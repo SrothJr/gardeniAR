@@ -1,0 +1,160 @@
+/* Add this to the TOP of WeedIdentifier.css */
+.back-icon {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  z-index: 30;
+  background: rgba(0, 0, 0, 0.5);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  font-size: 1.5rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.weed-identifier-container {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  background-color: #000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow: hidden;
+}
+
+.camera-feed {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.overlay-ui {
+  position: absolute;
+  bottom: 20px;
+  left: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  z-index: 10;
+  padding: 20px;
+}
+
+.scan-btn {
+  background-color: #ffffff;
+  border: 4px solid #4caf50; /* Garden Green */
+  border-radius: 50%;
+  width: 80px;
+  height: 80px;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  transition: transform 0.2s;
+}
+
+.scan-btn:active {
+  transform: scale(0.9);
+  background-color: #e0e0e0;
+}
+
+.scan-btn:disabled {
+  border-color: #888;
+  cursor: not-allowed;
+}
+
+.loading-indicator {
+  color: white;
+  background: rgba(0, 0, 0, 0.7);
+  padding: 10px 20px;
+  border-radius: 20px;
+  margin-bottom: 10px;
+  font-weight: bold;
+}
+
+/* Result Card */
+.result-card {
+  position: absolute;
+  bottom: 20px; /* Lift it off the very bottom */
+  left: 50%; /* Start centering */
+  transform: translateX(-50%); /* Complete centering */
+  width: 90%; /* Responsive width */
+  max-width: 400px; /* Maximum width for desktop */
+  background: rgba(255, 255, 255, 0.95); /* Slight transparency for glass feel */
+  border-radius: 24px; /* More rounded */
+  padding: 25px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.3); /* Deeper shadow */
+  z-index: 20;
+  max-height: 80vh;
+  overflow-y: auto;
+  transition: all 0.3s ease-out;
+  backdrop-filter: blur(10px); /* Glassmorphism effect */
+}
+
+/* Mobile Adjustment: If screen is very small, go full width but keep corners */
+@media (max-width: 480px) {
+  .result-card {
+    bottom: 0;
+    width: 100%;
+    max-width: 100%;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+  }
+}
+
+.result-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 15px;
+}
+
+.weed-name {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #2c3e50;
+  margin: 0;
+}
+
+.scientific-name {
+  font-style: italic;
+  color: #7f8c8d;
+  margin-top: 5px;
+}
+
+.confidence-badge {
+  background: #e8f5e9;
+  color: #2e7d32;
+  padding: 5px 10px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: bold;
+}
+
+.section-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #333;
+  margin-top: 15px;
+  margin-bottom: 5px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.close-btn {
+  margin-top: 20px;
+  width: 100%;
+  padding: 15px;
+  background: #333;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+}
