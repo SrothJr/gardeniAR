@@ -21,11 +21,6 @@ const Home = () => {
           </div>
 
           {/* Placeholders for other group members' features */}
-          <div className="feature-card disabled">
-            <div className="icon-circle">💧</div>
-            <h2>Soil Doctor</h2>
-            <p>Coming Soon (Module 2)</p>
-          </div>
         </div>
       </div>
     </div>

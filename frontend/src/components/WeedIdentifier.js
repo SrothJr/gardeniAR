@@ -1,4 +1,4 @@
-import React, { useRef, useState, useCallback } from 'react';
+import React, { useRef, useState, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Webcam from 'react-webcam';
 import axios from 'axios';
@@ -7,17 +7,50 @@ import './WeedIdentifier.css';
 const WeedIdentifier = () => {
   const navigate = useNavigate();
   const webcamRef = useRef(null);
+  const fileInputRef = useRef(null); // Hidden input ref
+  
+  // State
+  const [mode, setMode] = useState('auto'); // 'auto' (AI) or 'manual' (AR)
   const [imgSrc, setImgSrc] = useState(null);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
+  
+  // Manual Mode State
+  const [weeds, setWeeds] = useState([]);
+  const [currentIndex, setCurrentIndex] = useState(0);
 
-  // Camera constraints for mobile rear camera
-  const videoConstraints = {
-    facingMode: { exact: "environment" } // Tries to use rear camera on mobile
+  // Fetch Manual Weeds on Mount
+  useEffect(() => {
+    axios.get('http://localhost:5000/api/weeds')
+      .then(res => {
+        setWeeds(res.data);
+      })
+      .catch(err => console.error("Failed to load weeds", err));
+  }, []);
+
+  // Navigation for Manual Mode
+  const nextWeed = () => setCurrentIndex((prev) => (prev + 1) % weeds.length);
+  const prevWeed = () => setCurrentIndex((prev) => (prev - 1 + weeds.length) % weeds.length);
+  
+  const selectManualWeed = () => {
+    const selected = weeds[currentIndex];
+    setResult({
+      name: selected.name,
+      scientificName: selected.scientificName,
+      confidence: "Manual Match",
+      description: selected.description,
+      isWeed: true,
+      isPlant: true,
+      removalInstructions: selected.removalInstructions
+    });
   };
 
-  // Fallback to default if environment camera fails (desktop)
+  // --- Camera & Upload Logic ---
+  const videoConstraints = {
+    facingMode: { exact: "environment" } 
+  };
+
   const handleUserMediaError = useCallback(() => {
     console.log("Rear camera not found, using default.");
   }, []);
@@ -25,26 +58,33 @@ const WeedIdentifier = () => {
   const capture = useCallback(() => {
     const imageSrc = webcamRef.current.getScreenshot();
     setImgSrc(imageSrc);
-    identifyPlant(imageSrc);
+    // Convert base64 to blob and identify
+    fetch(imageSrc)
+      .then(res => res.blob())
+      .then(blob => identifyPlant(blob));
   }, [webcamRef]);
 
-  const identifyPlant = async (base64Image) => {
+  // New: Handle File Upload
+  const handleFileUpload = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => setImgSrc(e.target.result); // Show preview
+      reader.readAsDataURL(file);
+      identifyPlant(file); // Send file directly
+    }
+  };
+
+  const identifyPlant = async (imageBlobOrFile) => {
     setLoading(true);
     setError(null);
     
     try {
-      // Convert base64 to blob
-      const response = await fetch(base64Image);
-      const blob = await response.blob();
-      
       const formData = new FormData();
-      formData.append('image', blob, 'plant.jpg');
+      formData.append('image', imageBlobOrFile, 'plant.jpg');
 
-      // Use localhost URL directly for now
       const res = await axios.post('http://localhost:5000/api/weeds/identify', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
+        headers: { 'Content-Type': 'multipart/form-data' },
       });
 
       setResult(res.data);
@@ -62,9 +102,31 @@ const WeedIdentifier = () => {
     setError(null);
   };
 
+  const triggerFileUpload = () => {
+    fileInputRef.current.click();
+  };
+
   return (
     <div className="weed-identifier-container">
       <button className="back-icon" onClick={() => navigate('/')}>←</button>
+
+      {/* Mode Toggle Switch */}
+      {!imgSrc && !result && (
+        <div className="mode-toggle">
+          <button 
+            className={`mode-btn ${mode === 'auto' ? 'active' : ''}`} 
+            onClick={() => setMode('auto')}
+          >
+            AI Scan
+          </button>
+          <button 
+            className={`mode-btn ${mode === 'manual' ? 'active' : ''}`} 
+            onClick={() => setMode('manual')}
+          >
+            Manual AR
+          </button>
+        </div>
+      )}
 
       {/* Camera Feed */}
       {!imgSrc && (
@@ -78,20 +140,67 @@ const WeedIdentifier = () => {
         />
       )}
 
-      {/* Captured Image Preview (frozen frame) */}
+      {/* Captured Image Preview */}
       {imgSrc && (
-        <img src={imgSrc} alt="Captured" className="camera-feed" style={{ filter: 'brightness(0.5)' }} />
+        <img src={imgSrc} alt="Captured" className="camera-feed" style={{ filter: 'brightness(0.5)', objectFit: 'contain' }} />
       )}
 
-      {/* Overlay UI */}
-      <div className="overlay-ui">
-        {loading && <div className="loading-indicator">Analyzing Plant...</div>}
-        {error && <div className="loading-indicator" style={{background: 'red'}}>{error}</div>}
-        
-        {!imgSrc && !loading && (
-          <button className="scan-btn" onClick={capture} aria-label="Scan Plant"></button>
-        )}
-      </div>
+      {/* --- AUTO MODE UI --- */}
+      {mode === 'auto' && (
+        <div className="overlay-ui">
+          {loading && <div className="loading-indicator">Analyzing Plant...</div>}
+          {error && <div className="loading-indicator" style={{background: 'red'}}>{error}</div>}
+          
+          {!imgSrc && !loading && (
+            <div className="controls-row">
+               {/* Hidden Input */}
+               <input 
+                 type="file" 
+                 ref={fileInputRef} 
+                 onChange={handleFileUpload} 
+                 accept="image/*" 
+                 style={{display: 'none'}} 
+               />
+               
+               {/* Gallery Button */}
+               <button className="icon-btn" onClick={triggerFileUpload}>
+                 🖼️
+               </button>
+
+               {/* Shutter Button */}
+               <button className="scan-btn" onClick={capture} aria-label="Scan Plant"></button>
+
+               {/* Spacer to balance layout */}
+               <div style={{width: '50px'}}></div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* --- MANUAL MODE UI --- */}
+      {mode === 'manual' && !result && weeds.length > 0 && (
+        <div className="manual-overlay-layer">
+          {/* Ghost Image Overlay */}
+          <div className="ghost-container">
+            <img 
+              src={weeds[currentIndex].imageUrl} 
+              alt="Ghost Overlay" 
+              className="ghost-image"
+            />
+            <div className="ghost-guide-text">Align plant with overlay</div>
+          </div>
+
+          {/* Navigation Controls */}
+          <div className="manual-controls">
+             <button className="nav-btn" onClick={prevWeed}>❮</button>
+             <div className="weed-label">
+                <h3>{weeds[currentIndex].name}</h3>
+                <button className="match-btn" onClick={selectManualWeed}>It's a Match!</button>
+             </div>
+             <button className="nav-btn" onClick={nextWeed}>❯</button>
+          </div>
+        </div>
+      )}
 
       {/* Results Modal */}
       {result && (
@@ -101,7 +210,7 @@ const WeedIdentifier = () => {
               <h2 className="weed-name">{result.name || "Unknown Plant"}</h2>
               <p className="scientific-name">{result.scientificName}</p>
             </div>
-            <span className="confidence-badge">{result.confidence} Confidence</span>
+            <span className="confidence-badge">{result.confidence || "Manual"}</span>
           </div>
 
           <div className="result-body">
@@ -131,7 +240,9 @@ const WeedIdentifier = () => {
             {result.warning && <p style={{color: '#d32f2f'}}>{result.warning}</p>}
           </div>
 
-          <button className="close-btn" onClick={resetScan}>Scan Another</button>
+          <button className="close-btn" onClick={resetScan}>
+            {mode === 'auto' ? "Scan Another" : "Back to AR"}
+          </button>
         </div>
       )}
     </div>
