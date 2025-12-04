@@ -109,7 +109,14 @@ const WeedIdentifier = () => {
             <p>{result.description}</p>
 
             <div className="section-title">⚠️ Is it a Weed?</div>
-            <p>{result.isWeed ? "Yes, this is considered a weed." : "No, this might be a beneficial plant."}</p>
+            <p>
+              {result.isPlant === false 
+                ? "No plant detected." 
+                : result.isWeed 
+                  ? "Yes, this is considered a weed." 
+                  : "No, this might be a beneficial plant."
+              }
+            </p>
 
             {result.isWeed && (
               <>

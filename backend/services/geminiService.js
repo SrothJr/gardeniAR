@@ -17,6 +17,7 @@ class GeminiService {
         
         Return the response in this strictly valid JSON format:
         {
+          "isPlant": boolean,
           "isWeed": boolean,
           "name": "Common Name",
           "scientificName": "Scientific Name",
@@ -26,7 +27,8 @@ class GeminiService {
           "warning": "Any toxicity or safety warnings (e.g., poisonous sap)"
         }
         
-        If no plant is detected or it's unclear, set isWeed to false and explain in description.
+        If no plant is detected (e.g., a person, car, empty ground), set isPlant to false and isWeed to false.
+        If it is a plant but not a weed, set isPlant to true and isWeed to false.
         Do not use markdown code blocks. Just return the raw JSON string.
       `;
 
