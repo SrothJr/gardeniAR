@@ -5,7 +5,6 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 class GeminiService {
   constructor() {
-    // Using Experimental Flash model which usually allows free testing
     this.model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
   }
 
@@ -43,7 +42,7 @@ class GeminiService {
       const response = await result.response;
       const text = response.text();
 
-      // Clean up markdown if Gemini adds it
+      // Clean up markdown
       const cleanedText = text
         .replace(/```json/g, "")
         .replace(/```/g, "")
