@@ -1,19 +1,15 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import './App.css';
-import WeedIdentifier from './components/WeedIdentifier';
-import Home from './components/Home';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import ExplorePlants from './pages/ExplorePlants';
+import PlantDetail from './pages/PlantDetail';
 
 function App() {
   return (
-    <Router>
-      <div className="App">
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/identify" element={<WeedIdentifier />} />
-        </Routes>
-      </div>
-    </Router>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<ExplorePlants />} />
+        <Route path="/plants/:id" element={<PlantDetail />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
 
