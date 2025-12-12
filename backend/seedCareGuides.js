@@ -28,12 +28,15 @@ const guides = [
     scientificName: "Ocimum basilicum",
     image: "https://i.imgur.com/qZo4evT.png",
     waterConfig: [
+      // Specifics
       water("Seedling", "Spring", "50ml (Mist)", "Daily", "Keep soil surface consistently moist."),
-      water("Vegetative", "Summer", "300ml", "Daily", "Basil loves water in heat; do not let wilt."),
-      water("General", "Winter", "150ml", "Every 3 days", "Reduce watering as growth slows.")
+      water("Vegetative", "Summer", "300ml", "Daily", "Basil loves water in heat."),
+      // Fallbacks
+      water("General", "All Year", "Moderate", "Every 3 days", "Standard basil care: keep moist but draining.")
     ],
     fertilizerConfig: [
-      fert("Vegetative", "Summer", "Balanced Liquid Feed", "5ml/L", "Every 2 weeks", "Promotes lush green leaves.")
+      fert("Vegetative", "Summer", "Balanced Liquid", "5ml/L", "Every 2 weeks", "Promotes lush leaves."),
+      fert("General", "All Year", "Standard Balanced", "Half Strength", "Monthly", "Regular feeding.")
     ]
   },
   // 2. Rosemary
@@ -43,11 +46,11 @@ const guides = [
     image: "https://i.imgur.com/ORifXCb.png",
     waterConfig: [
       water("Seedling", "Spring", "Mist", "Daily", "Keep moist until established."),
-      water("General", "Summer", "200ml", "Weekly", "Allow soil to dry out completely between waterings."),
-      water("General", "Winter", "100ml", "Every 2 weeks", "Very susceptible to root rot in winter.")
+      water("General", "Winter", "100ml", "Every 2 weeks", "Very susceptible to root rot."),
+      water("General", "All Year", "Low", "Weekly", "Allow soil to dry out completely.")
     ],
     fertilizerConfig: [
-      fert("Vegetative", "Spring", "Fish Emulsion", "Half Strength", "Monthly", "Light feeder; do not over-fertilize.")
+      fert("General", "All Year", "Fish Emulsion", "Half Strength", "Monthly", "Light feeder.")
     ]
   },
   // 3. Mint
@@ -56,11 +59,11 @@ const guides = [
     scientificName: "Mentha",
     image: "https://i.imgur.com/LUAMciq.png",
     waterConfig: [
-      water("General", "Summer", "Keep Moist", "Daily", "Mint loves wet feet; never let dry out."),
-      water("General", "Winter", "Moderate", "Weekly", "Maintain slight moisture.")
+      water("General", "Summer", "Keep Moist", "Daily", "Mint loves wet feet."),
+      water("General", "All Year", "Moderate", "Every 3 days", "Never let dry out fully.")
     ],
     fertilizerConfig: [
-      fert("Vegetative", "Spring", "All Purpose", "Standard", "Monthly", "Fuels rapid spread.")
+      fert("General", "All Year", "All Purpose", "Standard", "Monthly", "Fuels rapid spread.")
     ]
   },
   // 4. Lavender
@@ -69,11 +72,11 @@ const guides = [
     scientificName: "Lavandula angustifolia",
     image: "https://i.imgur.com/GwF2iDd.png",
     waterConfig: [
-      water("General", "Summer", "Deep Soak", "Every 10 days", "Drought tolerant once established."),
-      water("General", "Winter", "Sparingly", "Monthly", "Keep dry to prevent rot.")
+      water("General", "Summer", "Deep Soak", "Every 10 days", "Drought tolerant."),
+      water("General", "All Year", "Sparingly", "Bi-weekly", "Prefers dry roots.")
     ],
     fertilizerConfig: [
-      fert("General", "Spring", "Compost", "Top Dress", "Once per season", "Lavender prefers poor soil; barely needs food.")
+      fert("General", "All Year", "Compost", "Top Dress", "Yearly", "Lavender prefers poor soil.")
     ]
   },
   // 5. Thyme
@@ -85,7 +88,7 @@ const guides = [
       water("General", "All Year", "Light", "Bi-weekly", "Prefers dry conditions.")
     ],
     fertilizerConfig: [
-      fert("General", "Spring", "None", "N/A", "N/A", "Usually does not require fertilizer.")
+      fert("General", "All Year", "None", "N/A", "N/A", "Usually does not require fertilizer.")
     ]
   },
   // 6. Cilantro
@@ -94,11 +97,11 @@ const guides = [
     scientificName: "Coriandrum sativum",
     image: "https://i.imgur.com/lCdXLAf.png",
     waterConfig: [
-      water("Seedling", "Spring", "Mist", "Daily", "Taproot is sensitive; keep moist."),
-      water("Vegetative", "Spring", "Moderate", "Every 2-3 days", "Heat causes bolting; keep roots cool and moist.")
+      water("Seedling", "Spring", "Mist", "Daily", "Taproot is sensitive."),
+      water("General", "All Year", "Moderate", "Every 2-3 days", "Keep cool and moist.")
     ],
     fertilizerConfig: [
-      fert("Vegetative", "Spring", "Nitrogen Rich", "Standard", "Once", "Apply once when plants are 2 inches tall.")
+      fert("General", "All Year", "Nitrogen Rich", "Standard", "Once", "Apply when 2 inches tall.")
     ]
   },
   // 7. Parsley
@@ -110,7 +113,7 @@ const guides = [
       water("General", "All Year", "Consistent", "Every 3 days", "Do not let dry out completely.")
     ],
     fertilizerConfig: [
-      fert("Vegetative", "Summer", "Balanced 10-10-10", "Standard", "Monthly", "Supports leafy growth.")
+      fert("General", "All Year", "Balanced 10-10-10", "Standard", "Monthly", "Supports leafy growth.")
     ]
   },
   // 8. Aloe Vera
@@ -119,11 +122,11 @@ const guides = [
     scientificName: "Aloe barbadensis miller",
     image: "https://i.imgur.com/Rs6PVde.png",
     waterConfig: [
-      water("General", "Summer", "Deep", "Every 3 weeks", "Soak and dry method."),
-      water("General", "Winter", "None/Light", "Monthly", "Dormant in winter; barely water.")
+      water("General", "Winter", "None/Light", "Monthly", "Dormant in winter."),
+      water("General", "All Year", "Deep", "Every 3 weeks", "Soak and dry method.")
     ],
     fertilizerConfig: [
-      fert("General", "Spring", "Cactus Food", "Half Strength", "Yearly", "Fertilize once in spring.")
+      fert("General", "All Year", "Cactus Food", "Half Strength", "Yearly", "Fertilize once in spring.")
     ]
   },
   // 9. Snake Plant
@@ -132,10 +135,10 @@ const guides = [
     scientificName: "Sansevieria trifasciata",
     image: "https://i.imgur.com/wLpp40s.png",
     waterConfig: [
-      water("General", "All Year", "Light", "Monthly", "Let soil dry completely. Indestructible except by overwatering.")
+      water("General", "All Year", "Light", "Monthly", "Let soil dry completely.")
     ],
     fertilizerConfig: [
-      fert("General", "Summer", "General Purpose", "Standard", "Twice a year", "Feed in spring and summer only.")
+      fert("General", "All Year", "General Purpose", "Standard", "Twice a year", "Feed in spring/summer.")
     ]
   },
   // 10. Spider Plant
@@ -144,11 +147,10 @@ const guides = [
     scientificName: "Chlorophytum comosum",
     image: "https://i.imgur.com/3VIEgLI.png",
     waterConfig: [
-      water("General", "Summer", "Moderate", "Weekly", "Keep lightly moist."),
-      water("General", "Winter", "Low", "Bi-weekly", "Allow top inch to dry.")
+      water("General", "All Year", "Moderate", "Weekly", "Keep lightly moist.")
     ],
     fertilizerConfig: [
-      fert("General", "Spring", "Liquid Houseplant", "Standard", "Monthly", "Avoid brown tips by flushing salts.")
+      fert("General", "All Year", "Liquid Houseplant", "Standard", "Monthly", "Avoid brown tips.")
     ]
   },
   // 11. Tomato
@@ -158,12 +160,12 @@ const guides = [
     image: "https://i.imgur.com/tT736tO.png",
     waterConfig: [
       water("Seedling", "Spring", "Gentle", "Daily", "Keep moist."),
-      water("Vegetative", "Summer", "Deep/Heavy", "Daily", "Inconsistent watering causes blossom end rot."),
-      water("Flowering", "Summer", "Consistent", "Daily", "Critical for fruit set.")
+      water("Flowering", "Summer", "Consistent", "Daily", "Critical for fruit set."),
+      water("General", "All Year", "Consistent", "Every 2 days", "Tomatoes need water.")
     ],
     fertilizerConfig: [
-      fert("Vegetative", "Spring", "Balanced", "Standard", "At planting", "Starter fertilizer."),
-      fert("Flowering", "Summer", "Tomato Food (Low N, High P)", "Label", "Every 2 weeks", "Boosts fruit production.")
+      fert("Flowering", "Summer", "Tomato Food", "Label", "Every 2 weeks", "Boosts fruit."),
+      fert("General", "All Year", "Balanced", "Standard", "Monthly", "Standard feeding.")
     ]
   },
   // 12. Spinach
@@ -172,10 +174,10 @@ const guides = [
     scientificName: "Spinacia oleracea",
     image: "https://i.imgur.com/HyV4oQP.png",
     waterConfig: [
-      water("General", "Spring", "Consistent", "Every 2 days", "Dryness causes bitter taste.")
+      water("General", "All Year", "Consistent", "Every 2 days", "Dryness causes bitterness.")
     ],
     fertilizerConfig: [
-      fert("Vegetative", "Spring", "Nitrogen High", "Standard", "At planting", "Spinach needs nitrogen for green leaves.")
+      fert("General", "All Year", "Nitrogen High", "Standard", "At planting", "Needs nitrogen.")
     ]
   },
   // 13. Lemon Balm
@@ -184,10 +186,26 @@ const guides = [
     scientificName: "Melissa officinalis",
     image: "https://i.imgur.com/mUgISVJ.png",
     waterConfig: [
-      water("General", "Summer", "Moderate", "Every 3 days", "Will wilt if too dry.")
+      water("General", "All Year", "Moderate", "Every 3 days", "Will wilt if too dry.")
     ],
     fertilizerConfig: [
-      fert("General", "Spring", "Balanced", "Standard", "Monthly", "Vigorous grower.")
+      fert("General", "All Year", "Balanced", "Standard", "Monthly", "Vigorous grower.")
+    ]
+  },
+  // 14. Rose
+  {
+    name: "Rose",
+    scientificName: "Rosa",
+    image: "https://i.imgur.com/ORifXCb.png",
+    waterConfig: [
+      water("Seedling", "All Year", "Mist", "Daily", "Keep moist."),
+      water("Flowering", "Summer", "1 Liter", "Every 2 days", "Thirsty when blooming."),
+      water("Flowering", "Winter", "500ml", "Weekly", "Reduce in winter."),
+      water("General", "All Year", "Moderate", "Weekly", "Standard rose care.")
+    ],
+    fertilizerConfig: [
+      fert("Flowering", "Summer", "Bloom Booster", "Label", "Every 2 weeks", "High P."),
+      fert("General", "All Year", "Balanced Rose Food", "Standard", "Monthly", "Regular feeding.")
     ]
   }
 ];
@@ -202,7 +220,7 @@ async function seed() {
     console.log("Cleared old guides.");
 
     const res = await CareGuide.insertMany(guides);
-    console.log(`Seeded ${res.length} guides.`);
+    console.log(`Seeded ${res.length} guides with Full Data.`);
     process.exit(0);
   } catch (err) {
     console.error(err);
