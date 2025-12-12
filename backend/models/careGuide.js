@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 
 const STAGES = ["Seedling", "Vegetative", "Flowering", "General"];
-const SEASONS = ["Summer", "Winter", "Monsoon", "All Year"];
+const SEASONS = ["Spring", "Summer", "Autumn", "Winter", "Monsoon", "All Year"];
 const CareGuideSchema = new mongoose.Schema(
   {
     name: {
