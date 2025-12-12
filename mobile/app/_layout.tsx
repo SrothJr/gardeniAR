@@ -1,24 +1,45 @@
-// mobile/app/(tabs)/_layout.tsx  (or mobile/app/_layout.tsx)
-import { Tabs } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
+import { Stack } from 'expo-router';
 import React from 'react';
 
 export default function Layout() {
   return (
-    <Tabs
+    <Stack
       screenOptions={{
-        headerShown: false,
-        tabBarStyle: { backgroundColor: '#05060a', borderTopColor: '#0f1724' },
+        headerStyle: { backgroundColor: '#05060a' },
+        headerTintColor: '#fff',
+        headerTitleStyle: { fontWeight: 'bold' },
+        contentStyle: { backgroundColor: '#071024' },
       }}
     >
-      {/* Only expose the Explore tab (pointing to app/explore.jsx) */}
-      <Tabs.Screen
-        name="explore"
-        options={{
-          title: 'Explore',
-          tabBarIcon: ({ color, size }) => <Ionicons name="paper-plane" size={size} color={color} />,
-        }}
+      {/* Home Screen (Menu) */}
+      <Stack.Screen 
+        name="index" 
+        options={{ title: 'Home', headerShown: false }} 
       />
-    </Tabs>
+
+      {/* Care Guides List */}
+      <Stack.Screen 
+        name="care-guides/index" 
+        options={{ title: 'Tracker' }} 
+      />
+
+      {/* Care Guide Detail */}
+      <Stack.Screen 
+        name="care-guides/[id]" 
+        options={{ title: 'Plant Care' }} 
+      />
+
+      {/* Explore Page (Existing) */}
+      <Stack.Screen 
+        name="explore" 
+        options={{ title: 'Explore' }} 
+      />
+      
+      {/* Plant Detail (Existing) */}
+      <Stack.Screen 
+        name="plant/[id]" 
+        options={{ title: 'Details' }} 
+      />
+    </Stack>
   );
 }
