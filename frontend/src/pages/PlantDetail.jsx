@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-
+import { BACKEND } from '../config';
 function PlantDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -10,7 +10,7 @@ function PlantDetail() {
   useEffect(() => {
     const fetchPlant = async () => {
       try {
-        const res = await fetch(`http://localhost:5000/api/plants/${id}`);
+        const res = await fetch(`${BACKEND}/api/plants/${id}`);
         const data = await res.json();
         setPlant(data);
       } catch (err) {

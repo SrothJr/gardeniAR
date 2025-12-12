@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import SearchBar from '../components/SearchBar';
 import PlantCard from '../components/PlantCard';
-
+import { BACKEND } from '../config';
 function ExplorePlants() {
   const [plants, setPlants] = useState([]);
   const [search, setSearch] = useState('');
@@ -12,10 +12,10 @@ function ExplorePlants() {
   const fetchPlants = async (searchTerm = '') => {
     try {
       const url = searchTerm
-        ? `http://localhost:5000/api/plants?search=${encodeURIComponent(
+        ? `${BACKEND}/api/plants?search=${encodeURIComponent(
             searchTerm
           )}`
-        : 'http://localhost:5000/api/plants';
+        : `${BACKEND}/api/plants`;
 
       const res = await fetch(url);
       const data = await res.json();
