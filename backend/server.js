@@ -1,22 +1,26 @@
-require('dotenv').config();
-const express = require('express');
-const mongoose = require('mongoose');
-const cors =require('cors');
+require("dotenv").config();
+const express = require("express");
+const mongoose = require("mongoose");
+const cors = require("cors");
 const app = express();
-app.use(express.json());                  // parse JSON bodies
-app.use(cors()); 
+app.use(express.json()); // parse JSON bodies
+app.use(cors());
 
-mongoose.connect(process.env.MONGO_URI, {}).then(() => {console.log("Connected to MongoDB")})
-.catch(err => (console.error("MongoDB connection error:", err.message)));
+const plantsRouter = require("./routes/plantsRoutes.js");
 
-app.get('/', (req,res) => {
-    console.log("Backend server is running");
-    res.send("Backend server is running");
-})
+mongoose
+  .connect(process.env.MONGO_URI, {})
+  .then(() => {
+    console.log("Connected to MongoDB");
+  })
+  .catch((err) => console.error("MongoDB connection error:", err.message));
 
-// mount the plants routes
-const plantsRouter = require('./routes/plantsRoutes.js');
-app.use('/api/plants', plantsRouter);
+app.get("/", (req, res) => {
+  console.log("Backend server is running");
+  res.send("Backend server is running");
+});
+
+app.use("/api/plants", plantsRouter);
 
 // start listening
 const PORT = process.env.PORT || 5000;
