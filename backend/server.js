@@ -23,7 +23,7 @@ app.get("/", (req, res) => {
 });
 
 app.use("/api/plants", plantsRouter);
-app.use("/api/weed-identify", weedRouter);
+app.use("/api/weeds", weedRouter);
 app.use("/api/care-guide", careGuideRouter);
 
 // start listening
