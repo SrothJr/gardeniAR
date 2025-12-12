@@ -1,23 +1,28 @@
-// mobile/app/(tabs)/_layout.tsx  (or mobile/app/_layout.tsx)
 import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 
-export default function Layout() {
+export default function RootLayout() {
   return (
-    <Tabs
-      screenOptions={{
-        headerShown: false,
-        tabBarStyle: { backgroundColor: '#05060a', borderTopColor: '#0f1724' },
-      }}
-    >
-      {/* Only expose the Explore tab (pointing to app/explore.jsx) */}
+    <Tabs screenOptions={{
+      headerShown: false,
+      tabBarStyle: { backgroundColor: '#000' },
+      tabBarActiveTintColor: '#22c55e'
+    }}>
       <Tabs.Screen
         name="explore"
         options={{
           title: 'Explore',
-          tabBarIcon: ({ color, size }) => <Ionicons name="paper-plane" size={size} color={color} />,
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="paper-plane" size={size} color={color} />
+          ),
         }}
+      />
+
+      {/* 🚫 hide plant/[id] from the tab bar */}
+      <Tabs.Screen
+        name="plant"
+        options={{ href: null }}
       />
     </Tabs>
   );
