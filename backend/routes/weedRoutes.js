@@ -1,15 +1,14 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const multer = require('multer');
-const weedController = require('../controllers/weedController');
+const multer = require("multer");
+const weedController = require("../controllers/weedController");
 
-// Configure Multer for memory storage (we process image in RAM, then discard)
-const upload = multer({ 
+const upload = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: 5 * 1024 * 1024 } // Limit to 5MB
+  limits: { fileSize: 5 * 1024 * 1024 },
 });
 
-router.get('/', weedController.getWeeds);
-router.post('/identify', upload.single('image'), weedController.identifyWeed);
+router.get("/", weedController.getWeeds);
+router.post("/identify", upload.single("image"), weedController.identifyWeed);
 
 module.exports = router;

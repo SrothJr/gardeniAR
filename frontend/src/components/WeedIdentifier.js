@@ -33,7 +33,7 @@ const WeedIdentifier = () => {
       .catch((err) => console.error("Failed to load weeds", err));
   }, []);
 
-  // Navigation for Manual Mode
+  // Navigation for Manual
   const nextWeed = () => setCurrentIndex((prev) => (prev + 1) % weeds.length);
   const prevWeed = () =>
     setCurrentIndex((prev) => (prev - 1 + weeds.length) % weeds.length);
