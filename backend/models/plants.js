@@ -1,4 +1,4 @@
-
+// backend/models/plants.js
 const mongoose = require('mongoose');
 
 const PlantSchema = new mongoose.Schema({

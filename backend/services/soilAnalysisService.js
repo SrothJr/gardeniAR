@@ -2,11 +2,11 @@
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 
 const key = process.env.SOIL_GEMINI_KEY || process.env.GEMINI_API_KEY;
-
+console.log(key);
 let model = null;
 try {
   const genAI = new GoogleGenerativeAI(key);
-  model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+  model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 } catch (err) {
   console.warn("⚠ Gemini init failed, returning mock soil results.", err.message);
 }

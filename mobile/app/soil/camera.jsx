@@ -180,8 +180,9 @@ import { View, Text, TouchableOpacity, Alert, StyleSheet } from "react-native";
 import * as Camera from "expo-camera";
 import * as ImageManipulator from "expo-image-manipulator";
 import { useRouter } from "expo-router";
+import { BACKEND } from '../../config';
 
-const BACKEND = "http://192.168.0.192:5000"; // <- CHANGE to your PC LAN IP
+//const BACKEND = "http://192.168.0.192:5000"; // 
 
 export default function SoilCamera() {
   const router = useRouter();
@@ -227,7 +228,7 @@ export default function SoilCamera() {
 
       console.log("DEBUG photo", Object.keys(photo));
 
-      // 2) resize & compress - return small file (and uri)
+      
       const manipResult = await ImageManipulator.manipulateAsync(
         photo.uri,
         [{ resize: { width: 1024 } }],
@@ -244,11 +245,11 @@ export default function SoilCamera() {
         type: "image/jpeg",
       });
 
-      // 4) upload to backend multipart route
+      
       const resp = await fetch(`${BACKEND}/api/soil/analyze-file`, {
         method: "POST",
         body: form,
-        // DO NOT set Content-Type; fetch will set the multipart boundary
+        
       });
 
       if (!resp.ok) {
@@ -261,7 +262,7 @@ export default function SoilCamera() {
       const json = await resp.json();
       const analysis = json.analysis ?? json;
 
-      // 5) navigate to result (pass image uri & analysis JSON)
+      
       router.push({
         pathname: "/soil/result",
         params: {
