@@ -1,30 +1,30 @@
-require("dotenv").config();
-const express = require("express");
-const mongoose = require("mongoose");
-const cors = require("cors");
+require('dotenv').config();
+console.log('ENV: SOIL_GEMINI_KEY present?', !!process.env.SOIL_GEMINI_KEY, 'GEMINI_API_KEY present?', !!process.env.GEMINI_API_KEY);
+
+const express = require('express');
+const mongoose = require('mongoose');
+const cors = require('cors');
 const app = express();
-app.use(express.json()); // parse JSON bodies
+
+app.use(express.json({ limit: "5mb" }));
 app.use(cors());
 
-const plantsRouter = require("./routes/plantsRoutes.js");
-const weedRouter = require("./routes/weedRoutes.js");
-const careGuideRouter = require("./routes/careGuideRoutes.js");
+// DB
+mongoose.connect(process.env.MONGO_URI, {})
+  .then(() => console.log("Connected to MongoDB"))
+  .catch(err => console.error("Mongo error:", err.message));
 
-mongoose
-  .connect(process.env.MONGO_URI, {})
-  .then(() => {
-    console.log("Connected to MongoDB");
-  })
-  .catch((err) => console.error("MongoDB connection error:", err.message));
-
-app.get("/", (req, res) => {
-  console.log("Backend server is running");
+app.get('/', (req, res) => {
   res.send("Backend server is running");
 });
 
-app.use("/api/plants", plantsRouter);
-app.use("/api/weeds", weedRouter);
-app.use("/api/care-guide", careGuideRouter);
+// ⭐ ADD THIS — Soil routes
+const soilRouter = require('./routes/soilRoutes');
+app.use('/api/soil', soilRouter);
+
+// existing plant routes
+const plantsRouter = require('./routes/plantsRoutes.js');
+app.use('/api/plants', plantsRouter);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server listening on ${PORT}`));
