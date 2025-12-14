@@ -1,6 +1,6 @@
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
-import { nBACKEND } from "../../config"; // Changed to BACKEND
+import { nBACKEND } from "../../config";
 import SearchBar from "../../components/SearchBar";
 import PlantCard from "../../components/PlantCard";
 import {
@@ -25,7 +25,7 @@ export default function CareGuidesList() {
         ? `${nBACKEND}/api/care-guide?search=${encodeURIComponent(query)}`
         : `${nBACKEND}/api/care-guide`;
 
-      //console.log("Fetching:", url); // Check your terminal for this log!
+      //console.log("Fetching:", url);
 
       const res = await fetch(url);
 
@@ -35,7 +35,6 @@ export default function CareGuidesList() {
 
       const json = await res.json();
 
-      // Handle { guides: [...] } OR [...]
       const data = json.guides || json;
 
       if (Array.isArray(data)) {
@@ -45,15 +44,13 @@ export default function CareGuidesList() {
       }
     } catch (error) {
       console.error("Fetch Error:", error);
-      Alert.alert("Connection Error", error.message); // Show error on phone
+      Alert.alert("Connection Error", error.message);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    // Only fetch once on mount (and when search changes)
-    // The previous code fetched twice.
     fetchGuides(search);
   }, [search]);
 
