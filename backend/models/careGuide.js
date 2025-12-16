@@ -15,6 +15,11 @@ const CareGuideSchema = new mongoose.Schema(
       index: true,
     },
     image: String, //link
+    stageImages: {
+      seedling: String,
+      vegetative: String,
+      flowering: String,
+    },
     waterConfig: [
       {
         lifeStage: {

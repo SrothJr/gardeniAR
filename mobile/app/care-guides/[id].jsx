@@ -110,13 +110,18 @@ export default function CareGuideDetail() {
   const waterRule = getRule(guide.waterConfig);
   const fertRule = getRule(guide.fertilizerConfig);
 
+  const currentImage =
+    guide.stageImages?.[activeStage.toLowerCase()] ||
+    guide.image ||
+    "https://picsum.photos/800/600";
+
   return (
     <ScrollView
       style={styles.page}
       contentContainerStyle={{ paddingBottom: 40 }}
     >
       <Image
-        source={{ uri: guide.image || "https://picsum.photos/800/600" }}
+        source={{ uri: currentImage }}
         style={styles.hero}
       />
 
