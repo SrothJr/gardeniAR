@@ -9,10 +9,16 @@ const app = express();
 app.use(express.json({ limit: "5mb" }));
 app.use(cors());
 
+
+
+
 // DB
 mongoose.connect(process.env.MONGO_URI, {})
   .then(() => console.log("Connected to MongoDB"))
   .catch(err => console.error("Mongo error:", err.message));
+
+const weatherRoutes = require("./routes/weatherRoutes");
+app.use("/api/weather", weatherRoutes);
 
 app.get('/', (req, res) => {
   res.send("Backend server is running");
