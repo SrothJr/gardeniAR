@@ -57,6 +57,13 @@ export default function Index() {
           </TouchableOpacity>
         </Link>
         
+        <Link href="/identify" asChild>
+          <TouchableOpacity style={styles.link}>
+            <Ionicons name="scan-outline" size={24} color="black" style={styles.icon} />
+            <Text style={styles.linkText}>Identify Weeds (AR)</Text>
+          </TouchableOpacity>
+        </Link>
+        
         <Link href="/forum" asChild>
           <TouchableOpacity style={styles.link}>
             <Ionicons name="chatbubbles-outline" size={24} color="black" style={styles.icon} />
