@@ -41,6 +41,12 @@ export default function RootLayout() {
         options={{ title: 'Details' }} 
       />
 
+      {/* Weed Identification (New) */}
+      <Stack.Screen 
+        name="identify/index" 
+        options={{ title: 'Weed ID', headerShown: false }} 
+      />
+
       {/* Auth Routes */}
       <Stack.Screen 
         name="auth/login" 
