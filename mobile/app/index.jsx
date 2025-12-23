@@ -53,7 +53,7 @@ export default function Index() {
               color="black"
               style={styles.icon}
             />
-            <Text style={styles.linkText}>Water & Fertilizer Tracker</Text>
+            <Text style={styles.linkText}>Water & Fertilizer Guide</Text>
           </TouchableOpacity>
         </Link>
 
@@ -122,14 +122,19 @@ export default function Index() {
           </TouchableOpacity>
         ) : (
           <Link href="/auth/login" asChild>
-            <TouchableOpacity style={[styles.link, styles.loginBtn]}>
+            <TouchableOpacity
+              style={[
+                styles.link,
+                { backgroundColor: "#3b82f6", marginTop: 10 },
+              ]}
+            >
               <Ionicons
                 name="log-in-outline"
                 size={24}
-                color="black"
+                color="white"
                 style={styles.icon}
               />
-              <Text style={styles.linkText}>Log In</Text>
+              <Text style={[styles.linkText, { color: "white" }]}>Log In</Text>
             </TouchableOpacity>
           </Link>
         )}
@@ -146,7 +151,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   header: {
-    marginTop: 60,
+    marginTop: 40,
     alignItems: "center",
   },
   title: {
@@ -195,6 +200,6 @@ const styles = StyleSheet.create({
     color: "white",
   },
   loginBtn: {
-    backgroundColor: "#3b82f6",
+    backgroundColor: "#2563eb", // Visible Blue
   },
 });
