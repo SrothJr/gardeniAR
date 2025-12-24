@@ -1,3 +1,5 @@
+//backend/server.js
+
 require('dotenv').config();
 console.log('ENV: SOIL_GEMINI_KEY present?', !!process.env.SOIL_GEMINI_KEY, 'GEMINI_API_KEY present?', !!process.env.GEMINI_API_KEY);
 
@@ -31,6 +33,10 @@ app.use('/api/soil', soilRouter);
 // existing plant routes
 const plantsRouter = require('./routes/plantsRoutes.js');
 app.use('/api/plants', plantsRouter);
+
+const captionRoutes = require("./routes/captionRoutes");
+app.use("/api/caption", captionRoutes);
+
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server listening on ${PORT}`));

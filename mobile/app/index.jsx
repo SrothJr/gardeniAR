@@ -12,6 +12,9 @@ export default function Index() {
       <Link href="/explore" style={styles.link}>
         <Text style={styles.linkText}>Explore Plants</Text>
       </Link>
+      <Link href="/share/camera" style={styles.shareLink}>
+        <Text style={styles.shareText}>Share Your Garden</Text>
+      </Link>
     </View>
   );
 }
@@ -42,4 +45,18 @@ const styles = StyleSheet.create({
     fontSize: 16,
     textAlign: "center",
   },
+  shareLink: {
+  padding: 15,
+  backgroundColor: "#10b981",
+  borderRadius: 10,
+  width: 250,
+  
+},
+shareText: {
+  color: "#071024",
+  fontWeight: "bold",
+  fontSize: 16,
+  textAlign: "center",
+},
+
 });
