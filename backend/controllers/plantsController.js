@@ -1,3 +1,5 @@
+// backend/controllers/plantsController.js
+
 const express = require('express');
 const router = express.Router();
 const plants = require('../models/plants');
@@ -33,4 +35,11 @@ const getPlantsId = async (req,res) => {
 
 };
 
+
+
+
+
+
+
 module.exports = { getPlants, getPlantsId };
+

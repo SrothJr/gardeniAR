@@ -1,4 +1,4 @@
-
+// backend/models/plants.js
 const mongoose = require('mongoose');
 
 const PlantSchema = new mongoose.Schema({
@@ -15,3 +15,6 @@ const PlantSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 module.exports = mongoose.model('Plant', PlantSchema);
+
+
+

@@ -1,3 +1,6 @@
-export const nBACKEND = "http://192.168.0.113:5000";
-export const BACKEND = "http://192.168.0.113:5000";
-export const BACKEND_URL = nBACKEND;
+export const nBACKEND = "http://192.168.0.108:5000";
+//export const nBACKEND = "http://192.168.0.192:5000";
+export const BACKEND = "http://192.168.0.192:5000";
+
+//export const BACKEND = "http://10.100.202.122:5000";
+

@@ -35,105 +35,16 @@ export default function Index() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>GardeniAR</Text>
-        {user && (
-          <Text style={styles.welcome}>
-            Hello, {user.name.split(" ")[0]}! 🌿
-          </Text>
-        )}
-      </View>
-
-      <View style={styles.menu}>
-        <Link href="/care-guides/" asChild>
-          <TouchableOpacity style={styles.link}>
-            <Ionicons
-              name="water-outline"
-              size={24}
-              color="black"
-              style={styles.icon}
-            />
-            <Text style={styles.linkText}>Water & Fertilizer Tracker</Text>
-          </TouchableOpacity>
-        </Link>
-
-        <Link href="/explore" asChild>
-          <TouchableOpacity style={styles.link}>
-            <Ionicons
-              name="search-outline"
-              size={24}
-              color="black"
-              style={styles.icon}
-            />
-            <Text style={styles.linkText}>Explore Plants</Text>
-          </TouchableOpacity>
-        </Link>
-
-        <Link href="/identify" asChild>
-          <TouchableOpacity style={styles.link}>
-            <Ionicons
-              name="scan-outline"
-              size={24}
-              color="black"
-              style={styles.icon}
-            />
-            <Text style={styles.linkText}>Identify Weeds</Text>
-          </TouchableOpacity>
-        </Link>
-
-        <Link href="/forum" asChild>
-          <TouchableOpacity style={styles.link}>
-            <Ionicons
-              name="chatbubbles-outline"
-              size={24}
-              color="black"
-              style={styles.icon}
-            />
-            <Text style={styles.linkText}>Community Forum</Text>
-          </TouchableOpacity>
-        </Link>
-
-        <Link href="/checklist" asChild>
-          <TouchableOpacity style={styles.link}>
-            <Ionicons
-              name="checkbox-outline"
-              size={24}
-              color="black"
-              style={styles.icon}
-            />
-            <Text style={styles.linkText}>Garden Tasks</Text>
-          </TouchableOpacity>
-        </Link>
-      </View>
-
-      <View style={styles.footer}>
-        {user ? (
-          <TouchableOpacity
-            style={[styles.link, styles.logoutBtn]}
-            onPress={handleLogout}
-          >
-            <Ionicons
-              name="log-out-outline"
-              size={24}
-              color="white"
-              style={styles.icon}
-            />
-            <Text style={[styles.linkText, styles.logoutText]}>Log Out</Text>
-          </TouchableOpacity>
-        ) : (
-          <Link href="/auth/login" asChild>
-            <TouchableOpacity style={[styles.link, styles.loginBtn]}>
-              <Ionicons
-                name="log-in-outline"
-                size={24}
-                color="black"
-                style={styles.icon}
-              />
-              <Text style={styles.linkText}>Log In</Text>
-            </TouchableOpacity>
-          </Link>
-        )}
-      </View>
+      <Text style={styles.title}>GardeniAR</Text>
+      <Link href="/care-guides/" style={styles.link}>
+        <Text style={styles.linkText}>Water & Fertilizer Tracker</Text>
+      </Link>
+      <Link href="/explore" style={styles.link}>
+        <Text style={styles.linkText}>Explore Plants</Text>
+      </Link>
+      <Link href="/share/camera" style={styles.shareLink}>
+        <Text style={styles.shareText}>Share Your Garden</Text>
+      </Link>
     </View>
   );
 }
@@ -187,14 +98,20 @@ const styles = StyleSheet.create({
     color: "black",
     fontWeight: "bold",
     fontSize: 16,
+    textAlign: "center",
   },
-  logoutBtn: {
-    backgroundColor: "#ef4444",
-  },
-  logoutText: {
-    color: "white",
-  },
-  loginBtn: {
-    backgroundColor: "#3b82f6",
-  },
+  shareLink: {
+  padding: 15,
+  backgroundColor: "#10b981",
+  borderRadius: 10,
+  width: 250,
+  
+},
+shareText: {
+  color: "#071024",
+  fontWeight: "bold",
+  fontSize: 16,
+  textAlign: "center",
+},
+
 });
