@@ -22,6 +22,7 @@ const orderRoutes = require("./routes/orderRoutes");
 app.use("/api/order", orderRoutes);
 
 // Route imports
+
 const plantsRouter = require("./routes/plantsRoutes.js");
 const weedRouter = require("./routes/weedRoutes.js");
 const careGuideRouter = require("./routes/careGuideRoutes.js");
@@ -30,7 +31,7 @@ const forumRouter = require("./routes/forumRoutes.js");
 const gardenTaskRouter = require("./routes/gardenTaskRoutes.js");
 const soilRouter = require("./routes/soilRoutes");
 const weatherRoutes = require("./routes/weatherRoutes");
-
+const companionRoutes = require('./routes/companionroutes');
 
 
 // DB
@@ -43,12 +44,12 @@ app.get("/", (req, res) => {
   res.send("Backend server is running");
 });
 
-
+app.use('/api/companions', companionRoutes);
 app.use('/api/soil', soilRouter);
 
 // existing plant routes
 
-app.use('/api/plants', plantsRouter);
+
 
 const captionRoutes = require("./routes/captionRoutes");
 app.use("/api/caption", captionRoutes);
