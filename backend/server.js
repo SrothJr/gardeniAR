@@ -11,7 +11,11 @@ const app = express();
 app.use(express.json({ limit: "5mb" }));
 app.use(cors());
 
+app.use("/api/cart", require("./routes/cartRoutes"));
 
+
+const orderRoutes = require("./routes/orderRoutes");
+app.use("/api/order", orderRoutes);
 
 
 // DB

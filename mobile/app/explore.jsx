@@ -124,6 +124,23 @@ export default function ExplorePlants() {
       <Text style={{ fontSize: 24 }}>📸</Text>
     </TouchableOpacity>
 
+    <TouchableOpacity
+  onPress={() => router.push("/cart")}
+  style={{
+    position: "absolute",
+    bottom: 100, // slightly above camera
+    right: 24,
+    backgroundColor: "#fbbf24",
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    justifyContent: "center",
+    alignItems: "center",
+  }}
+>
+  <Text style={{ fontSize: 24 }}>🛒</Text>
+</TouchableOpacity>
+
     </View>
     
   );
