@@ -6,7 +6,7 @@ import SearchBar from '../components/SearchBar';
 import PlantCard from '../components/PlantCard';
 import { BACKEND } from '../config';
 import * as Location from 'expo-location';
-
+import { TouchableOpacity } from "react-native";
 
 
 export default function ExplorePlants() {
@@ -107,8 +107,44 @@ export default function ExplorePlants() {
           ListEmptyComponent={<Text style={styles.empty}>No plants found.</Text>}
         />
       )}
+      <TouchableOpacity
+      onPress={() => router.push("/share/camera")}
+      style={{
+        position: "absolute",
+        bottom: 24,
+        right: 24,
+        backgroundColor: "#22c55e",
+        width: 60,
+        height: 60,
+        borderRadius: 30,
+        justifyContent: "center",
+        alignItems: "center",
+      }}
+    >
+      <Text style={{ fontSize: 24 }}>📸</Text>
+    </TouchableOpacity>
+
+    <TouchableOpacity
+  onPress={() => router.push("/cart")}
+  style={{
+    position: "absolute",
+    bottom: 100, // slightly above camera
+    right: 24,
+    backgroundColor: "#fbbf24",
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    justifyContent: "center",
+    alignItems: "center",
+  }}
+>
+  <Text style={{ fontSize: 24 }}>🛒</Text>
+</TouchableOpacity>
+
     </View>
+    
   );
+  
 }
 
 const styles = StyleSheet.create({
@@ -147,7 +183,25 @@ weatherTip: {
   color: '#cbd5e1',
   marginTop: 2,
   fontSize: 13
-}
+},
+
+fab: {
+  position: "absolute",
+  bottom: 24,
+  right: 24,
+  width: 60,
+  height: 60,
+  borderRadius: 30,
+  backgroundColor: "#22c55e",
+  justifyContent: "center",
+  alignItems: "center",
+  elevation: 6, // Android shadow
+  shadowColor: "#000",
+  shadowOffset: { width: 0, height: 4 },
+  shadowOpacity: 0.3,
+  shadowRadius: 4,
+},
+
 
 });
 

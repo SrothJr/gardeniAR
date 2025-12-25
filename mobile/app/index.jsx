@@ -69,6 +69,19 @@ export default function Index() {
           </TouchableOpacity>
         </Link>
 
+        {/* ✅ INTEGRATED FEATURE — FROM YOUR CODE */}
+        <Link href="/share/camera" asChild>
+          <TouchableOpacity style={styles.shareLink}>
+            <Ionicons
+              name="camera-outline"
+              size={24}
+              color="black"
+              style={styles.icon}
+            />
+            <Text style={styles.shareText}>Share Your Garden</Text>
+          </TouchableOpacity>
+        </Link>
+
         <Link href="/identify" asChild>
           <TouchableOpacity style={styles.link}>
             <Ionicons
@@ -118,7 +131,9 @@ export default function Index() {
               color="white"
               style={styles.icon}
             />
-            <Text style={[styles.linkText, styles.logoutText]}>Log Out</Text>
+            <Text style={[styles.linkText, styles.logoutText]}>
+              Log Out
+            </Text>
           </TouchableOpacity>
         ) : (
           <Link href="/auth/login" asChild>
@@ -134,7 +149,9 @@ export default function Index() {
                 color="white"
                 style={styles.icon}
               />
-              <Text style={[styles.linkText, { color: "white" }]}>Log In</Text>
+              <Text style={[styles.linkText, { color: "white" }]}>
+                Log In
+              </Text>
             </TouchableOpacity>
           </Link>
         )}
@@ -200,6 +217,23 @@ const styles = StyleSheet.create({
     color: "white",
   },
   loginBtn: {
-    backgroundColor: "#2563eb", // Visible Blue
+    backgroundColor: "#2563eb",
+  },
+
+  /* ✅ STYLES ADDED FROM YOUR FILE */
+  shareLink: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 18,
+    backgroundColor: "#10b981",
+    borderRadius: 14,
+    width: "100%",
+    maxWidth: 300,
+    paddingLeft: 30,
+  },
+  shareText: {
+    color: "black",
+    fontWeight: "bold",
+    fontSize: 16,
   },
 });
