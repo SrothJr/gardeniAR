@@ -332,6 +332,17 @@ export default function Index() {
             <Text style={styles.linkText}>Community Forum</Text>
           </TouchableOpacity>
         </Link>
+        <Link href="/growth" asChild>
+          <TouchableOpacity style={styles.link}>
+            <Ionicons
+              name="trending-up-outline"
+              size={24}
+              color="black"
+              style={styles.icon}
+            />
+            <Text style={styles.linkText}>Plant Growth Tracker</Text>
+          </TouchableOpacity>
+        </Link>
 
         {/* Garden Tasks */}
         <Link href="/checklist" asChild>
