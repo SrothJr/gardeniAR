@@ -9,9 +9,10 @@ app.use(cors());
 const plantsRouter = require("./routes/plantsRoutes.js");
 const weedRouter = require("./routes/weedRoutes.js");
 const careGuideRouter = require("./routes/careGuideRoutes.js");
+const companionRoutes = require('./routes/companionroutes');
 
 mongoose
-  .connect(process.env.MONGO_URI, {})
+  .connect("mongodb://127.0.0.1:27017/gardeningDB")
   .then(() => {
     console.log("Connected to MongoDB");
   })
@@ -25,6 +26,7 @@ app.get("/", (req, res) => {
 app.use("/api/plants", plantsRouter);
 app.use("/api/weeds", weedRouter);
 app.use("/api/care-guide", careGuideRouter);
+app.use('/api/companions', companionRoutes);
 
 // start listening
 const PORT = process.env.PORT || 5000;

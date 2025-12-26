@@ -10,6 +10,7 @@ const PlantSchema = new mongoose.Schema({
   water: String,
   soil: String,
   season: String,
+  price: Number,
   careTips: { type: [String], default: [] },
   description: String
 }, { timestamps: true });

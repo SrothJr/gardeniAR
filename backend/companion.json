@@ -1,0 +1,37 @@
+[
+    {
+        "name": "Tomato",
+        "companions": ["Basil", "Carrot", "Onion", "Lettuce"],
+        "avoided": ["Potato", "Cabbage", "Fennel"]
+    },
+    {
+        "name": "Basil",
+        "companions": ["Tomato", "Pepper", "Oregano"],
+        "avoided": ["Rue"]
+    },
+    {
+        "name": "Carrot",
+        "companions": ["Tomato", "Lettuce", "Pea", "Radish"],
+        "avoided": ["Dill", "Parsnip"]
+    },
+    {
+        "name": "Lettuce",
+        "companions": ["Carrot", "Radish", "Cucumber", "Strawberry"],
+        "avoided": ["Cabbage", "Broccoli"]
+    },
+    {
+        "name": "Potato",
+        "companions": ["Cabbage", "Corn", "Beans"],
+        "avoided": ["Tomato", "Cucumber", "Sunflower"]
+    },
+    {
+        "name": "Pepper",
+        "companions": ["Basil", "Onion", "Carrot"],
+        "avoided": ["Fennel"]
+    },
+    {
+        "name": "Cucumber",
+        "companions": ["Lettuce", "Radish", "Corn", "Beans"],
+        "avoided": ["Potato", "Sage"]
+    }    
+]

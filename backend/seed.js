@@ -13,6 +13,7 @@ const samplePlants = [
     water: "Medium",
     soil: "Loamy, well-drained",
     season: "Summer",
+    price: 100,
     careTips: [
       "Keep soil moist; water every 2–3 days.",
       "Provide 6+ hours of direct sun.",
@@ -28,6 +29,7 @@ const samplePlants = [
     water: "Low",
     soil: "Sandy, well-drained",
     season: "Summer",
+    price: 150,
     careTips: [
       "Drought tolerant; water sparingly.",
       "Give plenty of direct sun."
@@ -42,6 +44,7 @@ const samplePlants = [
     water: "Medium",
     soil: "Moist, rich",
     season: "Spring-Summer",
+    price: 140,
     careTips: [
       "Keep soil consistently moist.",
       "Contain roots — grows aggressively."
@@ -56,6 +59,7 @@ const samplePlants = [
     water: "Low",
     soil: "Sandy, well-drained",
     season: "Summer",
+    price: 200,
     careTips: [
       "Avoid overwatering.",
       "Provide full sunlight.",
@@ -71,6 +75,7 @@ const samplePlants = [
     water: "Low",
     soil: "Dry, rocky soil",
     season: "Summer",
+    price: 120,
     careTips: [
       "Water sparingly; prefers dryness.",
       "Harvest regularly to encourage new growth.",
@@ -84,6 +89,7 @@ const samplePlants = [
     sunlight: "Partial",
     water: "Medium",
     season: "Spring",
+    price: 60,
     soil: "Moist, well-drained",
     image: "https://i.imgur.com/lCdXLAf.png",
     careTips: [
@@ -99,6 +105,7 @@ const samplePlants = [
     sunlight: "Partial",
     water: "Medium",
     season: "Spring",
+    price: 220,
     soil: "Moist, rich soil",
     image: "https://i.imgur.com/p0XPFGx.png",
     careTips: [
@@ -114,6 +121,7 @@ const samplePlants = [
     sunlight: "Full",
     water: "Low",
     season: "Summer",
+    price: 300,
     soil: "Well-draining cactus mix",
     image: "https://i.imgur.com/Rs6PVde.png",
     careTips: [
@@ -129,6 +137,7 @@ const samplePlants = [
     sunlight: "Low",
     water: "Low",
     season: "All Year",
+    price: 250,
     soil: "Well-draining potting mix",
     image: "https://i.imgur.com/wLpp40s.png",
     careTips: [
@@ -144,6 +153,7 @@ const samplePlants = [
     sunlight: "Indirect",
     water: "Medium",
     season: "All Year",
+    price: 180,
     soil: "Rich, well-draining soil",
     image: "https://i.imgur.com/3VIEgLI.png",
     careTips: [
@@ -159,6 +169,7 @@ const samplePlants = [
     sunlight: "Full",
     water: "High",
     season: "Summer",
+    price: 350,
     soil: "Rich, well-drained, compost added",
     image: "https://i.imgur.com/tT736tO.png",
     careTips: [
@@ -174,6 +185,7 @@ const samplePlants = [
     sunlight: "Partial",
     water: "Medium",
     season: "Spring-Fall",
+    price: 90,
     soil: "Moist, nutrient-rich",
     image: "https://i.imgur.com/HyV4oQP.png",
     careTips: [
@@ -189,6 +201,7 @@ const samplePlants = [
     sunlight: "Partial",
     water: "Medium",
     season: "Spring-Summer",
+    price: 130,
     soil: "Moist but well-draining",
     image: "https://i.imgur.com/mUgISVJ.png",
     careTips: [
