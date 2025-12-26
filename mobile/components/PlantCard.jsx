@@ -28,7 +28,7 @@
 // });
 
 
-
+//mobile/components/PlantCard.jsx
 import React from 'react';
 import { TouchableOpacity, View, Text, Image, StyleSheet, Alert } from 'react-native';
 
