@@ -73,7 +73,7 @@ export default function Login() {
           {loading ? <ActivityIndicator color="#000" /> : <Text style={styles.buttonText}>Log In</Text>}
         </TouchableOpacity>
 
-        <TouchableOpacity style={[styles.button, styles.secondaryButton]} onPress={() => router.replace('/')}>
+        <TouchableOpacity style={StyleSheet.flatten([styles.button, styles.secondaryButton])} onPress={() => router.replace('/')}>
           <Text style={styles.buttonText}>Back to Home</Text>
         </TouchableOpacity>
 

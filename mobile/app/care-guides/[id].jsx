@@ -8,7 +8,9 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   StyleSheet,
+  Alert,
 } from "react-native";
+import * as Location from 'expo-location';
 import { nBACKEND } from "../../config";
 import { Ionicons } from "@expo/vector-icons";
 
@@ -23,6 +25,9 @@ export default function CareGuideDetail() {
   const [loading, setLoading] = useState(true);
   const [activeStage, setActiveStage] = useState("Vegetative");
   const [activeSeason, setActiveSeason] = useState("Summer");
+  
+  const [todayAdvice, setTodayAdvice] = useState(null);
+  const [analyzing, setAnalyzing] = useState(false);
 
   useEffect(() => {
     // Auto-detect current season on load
@@ -110,6 +115,51 @@ export default function CareGuideDetail() {
   const waterRule = getRule(guide.waterConfig);
   const fertRule = getRule(guide.fertilizerConfig);
 
+  const handleForToday = async () => {
+    setAnalyzing(true);
+    try {
+      // 1. Permission
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert('Permission to access location was denied');
+        return;
+      }
+
+      // 2. Location
+      let location = await Location.getCurrentPositionAsync({});
+      
+      // 3. API
+      const generalWater = waterRule ? `${waterRule.amount} ${waterRule.frequency}` : "Standard";
+      const generalFert = fertRule ? `${fertRule.dosage} ${fertRule.frequency}` : "Standard";
+
+      const res = await fetch(`${nBACKEND}/api/weather/care-adjustment`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          lat: location.coords.latitude,
+          lon: location.coords.longitude,
+          plantName: guide.name,
+          lifeStage: activeStage, // Added lifeStage
+          generalWater,
+          generalFert
+        })
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        setTodayAdvice(data);
+      } else {
+        Alert.alert("Error", data.error || "Failed to get advice");
+      }
+
+    } catch (e) {
+      console.error(e);
+      Alert.alert("Error", "Could not analyze weather.");
+    } finally {
+      setAnalyzing(false);
+    }
+  };
+
   const currentImage =
     guide.stageImages?.[activeStage.toLowerCase()] ||
     guide.image ||
@@ -129,6 +179,48 @@ export default function CareGuideDetail() {
         <Text style={styles.name}>{guide.name}</Text>
         <Text style={styles.scientific}>{guide.scientificName}</Text>
 
+        {/* TODAY'S ADVICE BUTTON */}
+        <TouchableOpacity 
+            style={styles.aiButton} 
+            onPress={handleForToday} 
+            disabled={analyzing}
+        >
+            {analyzing ? (
+                <ActivityIndicator color="#000" />
+            ) : (
+                <>
+                    <Ionicons name="sunny" size={20} color="#000" style={{ marginRight: 8 }} />
+                    <Text style={styles.aiButtonText}>For Today (AI Weather Adjust)</Text>
+                </>
+            )}
+        </TouchableOpacity>
+
+        {/* TODAY'S ADVICE CARD */}
+        {todayAdvice && (
+             <View style={[styles.card, { borderColor: '#facc15', borderWidth: 1 }]}>
+                <View style={styles.cardHeader}>
+                  <Ionicons name="sparkles" size={24} color="#facc15" />
+                  <Text style={[styles.cardTitle, { color: '#facc15' }]}>Today's Advice</Text>
+                </View>
+                
+                <Text style={[styles.label, { marginBottom: 4 }]}>
+                    Weather: {todayAdvice.weather.condition}, {Math.round(todayAdvice.weather.temperature)}°C
+                </Text>
+                
+                <View style={{ marginVertical: 8 }}>
+                    <Text style={[styles.label, { color: '#3b82f6' }]}>Water:</Text>
+                    <Text style={styles.valueLeft}>{todayAdvice.adjustment.waterAdvice}</Text>
+                </View>
+
+                <View style={{ marginVertical: 8 }}>
+                    <Text style={[styles.label, { color: '#22c55e' }]}>Fertilizer:</Text>
+                    <Text style={styles.valueLeft}>{todayAdvice.adjustment.fertilizerAdvice}</Text>
+                </View>
+
+                <Text style={styles.desc}>{todayAdvice.adjustment.reasoning}</Text>
+             </View>
+        )}
+
         {/* --- SELECTORS --- */}
         <View style={styles.controls}>
           {/* Stage Selector */}
@@ -138,17 +230,17 @@ export default function CareGuideDetail() {
               {STAGES.map((stage) => (
                 <TouchableOpacity
                   key={stage}
-                  style={[
+                  style={StyleSheet.flatten([
                     styles.pill,
                     activeStage === stage && styles.pillActive,
-                  ]}
+                  ])}
                   onPress={() => setActiveStage(stage)}
                 >
                   <Text
-                    style={[
+                    style={StyleSheet.flatten([
                       styles.pillText,
                       activeStage === stage && styles.pillTextActive,
-                    ]}
+                    ])}
                   >
                     {stage}
                   </Text>
@@ -168,17 +260,17 @@ export default function CareGuideDetail() {
               {SEASONS.map((season) => (
                 <TouchableOpacity
                   key={season}
-                  style={[
+                  style={StyleSheet.flatten([
                     styles.pill,
                     activeSeason === season && styles.pillActive,
-                  ]}
+                  ])}
                   onPress={() => setActiveSeason(season)}
                 >
                   <Text
-                    style={[
+                    style={StyleSheet.flatten([
                       styles.pillText,
                       activeSeason === season && styles.pillTextActive,
-                    ]}
+                    ])}
                   >
                     {season}
                   </Text>
@@ -292,7 +384,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
 
-  pills: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+  pills: { flexDirection: "row", flexWrap: "wrap" },
   pillsScroll: { flexDirection: "row" },
   pill: {
     backgroundColor: "#0f1724",
@@ -302,6 +394,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#1e293b",
     marginRight: 8,
+    marginBottom: 8, // Added for wrapping
   },
   pillActive: { backgroundColor: "#22c55e", borderColor: "#22c55e" },
   pillText: { color: "#94a3b8", fontSize: 13, fontWeight: "600" },
@@ -319,9 +412,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     marginBottom: 12,
-    gap: 10,
   },
-  cardTitle: { fontSize: 18, fontWeight: "bold", color: "#e6eef3" },
+  cardTitle: { fontSize: 18, fontWeight: "bold", color: "#e6eef3", marginLeft: 10 }, // Added marginLeft to replace gap
 
   row: {
     flexDirection: "row",
@@ -351,4 +443,23 @@ const styles = StyleSheet.create({
     textAlign: "center",
     padding: 10,
   },
+  aiButton: {
+    backgroundColor: '#facc15',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 12,
+    borderRadius: 12,
+    marginBottom: 20,
+  },
+  aiButtonText: {
+    color: '#000',
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+  valueLeft: {
+    color: '#e6eef3',
+    fontWeight: '600',
+    fontSize: 15,
+  }
 });

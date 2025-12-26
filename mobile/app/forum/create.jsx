@@ -64,7 +64,7 @@ export default function CreatePost() {
 
       <Text style={styles.label}>Content</Text>
       <TextInput
-        style={[styles.input, styles.textArea]}
+        style={StyleSheet.flatten([styles.input, styles.textArea])}
         placeholder="Share your gardening tips or questions..."
         placeholderTextColor="#aaa"
         value={content}

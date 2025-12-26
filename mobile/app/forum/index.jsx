@@ -111,7 +111,7 @@ export default function ForumList() {
       <Text numberOfLines={2} style={styles.content}>{item.content}</Text>
       <View style={styles.footer}>
         <View style={styles.iconRow}>
-          <Ionicons name="chatbubble-outline" size={16} color="#aaa" />
+          <Ionicons name="chatbubble-outline" size={16} color="#aaa" style={styles.icon} />
           <Text style={styles.footerText}>{item.comments?.length || 0} Comments</Text>
         </View>
       </View>
@@ -189,7 +189,9 @@ const styles = StyleSheet.create({
   iconRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 5,
+  },
+  icon: {
+    marginRight: 5,
   },
   footerText: {
     color: '#aaa',
