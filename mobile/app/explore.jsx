@@ -309,23 +309,27 @@ export default function ExplorePlants() {
       <Text style={styles.title}>Explore Plants</Text>
 
       {/* WEATHER CARD */}
-      {weather && (
+      {weather && weather.weather && (
         <View style={styles.weatherCard}>
-          <Text style={styles.weatherCity}>📍 {weather.city}</Text>
+          <Text style={styles.weatherCity}>
+            📍 {weather.weather.city}
+          </Text>
+
           <Text style={styles.weatherTemp}>
-            🌡 {weather.temperature}°C | 💧 {weather.humidity}%
+            🌡 {weather.weather.temperature}°C | 💧 {weather.weather.humidity}%
           </Text>
+
           <Text style={styles.weatherCondition}>
-            {weather.condition}
+            {weather.weather.condition}
           </Text>
+
           <Text style={styles.weatherAlert}>
-            🧠 {weather.alertSummary}
+            🧠 Weather-based gardening advice
           </Text>
-          {weather.recommendations?.map((r, i) => (
-            <Text key={i} style={styles.weatherTip}>
-              • {r}
-            </Text>
-          ))}
+
+          <Text style={styles.weatherTip}>
+            {weather.alert}
+          </Text>
         </View>
       )}
 

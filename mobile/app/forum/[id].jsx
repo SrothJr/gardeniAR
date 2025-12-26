@@ -297,6 +297,7 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: '#2d3748',
     backgroundColor: '#1a202c',
+    marginBottom: 30,
   },
   input: {
     flex: 1,

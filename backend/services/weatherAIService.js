@@ -1,6 +1,6 @@
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 
-const genAI = new GoogleGenerativeAI(process.env.WGEMINI_KEY);
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 // Using 1.5-flash for stability and speed
 const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
@@ -31,7 +31,7 @@ async function generateAdjustedCareAI(plantName, lifeStage, generalWater, genera
   console.log(`Generating AI advice for: ${plantName} (${lifeStage}) in ${weather.city}`);
   
   const prompt = `
-You are an expert botanist. Adjust the care for the plant "${plantName}" which is in the "${lifeStage}" stage, based on TODAY's weather.
+You are an expert botanist. Adjust the care for the plant "${plantName}" which is in the "${lifeStage}" stage, based on TODAY's weather, keep it within 50 words or concise.
 
 General Rules for this stage:
 - Water: ${generalWater || "Standard"}
