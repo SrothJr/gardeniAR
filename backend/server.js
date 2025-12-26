@@ -10,6 +10,7 @@ const plantsRouter = require("./routes/plantsRoutes.js");
 const weedRouter = require("./routes/weedRoutes.js");
 const careGuideRouter = require("./routes/careGuideRoutes.js");
 const companionRoutes = require('./routes/companionroutes');
+const growthRoutes = require("./routes/growthRoutes");
 
 mongoose
   .connect("mongodb://127.0.0.1:27017/gardeningDB")
@@ -27,6 +28,7 @@ app.use("/api/plants", plantsRouter);
 app.use("/api/weeds", weedRouter);
 app.use("/api/care-guide", careGuideRouter);
 app.use('/api/companions', companionRoutes);
+app.use("/api/growth", growthRoutes);
 
 // start listening
 const PORT = process.env.PORT || 5000;

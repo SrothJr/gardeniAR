@@ -1,0 +1,63 @@
+[
+  {
+    "plantName": "Tomato",
+    "growthRate": "Fast",
+    "spread": "Medium",
+    "stages": [
+      { "stage": "Seed", "month": 0, "height": 2 },
+      { "stage": "Child", "month": 1, "height": 15 },
+      { "stage": "Medium", "month": 3, "height": 60 },
+      { "stage": "Adult", "month": 6, "height": 120 },
+      { "stage": "Flower", "month": 7, "height": 130 },
+      { "stage": "Fruit", "month": 8, "height": 150 }
+    ]
+  },
+  {
+    "plantName": "Rose",
+    "growthRate": "Medium",
+    "spread": "Low",
+    "stages": [
+      { "stage": "Seed", "month": 0, "height": 3 },
+      { "stage": "Child", "month": 2, "height": 20 },
+      { "stage": "Medium", "month": 4, "height": 50 },
+      { "stage": "Adult", "month": 8, "height": 100 },
+      { "stage": "Flower", "month": 9, "height": 110 }
+    ]
+  },
+  {
+    "plantName": "Sunflower",
+    "growthRate": "Fast",
+    "spread": "Low",
+    "stages": [
+      { "stage": "Seed", "month": 0, "height": 5 },
+      { "stage": "Child", "month": 1, "height": 30 },
+      { "stage": "Medium", "month": 3, "height": 100 },
+      { "stage": "Adult", "month": 5, "height": 180 },
+      { "stage": "Flower", "month": 6, "height": 200 }
+    ]
+  },
+  {
+    "plantName": "Mango",
+    "growthRate": "Slow",
+    "spread": "Large",
+    "stages": [
+      { "stage": "Seed", "month": 0, "height": 10 },
+      { "stage": "Child", "month": 6, "height": 60 },
+      { "stage": "Medium", "month": 12, "height": 150 },
+      { "stage": "Adult", "month": 36, "height": 400 },
+      { "stage": "Fruit", "month": 48, "height": 450 }
+    ]
+  },
+  {
+    "plantName": "Chili",
+    "growthRate": "Fast",
+    "spread": "Low",
+    "stages": [
+      { "stage": "Seed", "month": 0, "height": 2 },
+      { "stage": "Child", "month": 1, "height": 12 },
+      { "stage": "Medium", "month": 2, "height": 40 },
+      { "stage": "Adult", "month": 4, "height": 70 },
+      { "stage": "Fruit", "month": 5, "height": 80 }
+    ]
+  }
+]
