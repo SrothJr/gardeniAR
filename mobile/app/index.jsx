@@ -311,9 +311,9 @@ export default function Index() {
 
         {/* Share Your Garden */}
         <Link href="/share/camera" asChild>
-          <TouchableOpacity style={styles.shareLink}>
+          <TouchableOpacity style={styles.link}>
             <Ionicons name="camera-outline" size={24} color="black" style={styles.icon} />
-            <Text style={styles.shareText}>Share Your Garden</Text>
+            <Text style={styles.linkText}>Share Your Garden</Text>
           </TouchableOpacity>
         </Link>
 
