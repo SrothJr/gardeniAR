@@ -66,9 +66,9 @@ export default function PlantCard({ plant, onPress }) {
       {/* ➕ ADD TO CART BUTTON (separate touch) */}
       {plant?.price !== undefined && (
         <TouchableOpacity
-  style={styles.plus}
-  activeOpacity={0.8}
-  onPress={async () => {
+    style={styles.plus}
+    activeOpacity={0.8}
+    onPress={async () => {
     try {
       // 1️⃣ Load existing cart
       const res = await fetch(`${BACKEND}/api/cart`);
