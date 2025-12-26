@@ -132,16 +132,16 @@ export default function IdentifyScreen() {
                 
                 <View style={styles.toggleContainer}>
                     <TouchableOpacity 
-                        style={[styles.toggleBtn, mode === 'auto' && styles.activeToggle]}
+                        style={StyleSheet.flatten([styles.toggleBtn, mode === 'auto' && styles.activeToggle])}
                         onPress={() => setMode('auto')}
                     >
-                        <Text style={[styles.toggleText, mode === 'auto' && styles.activeToggleText]}>AI Scan</Text>
+                        <Text style={StyleSheet.flatten([styles.toggleText, mode === 'auto' && styles.activeToggleText])}>AI Scan</Text>
                     </TouchableOpacity>
                     <TouchableOpacity 
-                        style={[styles.toggleBtn, mode === 'manual' && styles.activeToggle]}
+                        style={StyleSheet.flatten([styles.toggleBtn, mode === 'manual' && styles.activeToggle])}
                         onPress={() => setMode('manual')}
                     >
-                        <Text style={[styles.toggleText, mode === 'manual' && styles.activeToggleText]}>Manual AR</Text>
+                        <Text style={StyleSheet.flatten([styles.toggleText, mode === 'manual' && styles.activeToggleText])}>Manual AR</Text>
                     </TouchableOpacity>
                 </View>
             </View>
@@ -242,8 +242,8 @@ export default function IdentifyScreen() {
 
                     {result?.warning && (
                         <>
-                            <Text style={[styles.sectionTitle, { color: '#ef4444' }]}>☣️ Warning</Text>
-                            <Text style={[styles.bodyText, { color: '#ef4444' }]}>{result?.warning}</Text>
+                            <Text style={StyleSheet.flatten([styles.sectionTitle, { color: '#ef4444' }])}>☣️ Warning</Text>
+                            <Text style={StyleSheet.flatten([styles.bodyText, { color: '#ef4444' }])}>{result?.warning}</Text>
                         </>
                     )}
 

@@ -186,7 +186,7 @@ export default function Checklist() {
             />
 
             <TextInput
-              style={[styles.input, styles.textArea]}
+              style={StyleSheet.flatten([styles.input, styles.textArea])}
               placeholder="Description (Optional)"
               placeholderTextColor="#aaa"
               value={newTaskDesc}
@@ -215,13 +215,13 @@ export default function Checklist() {
 
             <View style={styles.modalButtons}>
               <TouchableOpacity 
-                style={[styles.btn, styles.cancelBtn]} 
+                style={StyleSheet.flatten([styles.btn, styles.cancelBtn])} 
                 onPress={() => setModalVisible(false)}
               >
                 <Text style={styles.btnText}>Cancel</Text>
               </TouchableOpacity>
               <TouchableOpacity 
-                style={[styles.btn, styles.saveBtn]} 
+                style={StyleSheet.flatten([styles.btn, styles.saveBtn])} 
                 onPress={handleAddTask}
               >
                 <Text style={styles.btnText}>Save</Text>
@@ -345,13 +345,13 @@ const styles = StyleSheet.create({
   modalButtons: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    gap: 10,
   },
   btn: {
     flex: 1,
     padding: 12,
     borderRadius: 8,
     alignItems: 'center',
+    marginHorizontal: 5,
   },
   cancelBtn: {
     backgroundColor: '#4a5568',

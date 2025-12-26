@@ -356,7 +356,7 @@ export default function Index() {
       <View style={styles.footer}>
         {user ? (
           <TouchableOpacity
-            style={[styles.link, styles.logoutBtn]}
+            style={StyleSheet.flatten([styles.link, styles.logoutBtn])}
             onPress={handleLogout}
           >
             <Ionicons name="log-out-outline" size={24} color="white" style={styles.icon} />
@@ -365,7 +365,10 @@ export default function Index() {
         ) : (
           <Link href="/auth/login" asChild>
             <TouchableOpacity
-              style={[styles.link, { backgroundColor: "#3b82f6", marginTop: 10 }]}
+              style={StyleSheet.flatten([
+                styles.link,
+                { backgroundColor: "#3b82f6", marginTop: 10 },
+              ])}
             >
               <Ionicons name="log-in-outline" size={24} color="white" style={styles.icon} />
               <Text style={[styles.linkText, { color: "white" }]}>Log In</Text>
@@ -399,7 +402,6 @@ const styles = StyleSheet.create({
     fontSize: 18,
   },
   menu: {
-    gap: 15,
     width: "100%",
     alignItems: "center",
   },
@@ -415,9 +417,9 @@ const styles = StyleSheet.create({
     backgroundColor: "#10b981",
     borderRadius: 12,
     width: "100%",
-    maxWidth: 300,
     justifyContent: "flex-start",
     paddingLeft: 30,
+    marginBottom: 15, // Added margin here instead of gap
   },
   icon: {
     marginRight: 15,
