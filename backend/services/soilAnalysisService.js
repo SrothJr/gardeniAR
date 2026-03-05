@@ -13,7 +13,7 @@ try {
 
 module.exports = {
   async analyzeSoil(imageBuffer, mimeType = "image/jpeg") {
-    // If no Gemini key, return mock result for testing
+  
     if (!model) {
       return {
         soilType: "loamy",

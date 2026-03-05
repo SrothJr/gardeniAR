@@ -31,7 +31,7 @@ async function generateAdjustedCareAI(plantName, lifeStage, generalWater, genera
   console.log(`Generating AI advice for: ${plantName} (${lifeStage}) in ${weather.city}`);
   
   const prompt = `
-You are an expert botanist. Adjust the care for the plant "${plantName}" which is in the "${lifeStage}" stage, based on TODAY's weather, keep it within 50 words or concise.
+You are an expert botanist. Adjust the care for the plant "${plantName}" which is in the "${lifeStage}" stage, based on TODAY's weather, keep it within 20 words or concise.
 
 General Rules for this stage:
 - Water: ${generalWater || "Standard"}

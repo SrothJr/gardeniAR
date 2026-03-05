@@ -1,40 +1,4 @@
-// async function generateWeatherAlert(city) {
-//   const apiKey = process.env.WEATHER_API_KEY;
-//   const url = `https://api.openweathermap.org/data/2.5/weather?q=${city}&units=metric&appid=${apiKey}`;
 
-//   const res = await fetch(url);
-
-//   // 🔴 IMPORTANT CHECK
-//   if (!res.ok) {
-//     const errorText = await res.text();
-//     console.error("Weather API failed:", res.status, errorText);
-//     throw new Error("Weather API request failed");
-//   }
-
-//   const weatherData = await res.json();
-
-//   // 🔴 EXTRA SAFETY
-//   if (!weatherData.main || typeof weatherData.main.temp !== "number") {
-//     console.error("Invalid weather response:", weatherData);
-//     throw new Error("Invalid weather data structure");
-//   }
-
-//   const temp = weatherData.main.temp;
-//   const humidity = weatherData.main.humidity;
-//   const condition = weatherData.weather?.[0]?.description || "unknown";
-
-//   return {
-//     city,
-//     temperature: temp,
-//     humidity,
-//     condition,
-//     alert: temp > 35
-//       ? "High temperature! Water plants more frequently."
-//       : "Weather conditions are suitable for gardening.",
-//   };
-// }
-
-// module.exports = { generateWeatherAlert };
 
 const { generateWeatherAlertAI } = require("./weatherAIService");
 

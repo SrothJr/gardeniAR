@@ -9,7 +9,6 @@ router.get("/alert", async (req, res) => {
   try {
     const city = req.query.city || "Dhaka";
 
-    // 1️⃣ Fetch weather
     const weatherRes = await fetch(
       `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${WEATHER_KEY}&units=metric`
     );
@@ -19,8 +18,7 @@ router.get("/alert", async (req, res) => {
     }
 
     const weatherData = await weatherRes.json();
-    
-    // Simplify for AI
+
     const simpleWeather = {
       city: weatherData.name,
       temperature: weatherData.main.temp,
@@ -29,10 +27,9 @@ router.get("/alert", async (req, res) => {
       windSpeed: weatherData.wind.speed
     };
 
-    // 2️⃣ Generate alert (AI)
     const alert = await generateWeatherAlertAI(simpleWeather);
 
-    // 3️⃣ Send response
+
     res.json({ alert, weather: simpleWeather });
 
   } catch (err) {
@@ -41,7 +38,6 @@ router.get("/alert", async (req, res) => {
   }
 });
 
-// POST /api/weather/care-adjustment
 router.post("/care-adjustment", async (req, res) => {
   try {
     const { lat, lon, plantName, lifeStage, generalWater, generalFert } = req.body;
@@ -50,13 +46,13 @@ router.post("/care-adjustment", async (req, res) => {
       return res.status(400).json({ error: "Missing location or plant info" });
     }
 
-    // 1. Fetch Weather
+
     const weatherRes = await fetch(
       `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${WEATHER_KEY}&units=metric`
     );
 
     if (!weatherRes.ok) {
-        // Fallback or error
+
         console.error("Weather API error", await weatherRes.text());
         return res.status(502).json({ error: "Could not fetch local weather" });
     }
@@ -70,7 +66,7 @@ router.post("/care-adjustment", async (req, res) => {
       windSpeed: weatherData.wind.speed
     };
 
-    // 2. Call AI with lifeStage
+
     const adjustment = await generateAdjustedCareAI(plantName, lifeStage || "General", generalWater, generalFert, simpleWeather);
 
     res.json({ adjustment, weather: simpleWeather });

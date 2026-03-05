@@ -233,11 +233,16 @@ const samplePlants = [
     water: "Medium",
     soil: "Loamy, well-drained",
     season: "Summer",
+    difficulty: "easy",
+    growthSpeed: "fast",
+    heatTolerance: "medium",
+    beginnerFriendly: true,
+    seasonalTags: ["easy-starters", "fast-growers"],
     careTips: [
       "Keep soil moist; water every 2–3 days.",
       "Provide 6+ hours of direct sun.",
-      "Pinch leaves to encourage bushier growth."
-    ]
+      "Pinch leaves to encourage bushier growth.",
+    ],
   },
   {
     name: "Rosemary",
@@ -250,10 +255,15 @@ const samplePlants = [
     water: "Low",
     soil: "Sandy, well-drained",
     season: "Summer",
+    difficulty: "medium",
+    growthSpeed: "medium",
+    heatTolerance: "high",
+    beginnerFriendly: true,
+    seasonalTags: ["heat-friendly", "easy-starters"],
     careTips: [
       "Drought tolerant; water sparingly.",
-      "Give plenty of direct sun."
-    ]
+      "Give plenty of direct sun.",
+    ],
   },
   {
     name: "Mint",
@@ -266,10 +276,15 @@ const samplePlants = [
     water: "Medium",
     soil: "Moist, rich",
     season: "Spring-Summer",
+    difficulty: "easy",
+    growthSpeed: "fast",
+    heatTolerance: "medium",
+    beginnerFriendly: true,
+    seasonalTags: ["easy-starters", "fast-growers"],
     careTips: [
       "Keep soil consistently moist.",
-      "Contain roots — grows aggressively."
-    ]
+      "Contain roots — grows aggressively.",
+    ],
   },
   {
     name: "Lavender",
@@ -282,11 +297,16 @@ const samplePlants = [
     water: "Low",
     soil: "Sandy, well-drained",
     season: "Summer",
+    difficulty: "medium",
+    growthSpeed: "medium",
+    heatTolerance: "high",
+    beginnerFriendly: true,
+    seasonalTags: ["heat-friendly"],
     careTips: [
       "Avoid overwatering.",
       "Provide full sunlight.",
-      "Prune yearly to encourage growth."
-    ]
+      "Prune yearly to encourage growth.",
+    ],
   },
   {
     name: "Thyme",
@@ -299,11 +319,16 @@ const samplePlants = [
     water: "Low",
     soil: "Dry, rocky soil",
     season: "Summer",
+    difficulty: "easy",
+    growthSpeed: "medium",
+    heatTolerance: "high",
+    beginnerFriendly: true,
+    seasonalTags: ["easy-starters", "heat-friendly"],
     careTips: [
       "Water sparingly; prefers dryness.",
       "Harvest regularly to encourage new growth.",
-      "Plant in full sun."
-    ]
+      "Plant in full sun.",
+    ],
   },
   {
     name: "Cilantro",
@@ -315,12 +340,17 @@ const samplePlants = [
     water: "Medium",
     season: "Spring",
     soil: "Moist, well-drained",
+    difficulty: "medium",
+    growthSpeed: "fast",
+    heatTolerance: "low",
+    beginnerFriendly: false,
+    seasonalTags: ["fast-growers"],
     image: "https://i.imgur.com/lCdXLAf.png",
     careTips: [
       "Needs cool temperatures to thrive.",
       "Trim regularly to prevent bolting.",
-      "Avoid hot afternoon sun."
-    ]
+      "Avoid hot afternoon sun.",
+    ],
   },
   {
     name: "Parsley",
@@ -332,12 +362,17 @@ const samplePlants = [
     water: "Medium",
     season: "Spring",
     soil: "Moist, rich soil",
+    difficulty: "easy",
+    growthSpeed: "medium",
+    heatTolerance: "medium",
+    beginnerFriendly: true,
+    seasonalTags: ["easy-starters"],
     image: "https://i.imgur.com/p0XPFGx.png",
     careTips: [
       "Keep soil moist but not soggy.",
       "Harvest from outer stems first.",
-      "Apply compost monthly."
-    ]
+      "Apply compost monthly.",
+    ],
   },
   {
     name: "Aloe Vera",
@@ -349,12 +384,17 @@ const samplePlants = [
     water: "Low",
     season: "Summer",
     soil: "Well-draining cactus mix",
+    difficulty: "easy",
+    growthSpeed: "slow",
+    heatTolerance: "high",
+    beginnerFriendly: true,
+    seasonalTags: ["easy-starters", "heat-friendly"],
     image: "https://i.imgur.com/Rs6PVde.png",
     careTips: [
       "Water only when soil is dry.",
       "Provide bright indirect sunlight.",
-      "Avoid freezing temperatures."
-    ]
+      "Avoid freezing temperatures.",
+    ],
   },
   {
     name: "Snake Plant",
@@ -366,12 +406,17 @@ const samplePlants = [
     water: "Low",
     season: "All Year",
     soil: "Well-draining potting mix",
+    difficulty: "easy",
+    growthSpeed: "slow",
+    heatTolerance: "high",
+    beginnerFriendly: true,
+    seasonalTags: ["easy-starters", "heat-friendly"],
     image: "https://i.imgur.com/wLpp40s.png",
     careTips: [
       "Very tolerant of low light.",
       "Let soil dry completely before watering.",
-      "Avoid cold drafts."
-    ]
+      "Avoid cold drafts.",
+    ],
   },
   {
     name: "Spider Plant",
@@ -383,12 +428,17 @@ const samplePlants = [
     water: "Medium",
     season: "All Year",
     soil: "Rich, well-draining soil",
+    difficulty: "easy",
+    growthSpeed: "fast",
+    heatTolerance: "medium",
+    beginnerFriendly: true,
+    seasonalTags: ["easy-starters", "fast-growers"],
     image: "https://i.imgur.com/3VIEgLI.png",
     careTips: [
       "Mist occasionally to increase humidity.",
       "Avoid direct sunlight to prevent leaf burn.",
-      "Repot when roots crowd."
-    ]
+      "Repot when roots crowd.",
+    ],
   },
   {
     name: "Tomato",
@@ -400,12 +450,17 @@ const samplePlants = [
     water: "High",
     season: "Summer",
     soil: "Rich, well-drained, compost added",
+    difficulty: "medium",
+    growthSpeed: "fast",
+    heatTolerance: "high",
+    beginnerFriendly: false,
+    seasonalTags: ["fast-growers", "heat-friendly"],
     image: "https://i.imgur.com/tT736tO.png",
     careTips: [
       "Provide support with stakes.",
       "Water deeply and consistently.",
-      "Full sunlight 6+ hours daily."
-    ]
+      "Full sunlight 6+ hours daily.",
+    ],
   },
   {
     name: "Spinach",
@@ -417,12 +472,17 @@ const samplePlants = [
     water: "Medium",
     season: "Spring-Fall",
     soil: "Moist, nutrient-rich",
+    difficulty: "easy",
+    growthSpeed: "fast",
+    heatTolerance: "low",
+    beginnerFriendly: true,
+    seasonalTags: ["easy-starters", "fast-growers"],
     image: "https://i.imgur.com/HyV4oQP.png",
     careTips: [
       "Prefers cooler weather.",
       "Keep soil evenly moist.",
-      "Harvest outer leaves first."
-    ]
+      "Harvest outer leaves first.",
+    ],
   },
   {
     name: "Lemon Balm",
@@ -434,13 +494,107 @@ const samplePlants = [
     water: "Medium",
     season: "Spring-Summer",
     soil: "Moist but well-draining",
+    difficulty: "easy",
+    growthSpeed: "medium",
+    heatTolerance: "medium",
+    beginnerFriendly: true,
+    seasonalTags: ["easy-starters"],
     image: "https://i.imgur.com/mUgISVJ.png",
     careTips: [
       "Spreads aggressively; consider containers.",
       "Trim frequently to avoid flowering.",
-      "Prefers morning sun."
-    ]
-  }
+      "Prefers morning sun.",
+    ],
+  },
+  // Extra plants to enrich recommendations
+  {
+    name: "Cucumber",
+    scientificName: "Cucumis sativus",
+    type: "Vegetable",
+    category: "vegetable",
+    price: 32,
+    sunlight: "Full",
+    water: "High",
+    season: "Summer",
+    soil: "Rich, well-drained soil",
+    difficulty: "medium",
+    growthSpeed: "fast",
+    heatTolerance: "high",
+    beginnerFriendly: true,
+    seasonalTags: ["fast-growers", "heat-friendly"],
+    image: "https://i.imgur.com/6MsYa7S.png",
+    careTips: [
+      "Provide a trellis or support.",
+      "Keep soil evenly moist.",
+      "Mulch to retain moisture.",
+    ],
+  },
+  {
+    name: "Lettuce",
+    scientificName: "Lactuca sativa",
+    type: "Vegetable",
+    category: "vegetable",
+    price: 22,
+    sunlight: "Partial",
+    water: "Medium",
+    season: "Spring-Fall",
+    soil: "Loose, fertile soil",
+    difficulty: "easy",
+    growthSpeed: "fast",
+    heatTolerance: "low",
+    beginnerFriendly: true,
+    seasonalTags: ["easy-starters", "fast-growers"],
+    image: "https://i.imgur.com/1wq1vVJ.png",
+    careTips: [
+      "Prefers cooler temperatures.",
+      "Water regularly to avoid bitterness.",
+      "Harvest outer leaves as needed.",
+    ],
+  },
+  {
+    name: "Chili Pepper",
+    scientificName: "Capsicum annuum",
+    type: "Vegetable",
+    category: "vegetable",
+    price: 30,
+    sunlight: "Full",
+    water: "Medium",
+    season: "Summer",
+    soil: "Rich, well-drained soil",
+    difficulty: "medium",
+    growthSpeed: "medium",
+    heatTolerance: "high",
+    beginnerFriendly: false,
+    seasonalTags: ["heat-friendly"],
+    image: "https://i.imgur.com/3l8Rqfm.png",
+    careTips: [
+      "Needs warm soil to germinate.",
+      "Stake plants if they become heavy with fruit.",
+      "Avoid overwatering to prevent root rot.",
+    ],
+  },
+  {
+    name: "Carrot",
+    scientificName: "Daucus carota subsp. sativus",
+    type: "Vegetable",
+    category: "vegetable",
+    price: 20,
+    sunlight: "Full",
+    water: "Medium",
+    season: "Spring-Fall",
+    soil: "Loose, stone-free soil",
+    difficulty: "easy",
+    growthSpeed: "medium",
+    heatTolerance: "medium",
+    beginnerFriendly: true,
+    seasonalTags: ["easy-starters"],
+    image: "https://i.imgur.com/Y7Q9M62.png",
+    careTips: [
+      "Thin seedlings to avoid crowding.",
+      "Keep soil consistently moist.",
+      "Avoid fresh manure to prevent forked roots.",
+    ],
+  },
 ];
 
 async function seed() {

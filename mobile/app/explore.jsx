@@ -1,32 +1,360 @@
-// // mobile/app/explore.jsx (working Explore screen)
-// import React, { useEffect, useState } from 'react';
-// import { View, Text, FlatList, ActivityIndicator, StyleSheet } from 'react-native';
-// import { useRouter } from 'expo-router';
-// import SearchBar from '../components/SearchBar';
-// import PlantCard from '../components/PlantCard';
-// import { BACKEND } from '../config';
-// import * as Location from 'expo-location';
-// import { TouchableOpacity } from "react-native";
+// // mobile/app/explore.jsx
+// import React, { useEffect, useMemo, useState, useRef } from "react";
+// import {
+//   View,
+//   Text,
+//   FlatList,
+//   ActivityIndicator,
+//   StyleSheet,
+//   TouchableOpacity,
+//   Animated,
+//   ScrollView,
+// } from "react-native";
+// import { useRouter, useLocalSearchParams } from "expo-router";
+// import SearchBar from "../components/SearchBar";
+// import PlantCard from "../components/PlantCard";
+// import { BACKEND } from "../config";
+// import * as Location from "expo-location";
 
+// // ─── Cascading Filter Dropdown ────────────────────────────────────────────────
+
+// const FILTER_GROUPS = [
+//   {
+//     id: "type",
+//     label: "🌿 Type",
+//     options: [
+//       { value: "all", label: "All" },
+//       { value: "herb", label: "Herbs" },
+//       { value: "vegetable", label: "Vegetables" },
+//       { value: "houseplant", label: "Houseplants" },
+//       { value: "other", label: "Other" },
+//     ],
+//   },
+//   {
+//     id: "care",
+//     label: "☀️ Care & Weather",
+//     options: [
+//       { value: "all", label: "All" },
+//       { value: "easy", label: "Easy" },
+//       { value: "medium", label: "Medium" },
+//       { value: "hard", label: "Hard" },
+//       { value: "cool", label: "Cool Spots" },
+//       { value: "warm", label: "Heat Lovers" },
+//     ],
+//   },
+//   {
+//     id: "price",
+//     label: "💰 Price",
+//     options: [
+//       { value: "all", label: "Any Price" },
+//       { value: "budget", label: "Budget  (< ৳35)" },
+//       { value: "mid", label: "Mid  (৳35–70)" },
+//       { value: "premium", label: "Premium  (> ৳70)" },
+//     ],
+//   },
+// ];
+
+// function CascadeDropdown({ typeFilter, setTypeFilter, difficultyFilter, setDifficultyFilter, heatFilter, setHeatFilter, priceBand, setPriceBand }) {
+//   const [open, setOpen] = useState(false);
+//   const [activeGroup, setActiveGroup] = useState(null); // 'type' | 'care' | 'price'
+
+//   const dropAnim = useRef(new Animated.Value(0)).current;
+//   const subAnim = useRef(new Animated.Value(0)).current;
+
+//   const toggleOpen = () => {
+//     if (open) {
+//       // close everything
+//       Animated.parallel([
+//         Animated.timing(dropAnim, { toValue: 0, duration: 180, useNativeDriver: true }),
+//         Animated.timing(subAnim, { toValue: 0, duration: 140, useNativeDriver: true }),
+//       ]).start(() => { setOpen(false); setActiveGroup(null); });
+//     } else {
+//       setOpen(true);
+//       Animated.timing(dropAnim, { toValue: 1, duration: 220, useNativeDriver: true }).start();
+//     }
+//   };
+
+//   const handleGroupPress = (groupId) => {
+//     if (activeGroup === groupId) {
+//       Animated.timing(subAnim, { toValue: 0, duration: 140, useNativeDriver: true }).start(() => setActiveGroup(null));
+//     } else {
+//       setActiveGroup(groupId);
+//       subAnim.setValue(0);
+//       Animated.timing(subAnim, { toValue: 1, duration: 180, useNativeDriver: true }).start();
+//     }
+//   };
+
+//   const getActiveLabel = (groupId) => {
+//     if (groupId === "type") return typeFilter !== "all" ? typeFilter : null;
+//     if (groupId === "care") {
+//       if (difficultyFilter !== "all") return difficultyFilter;
+//       if (heatFilter !== "all") return heatFilter;
+//       return null;
+//     }
+//     if (groupId === "price") return priceBand !== "all" ? priceBand : null;
+//     return null;
+//   };
+
+//   const handleOptionPress = (groupId, value) => {
+//     if (groupId === "type") setTypeFilter(value);
+//     if (groupId === "care") {
+//       const diffValues = ["all", "easy", "medium", "hard"];
+//       const heatValues = ["cool", "warm"];
+//       if (diffValues.includes(value)) setDifficultyFilter(value);
+//       if (heatValues.includes(value)) { setHeatFilter(value); setDifficultyFilter("all"); }
+//       if (value === "all") { setDifficultyFilter("all"); setHeatFilter("all"); }
+//     }
+//     if (groupId === "price") setPriceBand(value);
+//   };
+
+//   const getSelectedValue = (groupId) => {
+//     if (groupId === "type") return typeFilter;
+//     if (groupId === "care") {
+//       if (heatFilter !== "all") return heatFilter;
+//       return difficultyFilter;
+//     }
+//     if (groupId === "price") return priceBand;
+//   };
+
+//   // Build summary badge text for the main button
+//   const activeSummary = useMemo(() => {
+//     const parts = [];
+//     if (typeFilter !== "all") parts.push(typeFilter);
+//     if (difficultyFilter !== "all") parts.push(difficultyFilter);
+//     if (heatFilter !== "all") parts.push(heatFilter);
+//     if (priceBand !== "all") parts.push(priceBand);
+//     return parts;
+//   }, [typeFilter, difficultyFilter, heatFilter, priceBand]);
+
+//   const dropTranslate = dropAnim.interpolate({ inputRange: [0, 1], outputRange: [-8, 0] });
+//   const subTranslate = subAnim.interpolate({ inputRange: [0, 1], outputRange: [-6, 0] });
+
+//   return (
+//     <View style={dd.wrapper}>
+//       {/* ── Main trigger button ── */}
+//       <TouchableOpacity style={dd.trigger} onPress={toggleOpen} activeOpacity={0.8}>
+//         <Text style={dd.triggerIcon}>⚙️</Text>
+//         <Text style={dd.triggerText}>Filters</Text>
+//         {activeSummary.length > 0 && (
+//           <View style={dd.badge}>
+//             <Text style={dd.badgeText}>{activeSummary.length}</Text>
+//           </View>
+//         )}
+//         <Text style={[dd.chevron, open && dd.chevronUp]}>›</Text>
+//       </TouchableOpacity>
+
+//       {/* ── Active filter chips (quick-clear) ── */}
+//       {activeSummary.length > 0 && (
+//         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={dd.activeChipsRow}>
+//           {activeSummary.map((label) => (
+//             <View key={label} style={dd.activeChip}>
+//               <Text style={dd.activeChipText}>{label}</Text>
+//             </View>
+//           ))}
+//           <TouchableOpacity
+//             onPress={() => { setTypeFilter("all"); setDifficultyFilter("all"); setHeatFilter("all"); setPriceBand("all"); }}
+//             style={dd.clearChip}
+//           >
+//             <Text style={dd.clearChipText}>✕ Clear</Text>
+//           </TouchableOpacity>
+//         </ScrollView>
+//       )}
+
+//       {/* ── Dropdown panel ── */}
+//       {open && (
+//         <Animated.View style={[dd.panel, { opacity: dropAnim, transform: [{ translateY: dropTranslate }] }]}>
+//           {FILTER_GROUPS.map((group) => {
+//             const activeVal = getSelectedValue(group.id);
+//             const isGroupActive = activeGroup === group.id;
+//             const hasSelection = getActiveLabel(group.id) !== null;
+
+//             return (
+//               <View key={group.id}>
+//                 {/* Group row */}
+//                 <TouchableOpacity
+//                   style={[dd.groupRow, isGroupActive && dd.groupRowActive]}
+//                   onPress={() => handleGroupPress(group.id)}
+//                   activeOpacity={0.75}
+//                 >
+//                   <Text style={[dd.groupLabel, hasSelection && dd.groupLabelSelected]}>
+//                     {group.label}
+//                     {hasSelection ? <Text style={dd.groupSelBadge}> • {getActiveLabel(group.id)}</Text> : ""}
+//                   </Text>
+//                   <Text style={[dd.groupChevron, isGroupActive && dd.groupChevronUp]}>›</Text>
+//                 </TouchableOpacity>
+
+//                 {/* Sub-options */}
+//                 {isGroupActive && (
+//                   <Animated.View style={[dd.subPanel, { opacity: subAnim, transform: [{ translateY: subTranslate }] }]}>
+//                     {group.options.map((opt) => {
+//                       const isSelected = activeVal === opt.value;
+//                       return (
+//                         <TouchableOpacity
+//                           key={opt.value}
+//                           style={[dd.optionRow, isSelected && dd.optionRowSelected]}
+//                           onPress={() => handleOptionPress(group.id, opt.value)}
+//                           activeOpacity={0.7}
+//                         >
+//                           <Text style={[dd.optionText, isSelected && dd.optionTextSelected]}>
+//                             {opt.label}
+//                           </Text>
+//                           {isSelected && <Text style={dd.optionCheck}>✓</Text>}
+//                         </TouchableOpacity>
+//                       );
+//                     })}
+//                   </Animated.View>
+//                 )}
+
+//                 {/* Divider */}
+//                 <View style={dd.divider} />
+//               </View>
+//             );
+//           })}
+//         </Animated.View>
+//       )}
+//     </View>
+//   );
+// }
+
+// const dd = StyleSheet.create({
+//   wrapper: { marginBottom: 10, zIndex: 100 },
+
+//   trigger: {
+//     flexDirection: "row",
+//     alignItems: "center",
+//     backgroundColor: "#0f172a",
+//     borderWidth: 1,
+//     borderColor: "#1e293b",
+//     borderRadius: 12,
+//     paddingVertical: 10,
+//     paddingHorizontal: 14,
+//     gap: 6,
+//     alignSelf: "flex-start",
+//   },
+//   triggerIcon: { fontSize: 14 },
+//   triggerText: { color: "#e5e7eb", fontSize: 13, fontWeight: "600" },
+//   badge: {
+//     backgroundColor: "#22c55e",
+//     borderRadius: 99,
+//     width: 18,
+//     height: 18,
+//     alignItems: "center",
+//     justifyContent: "center",
+//   },
+//   badgeText: { color: "#022c22", fontSize: 10, fontWeight: "800" },
+//   chevron: {
+//     color: "#94a3b8",
+//     fontSize: 18,
+//     lineHeight: 20,
+//     transform: [{ rotate: "90deg" }],
+//     marginLeft: 2,
+//   },
+//   chevronUp: { transform: [{ rotate: "270deg" }] },
+
+//   activeChipsRow: { marginTop: 8, marginBottom: 2 },
+//   activeChip: {
+//     backgroundColor: "rgba(34,197,94,0.15)",
+//     borderWidth: 1,
+//     borderColor: "#22c55e",
+//     borderRadius: 99,
+//     paddingVertical: 3,
+//     paddingHorizontal: 10,
+//     marginRight: 6,
+//   },
+//   activeChipText: { color: "#22c55e", fontSize: 11, fontWeight: "600", textTransform: "capitalize" },
+//   clearChip: {
+//     backgroundColor: "rgba(248,113,113,0.12)",
+//     borderWidth: 1,
+//     borderColor: "#f87171",
+//     borderRadius: 99,
+//     paddingVertical: 3,
+//     paddingHorizontal: 10,
+//     marginRight: 6,
+//   },
+//   clearChipText: { color: "#f87171", fontSize: 11, fontWeight: "600" },
+
+//   panel: {
+//     marginTop: 6,
+//     backgroundColor: "#0f172a",
+//     borderWidth: 1,
+//     borderColor: "#1e293b",
+//     borderRadius: 14,
+//     overflow: "hidden",
+//     shadowColor: "#000",
+//     shadowOpacity: 0.5,
+//     shadowRadius: 12,
+//     shadowOffset: { width: 0, height: 4 },
+//     elevation: 8,
+//   },
+
+//   groupRow: {
+//     flexDirection: "row",
+//     justifyContent: "space-between",
+//     alignItems: "center",
+//     paddingVertical: 13,
+//     paddingHorizontal: 16,
+//   },
+//   groupRowActive: { backgroundColor: "rgba(34,197,94,0.07)" },
+//   groupLabel: { color: "#e5e7eb", fontSize: 13, fontWeight: "600" },
+//   groupLabelSelected: { color: "#22c55e" },
+//   groupSelBadge: { color: "#22c55e", fontWeight: "700", textTransform: "capitalize" },
+//   groupChevron: {
+//     color: "#64748b",
+//     fontSize: 18,
+//     transform: [{ rotate: "90deg" }],
+//   },
+//   groupChevronUp: { transform: [{ rotate: "270deg" }] },
+
+//   subPanel: {
+//     backgroundColor: "rgba(2,44,34,0.18)",
+//     borderTopWidth: 1,
+//     borderTopColor: "#1e293b",
+//   },
+//   optionRow: {
+//     flexDirection: "row",
+//     justifyContent: "space-between",
+//     alignItems: "center",
+//     paddingVertical: 11,
+//     paddingHorizontal: 28,
+//   },
+//   optionRowSelected: { backgroundColor: "rgba(34,197,94,0.12)" },
+//   optionText: { color: "#94a3b8", fontSize: 13 },
+//   optionTextSelected: { color: "#22c55e", fontWeight: "700" },
+//   optionCheck: { color: "#22c55e", fontSize: 13, fontWeight: "800" },
+
+//   divider: { height: 1, backgroundColor: "#1e293b", marginHorizontal: 0 },
+// });
+
+// // ─── Main Screen ──────────────────────────────────────────────────────────────
 
 // export default function ExplorePlants() {
 //   const router = useRouter();
+//   const { fromSeasonal } = useLocalSearchParams();
+
 //   const [plants, setPlants] = useState([]);
-//   const [search, setSearch] = useState('');
+//   const [search, setSearch] = useState("");
+//   const [sort, setSort] = useState("none");
 //   const [loading, setLoading] = useState(false);
+
 //   const [weather, setWeather] = useState(null);
 //   const [weatherLoading, setWeatherLoading] = useState(false);
 
+//   const [typeFilter, setTypeFilter] = useState("all");
+//   const [difficultyFilter, setDifficultyFilter] = useState("all");
+//   const [heatFilter, setHeatFilter] = useState("all");
+//   const [priceBand, setPriceBand] = useState("all");
 
-//   const fetchPlants = async (q = '') => {
+//   const fetchPlants = async (q = "") => {
 //     setLoading(true);
 //     try {
-//       const url = q ? `${BACKEND}/api/plants?search=${encodeURIComponent(q)}` : `${BACKEND}/api/plants`;
+//       const url = q
+//         ? `${BACKEND}/api/plants?search=${encodeURIComponent(q)}`
+//         : `${BACKEND}/api/plants`;
 //       const res = await fetch(url);
 //       const data = await res.json();
 //       setPlants(Array.isArray(data) ? data : []);
 //     } catch (err) {
-//       console.error('fetchPlants error', err);
+//       console.error("fetchPlants error", err);
 //       setPlants([]);
 //     } finally {
 //       setLoading(false);
@@ -34,180 +362,195 @@
 //   };
 
 //   const fetchWeatherAlert = async () => {
-//   try {
-//     setWeatherLoading(true);
+//     try {
+//       setWeatherLoading(true);
+//       const { status } = await Location.requestForegroundPermissionsAsync();
+//       if (status !== "granted") return;
+//       const loc = await Location.getCurrentPositionAsync({});
+//       const { latitude, longitude } = loc.coords;
+//       const res = await fetch(`${BACKEND}/api/weather/alert?lat=${latitude}&lon=${longitude}`);
+//       const data = await res.json();
+//       setWeather(data);
+//     } catch (err) {
+//       console.error("fetchWeatherAlert error", err);
+//     } finally {
+//       setWeatherLoading(false);
+//     }
+//   };
 
-//     const { status } = await Location.requestForegroundPermissionsAsync();
-//     if (status !== 'granted') return;
+//   useEffect(() => { fetchPlants(); fetchWeatherAlert(); }, []);
+//   useEffect(() => { const t = setTimeout(() => fetchPlants(search), 300); return () => clearTimeout(t); }, [search]);
 
-//     const loc = await Location.getCurrentPositionAsync({});
-//     const { latitude, longitude } = loc.coords;
+//   const sortedPlants = useMemo(() => {
+//     if (!Array.isArray(plants)) return [];
+//     if (sort === "low") return [...plants].sort((a, b) => (a.price ?? 0) - (b.price ?? 0));
+//     if (sort === "high") return [...plants].sort((a, b) => (b.price ?? 0) - (a.price ?? 0));
+//     return plants;
+//   }, [plants, sort]);
 
-//     const res = await fetch(
-//       `${BACKEND}/api/weather/alert?lat=${latitude}&lon=${longitude}`
-//     );
-//     const data = await res.json();
+//   const seasonalFilteredPlants = useMemo(() => {
+//     const list = sortedPlants;
+//     if (!fromSeasonal || !Array.isArray(list)) return list;
+//     const key = Array.isArray(fromSeasonal) ? fromSeasonal[0] : fromSeasonal;
+//     const hasTag = (plant, tag) => Array.isArray(plant.seasonalTags) && plant.seasonalTags.includes(tag);
 
-//     setWeather(data);
-//   } catch (err) {
-//     console.error('fetchWeatherAlert error', err);
-//   } finally {
-//     setWeatherLoading(false);
-//   }
-// };
+//     if (key === "easy-starters") {
+//       const subset = list.filter((p) => {
+//         const water = (p.water || "").toLowerCase();
+//         const type = (p.type || "").toLowerCase();
+//         const season = (p.season || "").toLowerCase();
+//         return hasTag(p, "easy-starters") || p.beginnerFriendly === true ||
+//           (p.difficulty && p.difficulty.toLowerCase() === "easy") ||
+//           water.includes("low") || water.includes("medium") ||
+//           type.includes("houseplant") || season.includes("all");
+//       });
+//       return subset.length ? subset : list;
+//     }
+//     if (key === "fast-growers") {
+//       const subset = list.filter((p) => {
+//         const desc = (p.description || "").toLowerCase();
+//         const tips = Array.isArray(p.careTips) ? p.careTips.join(" ").toLowerCase() : "";
+//         return hasTag(p, "fast-growers") || (p.growthSpeed && p.growthSpeed.toLowerCase() === "fast") ||
+//           desc.includes("fast") || desc.includes("quick") || desc.includes("rapid") ||
+//           tips.includes("fast") || tips.includes("quick");
+//       });
+//       return subset.length ? subset : list;
+//     }
+//     if (key === "heat-friendly") {
+//       const subset = list.filter((p) => {
+//         const sun = (p.sunlight || "").toLowerCase();
+//         const season = (p.season || "").toLowerCase();
+//         const desc = (p.description || "").toLowerCase();
+//         return hasTag(p, "heat-friendly") || (p.heatTolerance && p.heatTolerance.toLowerCase() === "high") ||
+//           sun.includes("full") || sun.includes("direct") || season.includes("summer") ||
+//           desc.includes("heat") || desc.includes("hot");
+//       });
+//       return subset.length ? subset : list;
+//     }
+//     return list;
+//   }, [sortedPlants, fromSeasonal]);
 
-//   useEffect(() => { fetchPlants();
-//     fetchWeatherAlert();
-//    }, []);
+//   const fullyFilteredPlants = useMemo(() => {
+//     let list = seasonalFilteredPlants;
+//     if (!Array.isArray(list)) return [];
 
-//   useEffect(() => {
-//     const t = setTimeout(() => fetchPlants(search), 300);
-//     return () => clearTimeout(t);
-//   }, [search]);
+//     if (typeFilter !== "all") {
+//       list = list.filter((p) => {
+//         const cat = (p.category || p.type || "").toLowerCase();
+//         if (typeFilter === "herb") return cat.includes("herb");
+//         if (typeFilter === "vegetable") return cat.includes("vegetable") || cat.includes("veg");
+//         if (typeFilter === "houseplant") return cat.includes("house") || cat.includes("indoor") || cat.includes("succulent");
+//         if (typeFilter === "other") return !cat.includes("herb") && !cat.includes("vegetable") && !cat.includes("veg") && !cat.includes("house") && !cat.includes("indoor") && !cat.includes("succulent");
+//         return true;
+//       });
+//     }
+
+//     if (difficultyFilter !== "all") {
+//       list = list.filter((p) => {
+//         const diff = (p.difficulty || "").toLowerCase();
+//         if (difficultyFilter === "easy") return p.beginnerFriendly === true || diff === "easy";
+//         if (difficultyFilter === "medium") return diff === "medium" || !diff;
+//         if (difficultyFilter === "hard") return diff === "hard";
+//         return true;
+//       });
+//     }
+
+//     if (heatFilter !== "all") {
+//       list = list.filter((p) => {
+//         const heat = (p.heatTolerance || "").toLowerCase();
+//         const sun = (p.sunlight || "").toLowerCase();
+//         if (heatFilter === "cool") return heat === "low" || sun.includes("partial") || sun.includes("shade") || sun.includes("indirect");
+//         if (heatFilter === "warm") return heat === "high" || sun.includes("full") || sun.includes("direct") || (p.season || "").toLowerCase().includes("summer");
+//         return true;
+//       });
+//     }
+
+//     if (priceBand !== "all") {
+//       list = list.filter((p) => {
+//         const price = typeof p.price === "number" ? p.price : null;
+//         if (price == null) return priceBand === "all";
+//         if (priceBand === "budget") return price < 35;
+//         if (priceBand === "mid") return price >= 35 && price <= 70;
+//         if (priceBand === "premium") return price > 70;
+//         return true;
+//       });
+//     }
+
+//     return list;
+//   }, [seasonalFilteredPlants, typeFilter, difficultyFilter, heatFilter, priceBand]);
 
 //   return (
 //     <View style={styles.page}>
 //       <Text style={styles.title}>Explore Plants</Text>
-//       {weather && (
+
+//       {weather && weather.weather && (
 //         <View style={styles.weatherCard}>
-//           <Text style={styles.weatherCity}>📍 {weather.city}</Text>
-
-//           <Text style={styles.weatherTemp}>
-//             🌡 {weather.temperature}°C | 💧 {weather.humidity}%
-//           </Text>
-
-//           <Text style={styles.weatherCondition}>
-//             {weather.condition}
-//           </Text>
-
-//           <Text style={styles.weatherAlert}>
-//             🧠 {weather.alertSummary}
-//           </Text>
-
-//           {weather.recommendations?.map((r, i) => (
-//             <Text key={i} style={styles.weatherTip}>• {r}</Text>
-//           ))}
+//           <Text style={styles.weatherCity}>📍 {weather.weather.city}</Text>
+//           <Text style={styles.weatherTemp}>🌡 {weather.weather.temperature}°C | 💧 {weather.weather.humidity}%</Text>
+//           <Text style={styles.weatherCondition}>{weather.weather.condition}</Text>
+//           <Text style={styles.weatherAlert}>🧠 Weather-based gardening advice</Text>
+//           <Text style={styles.weatherTip}>{weather.alert}</Text>
 //         </View>
 //       )}
 
-
 //       <SearchBar value={search} onChangeText={setSearch} />
+
+//       {/* CASCADING FILTER DROPDOWN */}
+//       <CascadeDropdown
+//         typeFilter={typeFilter}
+//         setTypeFilter={setTypeFilter}
+//         difficultyFilter={difficultyFilter}
+//         setDifficultyFilter={setDifficultyFilter}
+//         heatFilter={heatFilter}
+//         setHeatFilter={setHeatFilter}
+//         priceBand={priceBand}
+//         setPriceBand={setPriceBand}
+//       />
 
 //       {loading ? (
 //         <ActivityIndicator size="large" color="#22c55e" style={{ marginTop: 24 }} />
 //       ) : (
 //         <FlatList
-//           data={plants}
+//           data={fullyFilteredPlants}
 //           keyExtractor={(item, index) => item._id ?? String(index)}
 //           renderItem={({ item }) => (
 //             <PlantCard plant={item} onPress={() => router.push(`/plant/${item._id}`)} />
 //           )}
 //           showsVerticalScrollIndicator={false}
-//           contentContainerStyle={{ paddingBottom: 80 }}
+//           contentContainerStyle={{ paddingBottom: 120 }}
 //           ListEmptyComponent={<Text style={styles.empty}>No plants found.</Text>}
 //         />
 //       )}
-//       <TouchableOpacity
-//       onPress={() => router.push("/share/camera")}
-//       style={{
-//         position: "absolute",
-//         bottom: 24,
-//         right: 24,
-//         backgroundColor: "#22c55e",
-//         width: 60,
-//         height: 60,
-//         borderRadius: 30,
-//         justifyContent: "center",
-//         alignItems: "center",
-//       }}
-//     >
-//       <Text style={{ fontSize: 24 }}>📸</Text>
-//     </TouchableOpacity>
 
-//     <TouchableOpacity
-//   onPress={() => router.push("/cart")}
-//   style={{
-//     position: "absolute",
-//     bottom: 100, // slightly above camera
-//     right: 24,
-//     backgroundColor: "#fbbf24",
-//     width: 60,
-//     height: 60,
-//     borderRadius: 30,
-//     justifyContent: "center",
-//     alignItems: "center",
-//   }}
-// >
-//   <Text style={{ fontSize: 24 }}>🛒</Text>
-// </TouchableOpacity>
-
+//       <TouchableOpacity onPress={() => router.push("/share/camera")} style={styles.cameraFab}>
+//         <Text style={{ fontSize: 24 }}>📸</Text>
+//       </TouchableOpacity>
+//       <TouchableOpacity onPress={() => router.push("/cart")} style={styles.cartFab}>
+//         <Text style={{ fontSize: 24 }}>🛒</Text>
+//       </TouchableOpacity>
 //     </View>
-    
 //   );
-  
 // }
 
 // const styles = StyleSheet.create({
-//   page: { flex: 1, backgroundColor: '#071024', padding: 16 },
-//   title: { color: '#e6eef3', fontSize: 24, fontWeight: '700', marginBottom: 12 },
-//   empty: { color: '#94a3b8', marginTop: 20, textAlign: 'center' },
+//   page: { flex: 1, backgroundColor: "#071024", padding: 16 },
+//   title: { color: "#e6eef3", fontSize: 24, fontWeight: "700", marginBottom: 12 },
+//   empty: { color: "#94a3b8", marginTop: 20, textAlign: "center" },
 
-//   weatherCard: {
-//   backgroundColor: '#0f172a',
-//   borderRadius: 16,
-//   padding: 16,
-//   marginBottom: 16,
-//   borderWidth: 1,
-//   borderColor: '#1e293b'
-// },
-// weatherCity: {
-//   color: '#e5e7eb',
-//   fontSize: 16,
-//   fontWeight: '700'
-// },
-// weatherTemp: {
-//   color: '#93c5fd',
-//   marginTop: 4
-// },
-// weatherCondition: {
-//   color: '#a7f3d0',
-//   marginTop: 4,
-//   textTransform: 'capitalize'
-// },
-// weatherAlert: {
-//   color: '#fbbf24',
-//   marginTop: 8,
-//   fontWeight: '600'
-// },
-// weatherTip: {
-//   color: '#cbd5e1',
-//   marginTop: 2,
-//   fontSize: 13
-// },
+//   weatherCard: { backgroundColor: "#0f172a", borderRadius: 16, padding: 16, marginBottom: 16, borderWidth: 1, borderColor: "#1e293b" },
+//   weatherCity: { color: "#e5e7eb", fontWeight: "700", textAlign: "left" },
+//   weatherTemp: { color: "#93c5fd", marginTop: 4, textAlign: "left" },
+//   weatherCondition: { color: "#a7f3d0", marginTop: 4, textTransform: "capitalize", textAlign: "left" },
+//   weatherAlert: { color: "#fbbf24", marginTop: 8, fontWeight: "600" },
+//   weatherTip: { color: "#cbd5e1", fontSize: 13 },
 
-// fab: {
-//   position: "absolute",
-//   bottom: 24,
-//   right: 24,
-//   width: 60,
-//   height: 60,
-//   borderRadius: 30,
-//   backgroundColor: "#22c55e",
-//   justifyContent: "center",
-//   alignItems: "center",
-//   elevation: 6, // Android shadow
-//   shadowColor: "#000",
-//   shadowOffset: { width: 0, height: 4 },
-//   shadowOpacity: 0.3,
-//   shadowRadius: 4,
-// },
-
-
+//   cameraFab: { position: "absolute", bottom: 24, right: 24, backgroundColor: "#22c55e", width: 60, height: 60, borderRadius: 30, justifyContent: "center", alignItems: "center" },
+//   cartFab: { position: "absolute", bottom: 100, right: 24, backgroundColor: "#fbbf24", width: 60, height: 60, borderRadius: 30, justifyContent: "center", alignItems: "center" },
 // });
 
 
 // mobile/app/explore.jsx
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState, useRef } from "react";
 import {
   View,
   Text,
@@ -215,32 +558,352 @@ import {
   ActivityIndicator,
   StyleSheet,
   TouchableOpacity,
+  Animated,
+  ScrollView,
 } from "react-native";
-import { useRouter } from "expo-router";
+import { useRouter, useLocalSearchParams } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
 import SearchBar from "../components/SearchBar";
 import PlantCard from "../components/PlantCard";
+import WeatherPanel from "../components/WeatherPanel";
 import { BACKEND } from "../config";
 import * as Location from "expo-location";
 
+// ─── Cascading Filter Dropdown ────────────────────────────────────────────────
+
+const FILTER_GROUPS = [
+  {
+    id: "type",
+    label: "🌿 Type",
+    options: [
+      { value: "all", label: "All" },
+      { value: "herb", label: "Herbs" },
+      { value: "vegetable", label: "Vegetables" },
+      { value: "houseplant", label: "Houseplants" },
+      { value: "other", label: "Other" },
+    ],
+  },
+  {
+    id: "care",
+    label: "☀️ Care & Weather",
+    options: [
+      { value: "all", label: "All" },
+      { value: "easy", label: "Easy" },
+      { value: "medium", label: "Medium" },
+      { value: "hard", label: "Hard" },
+      { value: "cool", label: "Cool Spots" },
+      { value: "warm", label: "Heat Lovers" },
+    ],
+  },
+  {
+    id: "price",
+    label: "💰 Price",
+    options: [
+      { value: "all", label: "Any Price" },
+      { value: "budget", label: "Budget  (< ৳35)" },
+      { value: "mid", label: "Mid  (৳35–70)" },
+      { value: "premium", label: "Premium  (> ৳70)" },
+    ],
+  },
+];
+
+function CascadeDropdown({ typeFilter, setTypeFilter, difficultyFilter, setDifficultyFilter, heatFilter, setHeatFilter, priceBand, setPriceBand }) {
+  const [open, setOpen] = useState(false);
+  const [activeGroup, setActiveGroup] = useState(null); // 'type' | 'care' | 'price'
+
+  const dropAnim = useRef(new Animated.Value(0)).current;
+  const subAnim = useRef(new Animated.Value(0)).current;
+
+  const toggleOpen = () => {
+    if (open) {
+      // close everything
+      Animated.parallel([
+        Animated.timing(dropAnim, { toValue: 0, duration: 180, useNativeDriver: true }),
+        Animated.timing(subAnim, { toValue: 0, duration: 140, useNativeDriver: true }),
+      ]).start(() => { setOpen(false); setActiveGroup(null); });
+    } else {
+      setOpen(true);
+      Animated.timing(dropAnim, { toValue: 1, duration: 220, useNativeDriver: true }).start();
+    }
+  };
+
+  const handleGroupPress = (groupId) => {
+    if (activeGroup === groupId) {
+      Animated.timing(subAnim, { toValue: 0, duration: 140, useNativeDriver: true }).start(() => setActiveGroup(null));
+    } else {
+      setActiveGroup(groupId);
+      subAnim.setValue(0);
+      Animated.timing(subAnim, { toValue: 1, duration: 180, useNativeDriver: true }).start();
+    }
+  };
+
+  const getActiveLabel = (groupId) => {
+    if (groupId === "type") return typeFilter !== "all" ? typeFilter : null;
+    if (groupId === "care") {
+      if (difficultyFilter !== "all") return difficultyFilter;
+      if (heatFilter !== "all") return heatFilter;
+      return null;
+    }
+    if (groupId === "price") return priceBand !== "all" ? priceBand : null;
+    return null;
+  };
+
+  const handleOptionPress = (groupId, value) => {
+    if (groupId === "type") setTypeFilter(value);
+    if (groupId === "care") {
+      const diffValues = ["all", "easy", "medium", "hard"];
+      const heatValues = ["cool", "warm"];
+      if (diffValues.includes(value)) setDifficultyFilter(value);
+      if (heatValues.includes(value)) { setHeatFilter(value); setDifficultyFilter("all"); }
+      if (value === "all") { setDifficultyFilter("all"); setHeatFilter("all"); }
+    }
+    if (groupId === "price") setPriceBand(value);
+  };
+
+  const getSelectedValue = (groupId) => {
+    if (groupId === "type") return typeFilter;
+    if (groupId === "care") {
+      if (heatFilter !== "all") return heatFilter;
+      return difficultyFilter;
+    }
+    if (groupId === "price") return priceBand;
+  };
+
+  // Build summary badge text for the main button
+  const activeSummary = useMemo(() => {
+    const parts = [];
+    if (typeFilter !== "all") parts.push(typeFilter);
+    if (difficultyFilter !== "all") parts.push(difficultyFilter);
+    if (heatFilter !== "all") parts.push(heatFilter);
+    if (priceBand !== "all") parts.push(priceBand);
+    return parts;
+  }, [typeFilter, difficultyFilter, heatFilter, priceBand]);
+
+  const dropTranslate = dropAnim.interpolate({ inputRange: [0, 1], outputRange: [-8, 0] });
+  const subTranslate = subAnim.interpolate({ inputRange: [0, 1], outputRange: [-6, 0] });
+
+  return (
+    <View style={dd.wrapper}>
+      {/* ── Main trigger button ── */}
+      <TouchableOpacity style={dd.trigger} onPress={toggleOpen} activeOpacity={0.8}>
+        <Text style={dd.triggerIcon}>⚙️</Text>
+        <Text style={dd.triggerText}>Filters</Text>
+        {activeSummary.length > 0 && (
+          <View style={dd.badge}>
+            <Text style={dd.badgeText}>{activeSummary.length}</Text>
+          </View>
+        )}
+        <Text style={[dd.chevron, open && dd.chevronUp]}>›</Text>
+      </TouchableOpacity>
+
+      {/* ── Active filter chips (quick-clear) ── */}
+      {activeSummary.length > 0 && (
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={dd.activeChipsRow}>
+          {activeSummary.map((label) => (
+            <View key={label} style={dd.activeChip}>
+              <Text style={dd.activeChipText}>{label}</Text>
+            </View>
+          ))}
+          <TouchableOpacity
+            onPress={() => { setTypeFilter("all"); setDifficultyFilter("all"); setHeatFilter("all"); setPriceBand("all"); }}
+            style={dd.clearChip}
+          >
+            <Text style={dd.clearChipText}>✕ Clear</Text>
+          </TouchableOpacity>
+        </ScrollView>
+      )}
+
+      {/* ── Dropdown panel ── */}
+      {open && (
+        <Animated.View style={[dd.panel, { opacity: dropAnim, transform: [{ translateY: dropTranslate }] }]}>
+          {FILTER_GROUPS.map((group) => {
+            const activeVal = getSelectedValue(group.id);
+            const isGroupActive = activeGroup === group.id;
+            const hasSelection = getActiveLabel(group.id) !== null;
+
+            return (
+              <View key={group.id}>
+                {/* Group row */}
+                <TouchableOpacity
+                  style={[dd.groupRow, isGroupActive && dd.groupRowActive]}
+                  onPress={() => handleGroupPress(group.id)}
+                  activeOpacity={0.75}
+                >
+                  <Text style={[dd.groupLabel, hasSelection && dd.groupLabelSelected]}>
+                    {group.label}
+                    {hasSelection ? <Text style={dd.groupSelBadge}> • {getActiveLabel(group.id)}</Text> : ""}
+                  </Text>
+                  <Text style={[dd.groupChevron, isGroupActive && dd.groupChevronUp]}>›</Text>
+                </TouchableOpacity>
+
+                {/* Sub-options */}
+                {isGroupActive && (
+                  <Animated.View style={[dd.subPanel, { opacity: subAnim, transform: [{ translateY: subTranslate }] }]}>
+                    {group.options.map((opt) => {
+                      const isSelected = activeVal === opt.value;
+                      return (
+                        <TouchableOpacity
+                          key={opt.value}
+                          style={[dd.optionRow, isSelected && dd.optionRowSelected]}
+                          onPress={() => handleOptionPress(group.id, opt.value)}
+                          activeOpacity={0.7}
+                        >
+                          <Text style={[dd.optionText, isSelected && dd.optionTextSelected]}>
+                            {opt.label}
+                          </Text>
+                          {isSelected && <Text style={dd.optionCheck}>✓</Text>}
+                        </TouchableOpacity>
+                      );
+                    })}
+                  </Animated.View>
+                )}
+
+                {/* Divider */}
+                <View style={dd.divider} />
+              </View>
+            );
+          })}
+        </Animated.View>
+      )}
+    </View>
+  );
+}
+
+const dd = StyleSheet.create({
+  wrapper: { marginBottom: 10, zIndex: 100 },
+
+  trigger: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#0f172a",
+    borderWidth: 1,
+    borderColor: "#1e293b",
+    borderRadius: 12,
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    gap: 6,
+    alignSelf: "flex-start",
+  },
+  triggerIcon: { fontSize: 14 },
+  triggerText: { color: "#e5e7eb", fontSize: 13, fontWeight: "600" },
+  badge: {
+    backgroundColor: "#22c55e",
+    borderRadius: 99,
+    width: 18,
+    height: 18,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  badgeText: { color: "#022c22", fontSize: 10, fontWeight: "800" },
+  chevron: {
+    color: "#94a3b8",
+    fontSize: 18,
+    lineHeight: 20,
+    transform: [{ rotate: "90deg" }],
+    marginLeft: 2,
+  },
+  chevronUp: { transform: [{ rotate: "270deg" }] },
+
+  activeChipsRow: { marginTop: 8, marginBottom: 2 },
+  activeChip: {
+    backgroundColor: "rgba(34,197,94,0.15)",
+    borderWidth: 1,
+    borderColor: "#22c55e",
+    borderRadius: 99,
+    paddingVertical: 3,
+    paddingHorizontal: 10,
+    marginRight: 6,
+  },
+  activeChipText: { color: "#22c55e", fontSize: 11, fontWeight: "600", textTransform: "capitalize" },
+  clearChip: {
+    backgroundColor: "rgba(248,113,113,0.12)",
+    borderWidth: 1,
+    borderColor: "#f87171",
+    borderRadius: 99,
+    paddingVertical: 3,
+    paddingHorizontal: 10,
+    marginRight: 6,
+  },
+  clearChipText: { color: "#f87171", fontSize: 11, fontWeight: "600" },
+
+  panel: {
+    marginTop: 6,
+    backgroundColor: "#0f172a",
+    borderWidth: 1,
+    borderColor: "#1e293b",
+    borderRadius: 14,
+    overflow: "hidden",
+    shadowColor: "#000",
+    shadowOpacity: 0.5,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 8,
+  },
+
+  groupRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingVertical: 13,
+    paddingHorizontal: 16,
+  },
+  groupRowActive: { backgroundColor: "rgba(34,197,94,0.07)" },
+  groupLabel: { color: "#e5e7eb", fontSize: 13, fontWeight: "600" },
+  groupLabelSelected: { color: "#22c55e" },
+  groupSelBadge: { color: "#22c55e", fontWeight: "700", textTransform: "capitalize" },
+  groupChevron: {
+    color: "#64748b",
+    fontSize: 18,
+    transform: [{ rotate: "90deg" }],
+  },
+  groupChevronUp: { transform: [{ rotate: "270deg" }] },
+
+  subPanel: {
+    backgroundColor: "rgba(2,44,34,0.18)",
+    borderTopWidth: 1,
+    borderTopColor: "#1e293b",
+  },
+  optionRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingVertical: 11,
+    paddingHorizontal: 28,
+  },
+  optionRowSelected: { backgroundColor: "rgba(34,197,94,0.12)" },
+  optionText: { color: "#94a3b8", fontSize: 13 },
+  optionTextSelected: { color: "#22c55e", fontWeight: "700" },
+  optionCheck: { color: "#22c55e", fontSize: 13, fontWeight: "800" },
+
+  divider: { height: 1, backgroundColor: "#1e293b", marginHorizontal: 0 },
+});
+
+// ─── Main Screen ──────────────────────────────────────────────────────────────
+
 export default function ExplorePlants() {
   const router = useRouter();
+  const { fromSeasonal } = useLocalSearchParams();
 
   const [plants, setPlants] = useState([]);
   const [search, setSearch] = useState("");
-  const [sort, setSort] = useState("none"); // none | low | high
+  const [sort, setSort] = useState("none");
   const [loading, setLoading] = useState(false);
 
   const [weather, setWeather] = useState(null);
   const [weatherLoading, setWeatherLoading] = useState(false);
+  const [weatherPanelOpen, setWeatherPanelOpen] = useState(false);
 
-  // ---------------- FETCH PLANTS ----------------
+  const [typeFilter, setTypeFilter] = useState("all");
+  const [difficultyFilter, setDifficultyFilter] = useState("all");
+  const [heatFilter, setHeatFilter] = useState("all");
+  const [priceBand, setPriceBand] = useState("all");
+
   const fetchPlants = async (q = "") => {
     setLoading(true);
     try {
       const url = q
         ? `${BACKEND}/api/plants?search=${encodeURIComponent(q)}`
         : `${BACKEND}/api/plants`;
-
       const res = await fetch(url);
       const data = await res.json();
       setPlants(Array.isArray(data) ? data : []);
@@ -252,19 +915,14 @@ export default function ExplorePlants() {
     }
   };
 
-  // ---------------- WEATHER ----------------
   const fetchWeatherAlert = async () => {
     try {
       setWeatherLoading(true);
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== "granted") return;
-
       const loc = await Location.getCurrentPositionAsync({});
       const { latitude, longitude } = loc.coords;
-
-      const res = await fetch(
-        `${BACKEND}/api/weather/alert?lat=${latitude}&lon=${longitude}`
-      );
+      const res = await fetch(`${BACKEND}/api/weather/alert?lat=${latitude}&lon=${longitude}`);
       const data = await res.json();
       setWeather(data);
     } catch (err) {
@@ -274,128 +932,163 @@ export default function ExplorePlants() {
     }
   };
 
-  useEffect(() => {
-    fetchPlants();
-    fetchWeatherAlert();
-  }, []);
+  useEffect(() => { fetchPlants(); fetchWeatherAlert(); }, []);
+  useEffect(() => { const t = setTimeout(() => fetchPlants(search), 300); return () => clearTimeout(t); }, [search]);
 
-  useEffect(() => {
-    const t = setTimeout(() => fetchPlants(search), 300);
-    return () => clearTimeout(t);
-  }, [search]);
-
-  // ---------------- SORTED LIST ----------------
   const sortedPlants = useMemo(() => {
     if (!Array.isArray(plants)) return [];
-
-    if (sort === "low") {
-      return [...plants].sort(
-        (a, b) => (a.price ?? 0) - (b.price ?? 0)
-      );
-    }
-
-    if (sort === "high") {
-      return [...plants].sort(
-        (a, b) => (b.price ?? 0) - (a.price ?? 0)
-      );
-    }
-
+    if (sort === "low") return [...plants].sort((a, b) => (a.price ?? 0) - (b.price ?? 0));
+    if (sort === "high") return [...plants].sort((a, b) => (b.price ?? 0) - (a.price ?? 0));
     return plants;
   }, [plants, sort]);
 
-  // ---------------- UI ----------------
+  const seasonalFilteredPlants = useMemo(() => {
+    const list = sortedPlants;
+    if (!fromSeasonal || !Array.isArray(list)) return list;
+    const key = Array.isArray(fromSeasonal) ? fromSeasonal[0] : fromSeasonal;
+    const hasTag = (plant, tag) => Array.isArray(plant.seasonalTags) && plant.seasonalTags.includes(tag);
+
+    if (key === "easy-starters") {
+      const subset = list.filter((p) => {
+        const water = (p.water || "").toLowerCase();
+        const type = (p.type || "").toLowerCase();
+        const season = (p.season || "").toLowerCase();
+        return hasTag(p, "easy-starters") || p.beginnerFriendly === true ||
+          (p.difficulty && p.difficulty.toLowerCase() === "easy") ||
+          water.includes("low") || water.includes("medium") ||
+          type.includes("houseplant") || season.includes("all");
+      });
+      return subset.length ? subset : list;
+    }
+    if (key === "fast-growers") {
+      const subset = list.filter((p) => {
+        const desc = (p.description || "").toLowerCase();
+        const tips = Array.isArray(p.careTips) ? p.careTips.join(" ").toLowerCase() : "";
+        return hasTag(p, "fast-growers") || (p.growthSpeed && p.growthSpeed.toLowerCase() === "fast") ||
+          desc.includes("fast") || desc.includes("quick") || desc.includes("rapid") ||
+          tips.includes("fast") || tips.includes("quick");
+      });
+      return subset.length ? subset : list;
+    }
+    if (key === "heat-friendly") {
+      const subset = list.filter((p) => {
+        const sun = (p.sunlight || "").toLowerCase();
+        const season = (p.season || "").toLowerCase();
+        const desc = (p.description || "").toLowerCase();
+        return hasTag(p, "heat-friendly") || (p.heatTolerance && p.heatTolerance.toLowerCase() === "high") ||
+          sun.includes("full") || sun.includes("direct") || season.includes("summer") ||
+          desc.includes("heat") || desc.includes("hot");
+      });
+      return subset.length ? subset : list;
+    }
+    return list;
+  }, [sortedPlants, fromSeasonal]);
+
+  const fullyFilteredPlants = useMemo(() => {
+    let list = seasonalFilteredPlants;
+    if (!Array.isArray(list)) return [];
+
+    if (typeFilter !== "all") {
+      list = list.filter((p) => {
+        const cat = (p.category || p.type || "").toLowerCase();
+        if (typeFilter === "herb") return cat.includes("herb");
+        if (typeFilter === "vegetable") return cat.includes("vegetable") || cat.includes("veg");
+        if (typeFilter === "houseplant") return cat.includes("house") || cat.includes("indoor") || cat.includes("succulent");
+        if (typeFilter === "other") return !cat.includes("herb") && !cat.includes("vegetable") && !cat.includes("veg") && !cat.includes("house") && !cat.includes("indoor") && !cat.includes("succulent");
+        return true;
+      });
+    }
+
+    if (difficultyFilter !== "all") {
+      list = list.filter((p) => {
+        const diff = (p.difficulty || "").toLowerCase();
+        if (difficultyFilter === "easy") return p.beginnerFriendly === true || diff === "easy";
+        if (difficultyFilter === "medium") return diff === "medium" || !diff;
+        if (difficultyFilter === "hard") return diff === "hard";
+        return true;
+      });
+    }
+
+    if (heatFilter !== "all") {
+      list = list.filter((p) => {
+        const heat = (p.heatTolerance || "").toLowerCase();
+        const sun = (p.sunlight || "").toLowerCase();
+        if (heatFilter === "cool") return heat === "low" || sun.includes("partial") || sun.includes("shade") || sun.includes("indirect");
+        if (heatFilter === "warm") return heat === "high" || sun.includes("full") || sun.includes("direct") || (p.season || "").toLowerCase().includes("summer");
+        return true;
+      });
+    }
+
+    if (priceBand !== "all") {
+      list = list.filter((p) => {
+        const price = typeof p.price === "number" ? p.price : null;
+        if (price == null) return priceBand === "all";
+        if (priceBand === "budget") return price < 35;
+        if (priceBand === "mid") return price >= 35 && price <= 70;
+        if (priceBand === "premium") return price > 70;
+        return true;
+      });
+    }
+
+    return list;
+  }, [seasonalFilteredPlants, typeFilter, difficultyFilter, heatFilter, priceBand]);
+
   return (
     <View style={styles.page}>
-      <Text style={styles.title}>Explore Plants</Text>
-
-      {/* WEATHER CARD */}
-      {weather && weather.weather && (
-        <View style={styles.weatherCard}>
-          <Text style={styles.weatherCity}>
-            📍 {weather.weather.city}
-          </Text>
-
-          <Text style={styles.weatherTemp}>
-            🌡 {weather.weather.temperature}°C | 💧 {weather.weather.humidity}%
-          </Text>
-
-          <Text style={styles.weatherCondition}>
-            {weather.weather.condition}
-          </Text>
-
-          <Text style={styles.weatherAlert}>
-            🧠 Weather-based gardening advice
-          </Text>
-
-          <Text style={styles.weatherTip}>
-            {weather.alert}
-          </Text>
-        </View>
-      )}
-
-      <SearchBar value={search} onChangeText={setSearch} />
-
-      {/* PRICE FILTER */}
-      <View style={styles.sortRow}>
+      {/* Header row with title + bell */}
+      <View style={styles.headerRow}>
+        <Text style={styles.title}>Explore Plants</Text>
         <TouchableOpacity
-          style={[styles.sortBtn, sort === "none" && styles.sortActive]}
-          onPress={() => setSort("none")}
+          style={[styles.bellBtn, weather && styles.bellBtnActive]}
+          onPress={() => setWeatherPanelOpen(true)}
+          activeOpacity={0.8}
         >
-          <Text style={styles.sortText}>Default</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[styles.sortBtn, sort === "low" && styles.sortActive]}
-          onPress={() => setSort("low")}
-        >
-          <Text style={styles.sortText}>Low → High</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[styles.sortBtn, sort === "high" && styles.sortActive]}
-          onPress={() => setSort("high")}
-        >
-          <Text style={styles.sortText}>High → Low</Text>
+          <Ionicons name="notifications-outline" size={20} color={weather ? "#22c55e" : "#94a3b8"} />
+          {weather && <View style={styles.bellDot} />}
         </TouchableOpacity>
       </View>
 
+      {/* Weather modal panel */}
+      <WeatherPanel
+        visible={weatherPanelOpen}
+        onClose={() => setWeatherPanelOpen(false)}
+        weather={weather}
+        weatherLoading={weatherLoading}
+      />
+
+      <SearchBar value={search} onChangeText={setSearch} />
+
+      {/* CASCADING FILTER DROPDOWN */}
+      <CascadeDropdown
+        typeFilter={typeFilter}
+        setTypeFilter={setTypeFilter}
+        difficultyFilter={difficultyFilter}
+        setDifficultyFilter={setDifficultyFilter}
+        heatFilter={heatFilter}
+        setHeatFilter={setHeatFilter}
+        priceBand={priceBand}
+        setPriceBand={setPriceBand}
+      />
+
       {loading ? (
-        <ActivityIndicator
-          size="large"
-          color="#22c55e"
-          style={{ marginTop: 24 }}
-        />
+        <ActivityIndicator size="large" color="#22c55e" style={{ marginTop: 24 }} />
       ) : (
         <FlatList
-          data={sortedPlants}
+          data={fullyFilteredPlants}
           keyExtractor={(item, index) => item._id ?? String(index)}
           renderItem={({ item }) => (
-            <PlantCard
-              plant={item}
-              onPress={() => router.push(`/plant/${item._id}`)}
-            />
+            <PlantCard plant={item} onPress={() => router.push(`/plant/${item._id}`)} />
           )}
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ paddingBottom: 120 }}
-          ListEmptyComponent={
-            <Text style={styles.empty}>No plants found.</Text>
-          }
+          ListEmptyComponent={<Text style={styles.empty}>No plants found.</Text>}
         />
       )}
 
-      {/* CAMERA FAB */}
-      <TouchableOpacity
-        onPress={() => router.push("/share/camera")}
-        style={styles.cameraFab}
-      >
+      <TouchableOpacity onPress={() => router.push("/share/camera")} style={styles.cameraFab}>
         <Text style={{ fontSize: 24 }}>📸</Text>
       </TouchableOpacity>
-
-      {/* CART FAB */}
-      <TouchableOpacity
-        onPress={() => router.push("/cart")}
-        style={styles.cartFab}
-      >
+      <TouchableOpacity onPress={() => router.push("/cart")} style={styles.cartFab}>
         <Text style={{ fontSize: 24 }}>🛒</Text>
       </TouchableOpacity>
     </View>
@@ -404,80 +1097,23 @@ export default function ExplorePlants() {
 
 const styles = StyleSheet.create({
   page: { flex: 1, backgroundColor: "#071024", padding: 16 },
-  title: {
-    color: "#e6eef3",
-    fontSize: 24,
-    fontWeight: "700",
-    marginBottom: 12,
+  headerRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 12 },
+  title: { color: "#e6eef3", fontSize: 24, fontWeight: "700" },
+  bellBtn: {
+    width: 40, height: 40, borderRadius: 12,
+    alignItems: "center", justifyContent: "center",
+    backgroundColor: "rgba(15,23,42,0.95)",
+    borderWidth: 1, borderColor: "rgba(148,163,184,0.15)",
+  },
+  bellBtnActive: { borderColor: "rgba(34,197,94,0.4)", backgroundColor: "rgba(34,197,94,0.1)" },
+  bellDot: {
+    position: "absolute", top: 8, right: 8,
+    width: 7, height: 7, borderRadius: 99,
+    backgroundColor: "#22c55e",
+    borderWidth: 1.5, borderColor: "#071024",
   },
   empty: { color: "#94a3b8", marginTop: 20, textAlign: "center" },
 
-  /* WEATHER */
-  weatherCard: {
-    backgroundColor: "#0f172a",
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: "#1e293b",
-  },
-  weatherCity: { color: "#e5e7eb", fontWeight: "700" },
-  weatherTemp: { color: "#93c5fd", marginTop: 4 },
-  weatherCondition: {
-    color: "#a7f3d0",
-    marginTop: 4,
-    textTransform: "capitalize",
-  },
-  weatherAlert: {
-    color: "#fbbf24",
-    marginTop: 8,
-    fontWeight: "600",
-  },
-  weatherTip: { color: "#cbd5e1", fontSize: 13 },
-
-  /* SORT */
-  sortRow: {
-    flexDirection: "row",
-    gap: 8,
-    marginBottom: 12,
-  },
-  sortBtn: {
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    borderRadius: 999,
-    borderWidth: 1,
-    borderColor: "#1e293b",
-  },
-  sortActive: {
-    backgroundColor: "#22c55e",
-  },
-  sortText: {
-    color: "#e6eef3",
-    fontSize: 12,
-    fontWeight: "600",
-  },
-
-  /* FABs */
-  cameraFab: {
-    position: "absolute",
-    bottom: 24,
-    right: 24,
-    backgroundColor: "#22c55e",
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  cartFab: {
-    position: "absolute",
-    bottom: 100,
-    right: 24,
-    backgroundColor: "#fbbf24",
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    justifyContent: "center",
-    alignItems: "center",
-  },
+  cameraFab: { position: "absolute", bottom: 24, right: 24, backgroundColor: "#22c55e", width: 60, height: 60, borderRadius: 30, justifyContent: "center", alignItems: "center" },
+  cartFab: { position: "absolute", bottom: 100, right: 24, backgroundColor: "#fbbf24", width: 60, height: 60, borderRadius: 30, justifyContent: "center", alignItems: "center" },
 });

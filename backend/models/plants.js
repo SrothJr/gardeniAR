@@ -7,7 +7,7 @@ const PlantSchema = new mongoose.Schema(
     name: { type: String, required: true, index: true },
     scientificName: String,
     image: String,
-    type: String,          // indoor / outdoor / herb etc.
+    type: String, // indoor / outdoor / herb etc.
     sunlight: String,
     water: String,
     soil: String,
@@ -16,8 +16,29 @@ const PlantSchema = new mongoose.Schema(
     description: String,
 
     // 🛒 NEW fields (for shop integration)
-    price: { type: Number },          // e.g. 40
-    category: { type: String },       // fruit / vegetable / flower
+    price: { type: Number }, // e.g. 40
+    category: { type: String }, // fruit / vegetable / flower
+
+    // 🎯 Extra metadata for smarter recommendations
+    difficulty: {
+      type: String,
+      enum: ["easy", "medium", "hard"],
+      default: "medium",
+    },
+    growthSpeed: {
+      type: String, // e.g. "fast", "medium", "slow"
+    },
+    heatTolerance: {
+      type: String, // e.g. "low", "medium", "high"
+    },
+    beginnerFriendly: {
+      type: Boolean,
+      default: false,
+    },
+    seasonalTags: {
+      type: [String], // e.g. ["easy-starters", "fast-growers"]
+      default: [],
+    },
   },
   { timestamps: true }
 );
