@@ -567,7 +567,7 @@ export default function Index() {
 
   const [weather, setWeather] = useState(null);
   const [weatherLoading, setWeatherLoading] = useState(false);
-  const [weatherPanelOpen, setWeatherPanelOpen] = useState(true);
+  const [weatherPanelOpen, setWeatherPanelOpen] = useState(false);
 
   useFocusEffect(
     useCallback(() => {
