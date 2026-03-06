@@ -560,6 +560,7 @@ import {
   TouchableOpacity,
   Animated,
   ScrollView,
+  Image,
 } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
@@ -569,7 +570,8 @@ import WeatherPanel from "../components/WeatherPanel";
 import { BACKEND } from "../config";
 import * as Location from "expo-location";
 
-// ─── Cascading Filter Dropdown ────────────────────────────────────────────────
+// ─── Cascading Filter Dropdown ─────────────────────────────────────────────
+// (unchanged from original)
 
 const FILTER_GROUPS = [
   {
@@ -609,14 +611,12 @@ const FILTER_GROUPS = [
 
 function CascadeDropdown({ typeFilter, setTypeFilter, difficultyFilter, setDifficultyFilter, heatFilter, setHeatFilter, priceBand, setPriceBand }) {
   const [open, setOpen] = useState(false);
-  const [activeGroup, setActiveGroup] = useState(null); // 'type' | 'care' | 'price'
-
+  const [activeGroup, setActiveGroup] = useState(null);
   const dropAnim = useRef(new Animated.Value(0)).current;
   const subAnim = useRef(new Animated.Value(0)).current;
 
   const toggleOpen = () => {
     if (open) {
-      // close everything
       Animated.parallel([
         Animated.timing(dropAnim, { toValue: 0, duration: 180, useNativeDriver: true }),
         Animated.timing(subAnim, { toValue: 0, duration: 140, useNativeDriver: true }),
@@ -669,7 +669,6 @@ function CascadeDropdown({ typeFilter, setTypeFilter, difficultyFilter, setDiffi
     if (groupId === "price") return priceBand;
   };
 
-  // Build summary badge text for the main button
   const activeSummary = useMemo(() => {
     const parts = [];
     if (typeFilter !== "all") parts.push(typeFilter);
@@ -684,7 +683,6 @@ function CascadeDropdown({ typeFilter, setTypeFilter, difficultyFilter, setDiffi
 
   return (
     <View style={dd.wrapper}>
-      {/* ── Main trigger button ── */}
       <TouchableOpacity style={dd.trigger} onPress={toggleOpen} activeOpacity={0.8}>
         <Text style={dd.triggerIcon}>⚙️</Text>
         <Text style={dd.triggerText}>Filters</Text>
@@ -696,7 +694,6 @@ function CascadeDropdown({ typeFilter, setTypeFilter, difficultyFilter, setDiffi
         <Text style={[dd.chevron, open && dd.chevronUp]}>›</Text>
       </TouchableOpacity>
 
-      {/* ── Active filter chips (quick-clear) ── */}
       {activeSummary.length > 0 && (
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={dd.activeChipsRow}>
           {activeSummary.map((label) => (
@@ -713,17 +710,14 @@ function CascadeDropdown({ typeFilter, setTypeFilter, difficultyFilter, setDiffi
         </ScrollView>
       )}
 
-      {/* ── Dropdown panel ── */}
       {open && (
         <Animated.View style={[dd.panel, { opacity: dropAnim, transform: [{ translateY: dropTranslate }] }]}>
           {FILTER_GROUPS.map((group) => {
             const activeVal = getSelectedValue(group.id);
             const isGroupActive = activeGroup === group.id;
             const hasSelection = getActiveLabel(group.id) !== null;
-
             return (
               <View key={group.id}>
-                {/* Group row */}
                 <TouchableOpacity
                   style={[dd.groupRow, isGroupActive && dd.groupRowActive]}
                   onPress={() => handleGroupPress(group.id)}
@@ -735,8 +729,6 @@ function CascadeDropdown({ typeFilter, setTypeFilter, difficultyFilter, setDiffi
                   </Text>
                   <Text style={[dd.groupChevron, isGroupActive && dd.groupChevronUp]}>›</Text>
                 </TouchableOpacity>
-
-                {/* Sub-options */}
                 {isGroupActive && (
                   <Animated.View style={[dd.subPanel, { opacity: subAnim, transform: [{ translateY: subTranslate }] }]}>
                     {group.options.map((opt) => {
@@ -748,17 +740,13 @@ function CascadeDropdown({ typeFilter, setTypeFilter, difficultyFilter, setDiffi
                           onPress={() => handleOptionPress(group.id, opt.value)}
                           activeOpacity={0.7}
                         >
-                          <Text style={[dd.optionText, isSelected && dd.optionTextSelected]}>
-                            {opt.label}
-                          </Text>
+                          <Text style={[dd.optionText, isSelected && dd.optionTextSelected]}>{opt.label}</Text>
                           {isSelected && <Text style={dd.optionCheck}>✓</Text>}
                         </TouchableOpacity>
                       );
                     })}
                   </Animated.View>
                 )}
-
-                {/* Divider */}
                 <View style={dd.divider} />
               </View>
             );
@@ -771,115 +759,97 @@ function CascadeDropdown({ typeFilter, setTypeFilter, difficultyFilter, setDiffi
 
 const dd = StyleSheet.create({
   wrapper: { marginBottom: 10, zIndex: 100 },
-
   trigger: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#0f172a",
-    borderWidth: 1,
-    borderColor: "#1e293b",
-    borderRadius: 12,
-    paddingVertical: 10,
-    paddingHorizontal: 14,
-    gap: 6,
-    alignSelf: "flex-start",
+    flexDirection: "row", alignItems: "center",
+    backgroundColor: "#0f172a", borderWidth: 1, borderColor: "#1e293b",
+    borderRadius: 12, paddingVertical: 10, paddingHorizontal: 14, gap: 6, alignSelf: "flex-start",
   },
   triggerIcon: { fontSize: 14 },
   triggerText: { color: "#e5e7eb", fontSize: 13, fontWeight: "600" },
-  badge: {
-    backgroundColor: "#22c55e",
-    borderRadius: 99,
-    width: 18,
-    height: 18,
-    alignItems: "center",
-    justifyContent: "center",
-  },
+  badge: { backgroundColor: "#22c55e", borderRadius: 99, width: 18, height: 18, alignItems: "center", justifyContent: "center" },
   badgeText: { color: "#022c22", fontSize: 10, fontWeight: "800" },
-  chevron: {
-    color: "#94a3b8",
-    fontSize: 18,
-    lineHeight: 20,
-    transform: [{ rotate: "90deg" }],
-    marginLeft: 2,
-  },
+  chevron: { color: "#94a3b8", fontSize: 18, lineHeight: 20, transform: [{ rotate: "90deg" }], marginLeft: 2 },
   chevronUp: { transform: [{ rotate: "270deg" }] },
-
   activeChipsRow: { marginTop: 8, marginBottom: 2 },
-  activeChip: {
-    backgroundColor: "rgba(34,197,94,0.15)",
-    borderWidth: 1,
-    borderColor: "#22c55e",
-    borderRadius: 99,
-    paddingVertical: 3,
-    paddingHorizontal: 10,
-    marginRight: 6,
-  },
+  activeChip: { backgroundColor: "rgba(34,197,94,0.15)", borderWidth: 1, borderColor: "#22c55e", borderRadius: 99, paddingVertical: 3, paddingHorizontal: 10, marginRight: 6 },
   activeChipText: { color: "#22c55e", fontSize: 11, fontWeight: "600", textTransform: "capitalize" },
-  clearChip: {
-    backgroundColor: "rgba(248,113,113,0.12)",
-    borderWidth: 1,
-    borderColor: "#f87171",
-    borderRadius: 99,
-    paddingVertical: 3,
-    paddingHorizontal: 10,
-    marginRight: 6,
-  },
+  clearChip: { backgroundColor: "rgba(248,113,113,0.12)", borderWidth: 1, borderColor: "#f87171", borderRadius: 99, paddingVertical: 3, paddingHorizontal: 10, marginRight: 6 },
   clearChipText: { color: "#f87171", fontSize: 11, fontWeight: "600" },
-
-  panel: {
-    marginTop: 6,
-    backgroundColor: "#0f172a",
-    borderWidth: 1,
-    borderColor: "#1e293b",
-    borderRadius: 14,
-    overflow: "hidden",
-    shadowColor: "#000",
-    shadowOpacity: 0.5,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 8,
-  },
-
-  groupRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingVertical: 13,
-    paddingHorizontal: 16,
-  },
+  panel: { marginTop: 6, backgroundColor: "#0f172a", borderWidth: 1, borderColor: "#1e293b", borderRadius: 14, overflow: "hidden", shadowColor: "#000", shadowOpacity: 0.5, shadowRadius: 12, shadowOffset: { width: 0, height: 4 }, elevation: 8 },
+  groupRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingVertical: 13, paddingHorizontal: 16 },
   groupRowActive: { backgroundColor: "rgba(34,197,94,0.07)" },
   groupLabel: { color: "#e5e7eb", fontSize: 13, fontWeight: "600" },
   groupLabelSelected: { color: "#22c55e" },
   groupSelBadge: { color: "#22c55e", fontWeight: "700", textTransform: "capitalize" },
-  groupChevron: {
-    color: "#64748b",
-    fontSize: 18,
-    transform: [{ rotate: "90deg" }],
-  },
+  groupChevron: { color: "#64748b", fontSize: 18, transform: [{ rotate: "90deg" }] },
   groupChevronUp: { transform: [{ rotate: "270deg" }] },
-
-  subPanel: {
-    backgroundColor: "rgba(2,44,34,0.18)",
-    borderTopWidth: 1,
-    borderTopColor: "#1e293b",
-  },
-  optionRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingVertical: 11,
-    paddingHorizontal: 28,
-  },
+  subPanel: { backgroundColor: "rgba(2,44,34,0.18)", borderTopWidth: 1, borderTopColor: "#1e293b" },
+  optionRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingVertical: 11, paddingHorizontal: 28 },
   optionRowSelected: { backgroundColor: "rgba(34,197,94,0.12)" },
   optionText: { color: "#94a3b8", fontSize: 13 },
   optionTextSelected: { color: "#22c55e", fontWeight: "700" },
   optionCheck: { color: "#22c55e", fontSize: 13, fontWeight: "800" },
-
-  divider: { height: 1, backgroundColor: "#1e293b", marginHorizontal: 0 },
+  divider: { height: 1, backgroundColor: "#1e293b" },
 });
 
-// ─── Main Screen ──────────────────────────────────────────────────────────────
+// ─── Result count pill ──────────────────────────────────────────────────────
+function ResultCount({ count, loading }) {
+  if (loading) return null;
+  return (
+    <View style={rc.wrap}>
+      <View style={rc.dot} />
+      <Text style={rc.text}>{count} {count === 1 ? "plant" : "plants"} found</Text>
+    </View>
+  );
+}
+const rc = StyleSheet.create({
+  wrap: { flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 10 },
+  dot: { width: 6, height: 6, borderRadius: 99, backgroundColor: "#22c55e" },
+  text: { color: "#64748b", fontSize: 12, fontWeight: "600" },
+});
 
+// ─── Cart FAB with item count badge ────────────────────────────────────────
+function CartFab({ onPress, itemCount }) {
+  const scaleAnim = useRef(new Animated.Value(1)).current;
+  const pulse = () => {
+    Animated.sequence([
+      Animated.timing(scaleAnim, { toValue: 0.88, duration: 80, useNativeDriver: true }),
+      Animated.spring(scaleAnim, { toValue: 1, tension: 200, friction: 8, useNativeDriver: true }),
+    ]).start();
+  };
+  return (
+    <TouchableOpacity onPress={() => { pulse(); onPress(); }} activeOpacity={1}>
+      <Animated.View style={[fab.cartBtn, { transform: [{ scale: scaleAnim }] }]}>
+        <Ionicons name="cart-outline" size={24} color="#071024" />
+        {itemCount > 0 && (
+          <View style={fab.cartBadge}>
+            <Text style={fab.cartBadgeText}>{itemCount > 99 ? "99+" : itemCount}</Text>
+          </View>
+        )}
+      </Animated.View>
+    </TouchableOpacity>
+  );
+}
+const fab = StyleSheet.create({
+  cartBtn: {
+    width: 56, height: 56, borderRadius: 18,
+    backgroundColor: "#facc15",
+    justifyContent: "center", alignItems: "center",
+    shadowColor: "#facc15", shadowOpacity: 0.45, shadowRadius: 12, shadowOffset: { width: 0, height: 4 },
+    elevation: 8,
+  },
+  cartBadge: {
+    position: "absolute", top: -6, right: -6,
+    backgroundColor: "#ef4444",
+    borderRadius: 99, minWidth: 20, height: 20,
+    paddingHorizontal: 4,
+    alignItems: "center", justifyContent: "center",
+    borderWidth: 2, borderColor: "#071024",
+  },
+  cartBadgeText: { color: "#fff", fontSize: 10, fontWeight: "800" },
+});
+
+// ─── Main Screen ────────────────────────────────────────────────────────────
 export default function ExplorePlants() {
   const router = useRouter();
   const { fromSeasonal } = useLocalSearchParams();
@@ -897,6 +867,9 @@ export default function ExplorePlants() {
   const [difficultyFilter, setDifficultyFilter] = useState("all");
   const [heatFilter, setHeatFilter] = useState("all");
   const [priceBand, setPriceBand] = useState("all");
+
+  // Cart count from router state or local (lightweight)
+  const [cartCount, setCartCount] = useState(0);
 
   const fetchPlants = async (q = "") => {
     setLoading(true);
@@ -933,7 +906,10 @@ export default function ExplorePlants() {
   };
 
   useEffect(() => { fetchPlants(); fetchWeatherAlert(); }, []);
-  useEffect(() => { const t = setTimeout(() => fetchPlants(search), 300); return () => clearTimeout(t); }, [search]);
+  useEffect(() => {
+    const t = setTimeout(() => fetchPlants(search), 300);
+    return () => clearTimeout(t);
+  }, [search]);
 
   const sortedPlants = useMemo(() => {
     if (!Array.isArray(plants)) return [];
@@ -998,7 +974,6 @@ export default function ExplorePlants() {
         return true;
       });
     }
-
     if (difficultyFilter !== "all") {
       list = list.filter((p) => {
         const diff = (p.difficulty || "").toLowerCase();
@@ -1008,7 +983,6 @@ export default function ExplorePlants() {
         return true;
       });
     }
-
     if (heatFilter !== "all") {
       list = list.filter((p) => {
         const heat = (p.heatTolerance || "").toLowerCase();
@@ -1018,7 +992,6 @@ export default function ExplorePlants() {
         return true;
       });
     }
-
     if (priceBand !== "all") {
       list = list.filter((p) => {
         const price = typeof p.price === "number" ? p.price : null;
@@ -1029,15 +1002,18 @@ export default function ExplorePlants() {
         return true;
       });
     }
-
     return list;
   }, [seasonalFilteredPlants, typeFilter, difficultyFilter, heatFilter, priceBand]);
 
   return (
     <View style={styles.page}>
-      {/* Header row with title + bell */}
+
+      {/* ── Header ── */}
       <View style={styles.headerRow}>
-        <Text style={styles.title}>Explore Plants</Text>
+        <View>
+          <Text style={styles.title}>Explore Plants</Text>
+          <Text style={styles.subtitle}>Find your perfect green companion</Text>
+        </View>
         <TouchableOpacity
           style={[styles.bellBtn, weather && styles.bellBtnActive]}
           onPress={() => setWeatherPanelOpen(true)}
@@ -1048,7 +1024,7 @@ export default function ExplorePlants() {
         </TouchableOpacity>
       </View>
 
-      {/* Weather modal panel */}
+      {/* ── Weather modal ── */}
       <WeatherPanel
         visible={weatherPanelOpen}
         onClose={() => setWeatherPanelOpen(false)}
@@ -1056,64 +1032,122 @@ export default function ExplorePlants() {
         weatherLoading={weatherLoading}
       />
 
+      {/* ── Search ── */}
       <SearchBar value={search} onChangeText={setSearch} />
 
-      {/* CASCADING FILTER DROPDOWN */}
+      {/* ── Filters ── */}
       <CascadeDropdown
-        typeFilter={typeFilter}
-        setTypeFilter={setTypeFilter}
-        difficultyFilter={difficultyFilter}
-        setDifficultyFilter={setDifficultyFilter}
-        heatFilter={heatFilter}
-        setHeatFilter={setHeatFilter}
-        priceBand={priceBand}
-        setPriceBand={setPriceBand}
+        typeFilter={typeFilter} setTypeFilter={setTypeFilter}
+        difficultyFilter={difficultyFilter} setDifficultyFilter={setDifficultyFilter}
+        heatFilter={heatFilter} setHeatFilter={setHeatFilter}
+        priceBand={priceBand} setPriceBand={setPriceBand}
       />
 
+      {/* ── Result count ── */}
+      <ResultCount count={fullyFilteredPlants.length} loading={loading} />
+
+      {/* ── Plant list ── */}
       {loading ? (
-        <ActivityIndicator size="large" color="#22c55e" style={{ marginTop: 24 }} />
+        <View style={styles.loadingWrap}>
+          <ActivityIndicator size="large" color="#22c55e" />
+          <Text style={styles.loadingText}>Finding plants…</Text>
+        </View>
       ) : (
         <FlatList
           data={fullyFilteredPlants}
           keyExtractor={(item, index) => item._id ?? String(index)}
           renderItem={({ item }) => (
-            <PlantCard plant={item} onPress={() => router.push(`/plant/${item._id}`)} />
+            <PlantCard
+              plant={item}
+              onPress={() => router.push(`/plant/${item._id}`)}
+            />
           )}
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ paddingBottom: 120 }}
-          ListEmptyComponent={<Text style={styles.empty}>No plants found.</Text>}
+          contentContainerStyle={styles.listContent}
+          ListEmptyComponent={
+            <View style={styles.emptyWrap}>
+              <Text style={styles.emptyEmoji}>🌱</Text>
+              <Text style={styles.emptyTitle}>No plants found</Text>
+              <Text style={styles.emptySub}>Try adjusting your filters or search</Text>
+            </View>
+          }
         />
       )}
 
-      <TouchableOpacity onPress={() => router.push("/share/camera")} style={styles.cameraFab}>
-        <Text style={{ fontSize: 24 }}>📸</Text>
-      </TouchableOpacity>
-      <TouchableOpacity onPress={() => router.push("/cart")} style={styles.cartFab}>
-        <Text style={{ fontSize: 24 }}>🛒</Text>
-      </TouchableOpacity>
+      {/* ── FAB dock ── */}
+      <View style={styles.fabDock}>
+        {/* Camera */}
+        <TouchableOpacity
+          onPress={() => router.push("/share/camera")}
+          style={styles.cameraFab}
+          activeOpacity={0.85}
+        >
+          <Ionicons name="camera-outline" size={22} color="#071024" />
+        </TouchableOpacity>
+
+        {/* Cart with badge */}
+        <CartFab
+          onPress={() => router.push("/cart")}
+          itemCount={cartCount}
+        />
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   page: { flex: 1, backgroundColor: "#071024", padding: 16 },
-  headerRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 12 },
-  title: { color: "#e6eef3", fontSize: 24, fontWeight: "700" },
+
+  // ── Header
+  headerRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    justifyContent: "space-between",
+    marginBottom: 14,
+  },
+  title: { color: "#e6eef3", fontSize: 26, fontWeight: "800", letterSpacing: -0.5 },
+  subtitle: { color: "#334155", fontSize: 12, marginTop: 2, fontWeight: "500" },
   bellBtn: {
     width: 40, height: 40, borderRadius: 12,
     alignItems: "center", justifyContent: "center",
     backgroundColor: "rgba(15,23,42,0.95)",
     borderWidth: 1, borderColor: "rgba(148,163,184,0.15)",
+    marginTop: 4,
   },
   bellBtnActive: { borderColor: "rgba(34,197,94,0.4)", backgroundColor: "rgba(34,197,94,0.1)" },
   bellDot: {
     position: "absolute", top: 8, right: 8,
     width: 7, height: 7, borderRadius: 99,
-    backgroundColor: "#22c55e",
-    borderWidth: 1.5, borderColor: "#071024",
+    backgroundColor: "#22c55e", borderWidth: 1.5, borderColor: "#071024",
   },
-  empty: { color: "#94a3b8", marginTop: 20, textAlign: "center" },
 
-  cameraFab: { position: "absolute", bottom: 24, right: 24, backgroundColor: "#22c55e", width: 60, height: 60, borderRadius: 30, justifyContent: "center", alignItems: "center" },
-  cartFab: { position: "absolute", bottom: 100, right: 24, backgroundColor: "#fbbf24", width: 60, height: 60, borderRadius: 30, justifyContent: "center", alignItems: "center" },
+  // ── Loading
+  loadingWrap: { flex: 1, alignItems: "center", justifyContent: "center", gap: 12 },
+  loadingText: { color: "#475569", fontSize: 13 },
+
+  // ── Empty state
+  emptyWrap: { alignItems: "center", paddingTop: 60, gap: 8 },
+  emptyEmoji: { fontSize: 48 },
+  emptyTitle: { color: "#e2e8f0", fontSize: 16, fontWeight: "700" },
+  emptySub: { color: "#475569", fontSize: 13 },
+
+  // ── List
+  listContent: { paddingBottom: 120, gap: 0 },
+
+  // ── FAB dock — side-by-side pill at bottom right
+  fabDock: {
+    position: "absolute",
+    bottom: 28,
+    right: 20,
+    flexDirection: "column",
+    alignItems: "center",
+    gap: 12,
+  },
+  cameraFab: {
+    width: 56, height: 56, borderRadius: 18,
+    backgroundColor: "#22c55e",
+    justifyContent: "center", alignItems: "center",
+    shadowColor: "#22c55e", shadowOpacity: 0.4, shadowRadius: 12, shadowOffset: { width: 0, height: 4 },
+    elevation: 8,
+  },
 });

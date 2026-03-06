@@ -1,3 +1,4 @@
+// mobile/app/care-guides/index.jsx
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { nBACKEND } from "../../config";

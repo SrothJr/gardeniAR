@@ -1,3 +1,4 @@
+// mobile/app/care-guides/[id].jsx
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
