@@ -3,7 +3,9 @@ console.log(
   "ENV: SOIL_GEMINI_KEY present?",
   !!process.env.SOIL_GEMINI_KEY,
   "GEMINI_API_KEY present?",
-  !!process.env.GEMINI_API_KEY
+  !!process.env.GEMINI_API_KEY,
+  "CAM_GEMINI_API_KEY present?",
+  !!process.env.CAM_GEMINI_API_KEY
 );
 
 const express = require("express");
