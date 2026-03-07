@@ -33,6 +33,8 @@ const soilRouter = require("./routes/soilRoutes");
 const weatherRoutes = require("./routes/weatherRoutes");
 const companionRoutes = require('./routes/companionroutes');
 const growthRoutes = require("./routes/growthRoutes");
+const trackedPlantRoutes = require("./routes/trackedPlantRoutes");
+const diseaseRoutes = require("./routes/diseaseRoutes");
 
 // DB
 mongoose
@@ -62,6 +64,8 @@ app.use("/api/forum", forumRouter);
 app.use("/api/tasks", gardenTaskRouter);
 app.use("/api/weather", weatherRoutes);
 app.use("/api/growth", growthRoutes);
+app.use("/api/tracked-plants", trackedPlantRoutes);
+app.use("/api/disease", diseaseRoutes);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server listening on ${PORT}`));

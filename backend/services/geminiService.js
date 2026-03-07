@@ -54,6 +54,24 @@ class GeminiService {
       throw new Error("Failed to identify weed with AI.");
     }
   }
+
+  async analyzeDisease(imageBuffer, mimeType = "image/jpeg") {
+    try {
+      const prompt = `Act as a plant doctor. Identify the plant and disease in this image. Provide 3 organic remedies and 1 chemical remedy. Format with clear headings.`;
+      const imagePart = {
+        inlineData: {
+          data: imageBuffer.toString("base64"),
+          mimeType,
+        },
+      };
+      const result = await this.model.generateContent([prompt, imagePart]);
+      const response = await result.response;
+      return response.text();
+    } catch (error) {
+      console.error("Gemini Disease Analysis Error:", error);
+      throw new Error("Failed to analyze plant disease.");
+    }
+  }
 }
 
 module.exports = new GeminiService();

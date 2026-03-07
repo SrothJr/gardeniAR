@@ -212,7 +212,9 @@
 // });
 
 
-import React, { useState } from "react";
+// mobile/app/payment.jsx
+// mobile/app/payment.jsx
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -222,79 +224,116 @@ import {
   TouchableOpacity,
   Alert,
   ScrollView,
+  ActivityIndicator,
 } from "react-native";
 import { useRouter } from "expo-router";
-import { getCart, clearCart } from "../../constants/cart";
+import { BACKEND } from "../config";
 
-/* ================= VALIDATION FUNCTIONS ================= */
-const isValidPhone = (phone) => /^[0-9]{10,15}$/.test(phone);
-const isValidCardNumber = (num) => /^[0-9]{16}$/.test(num);
-const isValidCardName = (name) => /^[A-Za-z ]{3,}$/.test(name);
-const isValidExpiry = (exp) =>
-  /^(0[1-9]|1[0-2])\/([0-9]{2})$/.test(exp);
-const isValidCVV = (cvv) => /^[0-9]{3}$/.test(cvv);
+/* ================= VALIDATION ================= */
+const isValidPhone      = (v) => /^[0-9]{10,15}$/.test(v);
+const isValidCardNumber = (v) => /^[0-9]{16}$/.test(v);
+const isValidCardName   = (v) => /^[A-Za-z ]{3,}$/.test(v);
+const isValidExpiry     = (v) => /^(0[1-9]|1[0-2])\/([0-9]{2})$/.test(v);
+const isValidCVV        = (v) => /^[0-9]{3}$/.test(v);
 
 /* ================= SCREEN ================= */
 export default function PaymentScreen() {
   const router = useRouter();
-  const cart = getCart();
+
+  const [cart, setCart]       = useState([]);
+  const [cartLoading, setCartLoading] = useState(true);
+
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const res = await fetch(`${BACKEND}/api/cart`);
+        const data = await res.json();
+        if (mounted) {
+          setCart(Array.isArray(data.items) ? data.items : []);
+        }
+      } catch (e) {
+        if (mounted) setCart([]);
+      } finally {
+        if (mounted) setCartLoading(false);
+      }
+    })();
+    return () => { mounted = false; };
+  }, []);
 
   const totalPrice = cart.reduce(
-    (sum, item) => sum + item.price * item.quantity,
+    (sum, item) => sum + (item.price ?? 0) * (item.quantity ?? 1),
     0
   );
 
-  const [address, setAddress] = useState("");
-  const [phone, setPhone] = useState("");
+  const [address,       setAddress]       = useState("");
+  const [phone,         setPhone]         = useState("");
   const [paymentMethod, setPaymentMethod] = useState("");
-
-  const [cardNumber, setCardNumber] = useState("");
-  const [cardName, setCardName] = useState("");
-  const [expiry, setExpiry] = useState("");
-  const [cvv, setCvv] = useState("");
+  const [cardNumber,    setCardNumber]    = useState("");
+  const [cardName,      setCardName]      = useState("");
+  const [expiry,        setExpiry]        = useState("");
+  const [cvv,           setCvv]           = useState("");
+  const [paying,        setPaying]        = useState(false);
 
   /* ================= PAY ================= */
-  const handlePay = () => {
+  const handlePay = async () => {
     if (!address.trim()) {
-      Alert.alert("Error", "Please enter delivery address");
-      return;
+      Alert.alert("Error", "Please enter delivery address"); return;
     }
-
     if (!isValidPhone(phone)) {
-      Alert.alert("Error", "Enter a valid phone number");
-      return;
+      Alert.alert("Error", "Enter a valid phone number"); return;
     }
-
     if (!paymentMethod) {
-      Alert.alert("Error", "Select payment method");
-      return;
+      Alert.alert("Error", "Select payment method"); return;
     }
-
     if (paymentMethod === "card") {
       if (!isValidCardNumber(cardNumber)) {
-        Alert.alert("Error", "Card number must be 16 digits");
-        return;
+        Alert.alert("Error", "Card number must be 16 digits"); return;
       }
       if (!isValidCardName(cardName)) {
-        Alert.alert("Error", "Enter valid card holder name");
-        return;
+        Alert.alert("Error", "Enter valid card holder name"); return;
       }
       if (!isValidExpiry(expiry)) {
-        Alert.alert("Error", "Expiry must be MM/YY");
-        return;
+        Alert.alert("Error", "Expiry must be MM/YY"); return;
       }
       if (!isValidCVV(cvv)) {
-        Alert.alert("Error", "CVV must be 3 digits");
-        return;
+        Alert.alert("Error", "CVV must be 3 digits"); return;
       }
     }
 
-    Alert.alert("Payment Successful", "Your order has been placed 🌱");
-    clearCart();
-    router.replace("/");
+    setPaying(true);
+    try {
+      const orderData = {
+        address,
+        paymentMethod,
+        items: cart,
+        paymentStatus: paymentMethod === "cash" ? "cod" : "paid",
+      };
+      await fetch(`${BACKEND}/api/order/checkout`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(orderData),
+      });
+      await fetch(`${BACKEND}/api/cart`, { method: "DELETE" });
+      Alert.alert("Payment Successful", "Your order has been placed 🌱", [
+        { text: "OK", onPress: () => router.replace("/") },
+      ]);
+    } catch (e) {
+      Alert.alert("Error", "Could not complete payment");
+    } finally {
+      setPaying(false);
+    }
   };
 
   /* ================= UI ================= */
+  if (cartLoading) {
+    return (
+      <View style={styles.center}>
+        <ActivityIndicator size="large" color="#22c55e" />
+      </View>
+    );
+  }
+
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       <Text style={styles.title}>Checkout</Text>
@@ -302,30 +341,30 @@ export default function PaymentScreen() {
       {/* ORDER SUMMARY */}
       <View style={styles.card}>
         <Text style={styles.cardTitle}>Order Summary</Text>
-
         <FlatList
           data={cart}
           keyExtractor={(item) => item._id}
           scrollEnabled={false}
           renderItem={({ item }) => (
-            <View style={styles.cartRow}>
+            <View style={styles.summaryRow}>
               <Text style={styles.cartText}>
                 {item.name} × {item.quantity}
               </Text>
               <Text style={styles.cartText}>
-                Tk {item.price * item.quantity}
+                Tk {(item.price ?? 0) * (item.quantity ?? 1)}
               </Text>
             </View>
           )}
+          ListEmptyComponent={
+            <Text style={styles.emptyCart}>Your cart is empty.</Text>
+          }
         />
-
         <Text style={styles.total}>Total: Tk {totalPrice}</Text>
       </View>
 
       {/* DELIVERY DETAILS */}
       <View style={styles.card}>
         <Text style={styles.cardTitle}>Delivery Details</Text>
-
         <TextInput
           placeholder="Delivery Address"
           placeholderTextColor="#9ca3af"
@@ -333,7 +372,6 @@ export default function PaymentScreen() {
           value={address}
           onChangeText={setAddress}
         />
-
         <TextInput
           placeholder="Contact Number"
           placeholderTextColor="#9ca3af"
@@ -348,30 +386,21 @@ export default function PaymentScreen() {
       {/* PAYMENT METHOD */}
       <View style={styles.card}>
         <Text style={styles.cardTitle}>Payment Method</Text>
-
         <View style={styles.methodRow}>
           <TouchableOpacity
-            style={[
-              styles.methodBtn,
-              paymentMethod === "cash" && styles.selected,
-            ]}
+            style={[styles.methodBtn, paymentMethod === "cash" && styles.selected]}
             onPress={() => setPaymentMethod("cash")}
           >
             <Text style={styles.methodText}>Cash on Delivery</Text>
           </TouchableOpacity>
-
           <TouchableOpacity
-            style={[
-              styles.methodBtn,
-              paymentMethod === "card" && styles.selected,
-            ]}
+            style={[styles.methodBtn, paymentMethod === "card" && styles.selected]}
             onPress={() => setPaymentMethod("card")}
           >
             <Text style={styles.methodText}>Credit / Debit Card</Text>
           </TouchableOpacity>
         </View>
 
-        {/* CARD DETAILS */}
         {paymentMethod === "card" && (
           <>
             <TextInput
@@ -383,7 +412,6 @@ export default function PaymentScreen() {
               value={cardNumber}
               onChangeText={setCardNumber}
             />
-
             <TextInput
               placeholder="Card Holder Name"
               placeholderTextColor="#9ca3af"
@@ -391,7 +419,6 @@ export default function PaymentScreen() {
               value={cardName}
               onChangeText={setCardName}
             />
-
             <View style={styles.cardRow}>
               <TextInput
                 placeholder="MM/YY"
@@ -401,7 +428,6 @@ export default function PaymentScreen() {
                 value={expiry}
                 onChangeText={setExpiry}
               />
-
               <TextInput
                 placeholder="CVV"
                 placeholderTextColor="#9ca3af"
@@ -418,8 +444,15 @@ export default function PaymentScreen() {
       </View>
 
       {/* PAY BUTTON */}
-      <TouchableOpacity style={styles.payBtn} onPress={handlePay}>
-        <Text style={styles.payText}>Pay Tk {totalPrice}</Text>
+      <TouchableOpacity
+        style={[styles.payBtn, (paying || cart.length === 0) && { opacity: 0.6 }]}
+        onPress={handlePay}
+        disabled={paying || cart.length === 0}
+      >
+        {paying
+          ? <ActivityIndicator color="#fff" />
+          : <Text style={styles.payText}>Pay Tk {totalPrice}</Text>
+        }
       </TouchableOpacity>
     </ScrollView>
   );
@@ -427,109 +460,39 @@ export default function PaymentScreen() {
 
 /* ================= STYLES ================= */
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#071024",
-    padding: 16,
-  },
-
-  title: {
-    fontSize: 26,
-    fontWeight: "bold",
-    color: "#ffffff",
-    marginBottom: 20,
-  },
+  container: { flex: 1, backgroundColor: "#071024", padding: 16 },
+  center: { flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "#071024" },
+  title: { fontSize: 26, fontWeight: "bold", color: "#ffffff", marginBottom: 20 },
 
   card: {
-    backgroundColor: "#0b0a29",
-    borderRadius: 14,
-    padding: 16,
-    marginBottom: 18,
-    borderWidth: 1,
-    borderColor: "#1f2937",
+    backgroundColor: "#0b0a29", borderRadius: 14, padding: 16,
+    marginBottom: 18, borderWidth: 1, borderColor: "#1f2937",
   },
+  cardTitle: { fontSize: 18, fontWeight: "600", color: "#e5e7eb", marginBottom: 10 },
 
-  cardTitle: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: "#e5e7eb",
-    marginBottom: 10,
-  },
-
-  cartRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginVertical: 4,
-  },
-
-  cartText: {
-    fontSize: 15,
-    color: "#d1d5db",
-  },
-
-  total: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#22c55e",
-    marginTop: 10,
-  },
+  summaryRow: { flexDirection: "row", justifyContent: "space-between", marginVertical: 4 },
+  cartText: { fontSize: 15, color: "#d1d5db" },
+  emptyCart: { color: "#64748b", fontStyle: "italic", textAlign: "center", paddingVertical: 8 },
+  total: { fontSize: 18, fontWeight: "bold", color: "#22c55e", marginTop: 10 },
 
   input: {
-    backgroundColor: "#020617",
-    borderRadius: 10,
-    padding: 12,
-    marginVertical: 6,
-    borderWidth: 1,
-    borderColor: "#374151",
-    color: "#ffffff",
+    backgroundColor: "#020617", borderRadius: 10, padding: 12,
+    marginVertical: 6, borderWidth: 1, borderColor: "#374151", color: "#ffffff",
   },
+  cardRow: { flexDirection: "row", justifyContent: "space-between" },
+  smallInput: { flex: 1, marginHorizontal: 4 },
 
-  cardRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-  },
-
-  smallInput: {
-    flex: 1,
-    marginHorizontal: 4,
-  },
-
-  methodRow: {
-    flexDirection: "row",
-    marginTop: 10,
-  },
-
+  methodRow: { flexDirection: "row", marginTop: 10 },
   methodBtn: {
-    flex: 1,
-    padding: 12,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: "#374151",
-    alignItems: "center",
-    marginHorizontal: 4,
+    flex: 1, padding: 12, borderRadius: 10, borderWidth: 1,
+    borderColor: "#374151", alignItems: "center", marginHorizontal: 4,
   },
-
-  selected: {
-    backgroundColor: "#22c55e",
-    borderColor: "#22c55e",
-  },
-
-  methodText: {
-    color: "#ffffff",
-    fontWeight: "500",
-  },
+  selected: { backgroundColor: "#22c55e", borderColor: "#22c55e" },
+  methodText: { color: "#ffffff", fontWeight: "500" },
 
   payBtn: {
-    backgroundColor: "#22c55e",
-    padding: 16,
-    borderRadius: 14,
-    alignItems: "center",
-    marginBottom: 40,
+    backgroundColor: "#22c55e", padding: 16, borderRadius: 14,
+    alignItems: "center", marginBottom: 40,
   },
-
-  payText: {
-    color: "#ffffff",
-    fontSize: 18,
-    fontWeight: "bold",
-  },
+  payText: { color: "#ffffff", fontSize: 18, fontWeight: "bold" },
 });
