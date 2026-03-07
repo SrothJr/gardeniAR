@@ -1,3 +1,4 @@
+// ar/DiseaseDetection.js
 // --- 1. POLYFILLS (MUST BE AT THE VERY TOP) ---
 import { Buffer } from 'buffer';
 
@@ -27,6 +28,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import * as ImagePicker from 'expo-image-picker';
 import * as FileSystem from 'expo-file-system/legacy';
 import Constants from 'expo-constants';
+import { useRouter } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const API_KEY =
   process.env.EXPO_PUBLIC_AR_GEMINI_API_KEY ||
@@ -47,6 +50,16 @@ export default function App() {
   const [image, setImage] = useState(null);
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
+  const router = useRouter();
+
+  React.useEffect(() => {
+    (async () => {
+      const v = await AsyncStorage.getItem('PREMIUM_ACTIVE');
+      if (v !== '1') {
+        router.replace('/premium');
+      }
+    })();
+  }, []);
 
   const analyzeLeaf = async (uri) => {
     if (!API_KEY) {

@@ -175,9 +175,6 @@ import {
 import { useLocalSearchParams, useRouter } from "expo-router";
 import * as Sharing from "expo-sharing";
 import { BACKEND } from "../../config";
-import * as FileSystem from "expo-file-system";
-import * as ImageManipulator from "expo-image-manipulator";
-
 
 export default function SharePreview() {
   const router = useRouter();
@@ -190,94 +187,47 @@ export default function SharePreview() {
   useEffect(() => {
     const loadCaption = async () => {
       try {
-        if (!uri) throw new Error("No image");
-        // Resize & compress to keep payload comfortably under backend limits
-        const manip = await ImageManipulator.manipulateAsync(
-          uri,
-          [{ resize: { width: 1024 } }],
-          { compress: 0.7, format: ImageManipulator.SaveFormat.JPEG, base64: true }
-        );
-        const base64 = manip.base64 ?? (await FileSystem.readAsStringAsync(manip.uri, { encoding: FileSystem.EncodingType.Base64 }));
-        const res = await fetch(`${BACKEND}/api/caption/generate`, {
+        const res = await fetch(`${BACKEND}/api/ai/caption`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ imageBase64: base64 }),
+          body: JSON.stringify({
+            context: "home garden plant photo",
+          }),
         });
-        if (res.status === 503) {
-          const data = await res.json().catch(() => ({}));
-          Alert.alert(
-            "Validation unavailable",
-            data?.reason || "AI validation is temporarily unavailable. Please try again later."
-          );
-          setCaption("");
-          return;
-        }
-        if (res.status === 413) {
-          // Retry with stronger compression
-          const smaller = await ImageManipulator.manipulateAsync(
-            uri,
-            [{ resize: { width: 800 } }],
-            { compress: 0.55, format: ImageManipulator.SaveFormat.JPEG, base64: true }
-          );
-          const b2 = smaller.base64 ?? (await FileSystem.readAsStringAsync(smaller.uri, { encoding: FileSystem.EncodingType.Base64 }));
-          const res2 = await fetch(`${BACKEND}/api/caption/generate`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ imageBase64: b2 }),
-          });
-          if (res2.status === 503) {
-            const data2 = await res2.json().catch(() => ({}));
-            Alert.alert(
-              "Validation unavailable",
-              data2?.reason || "AI validation is temporarily unavailable. Please try again later."
-            );
-            setCaption("");
-            return;
-          }
-          if (res2.status === 422) {
-            const data = await res2.json();
-            Alert.alert("Not a plant/garden", data?.reason || "Please capture a garden or plant photo.");
-            setCaption("");
-            return;
-          }
-          if (!res2.ok) throw new Error("AI failed");
-          const data2 = await res2.json();
-          if (!data2?.caption) throw new Error("Invalid AI response");
-          setCaption(data2.caption);
-          return;
-        }
-        if (res.status === 422) {
-          const data = await res.json();
-          Alert.alert("Not a plant/garden", data?.reason || "Please capture a garden or plant photo.");
-          setCaption("");
-          return;
-        }
+
         if (!res.ok) throw new Error("AI failed");
+
         const data = await res.json();
         if (!data?.caption) throw new Error("Invalid AI response");
+
         setCaption(data.caption);
       } catch (err) {
-        Alert.alert("Caption unavailable", "Could not generate AI caption right now.");
-        setCaption("");
+        console.warn("⚠ AI unavailable, using fallback caption");
+
+        const hour = new Date().getHours();
+        const time =
+          hour < 12 ? "morning" : hour < 17 ? "afternoon" : "evening";
+
+        setCaption(
+          `🌿 A peaceful ${time} in my garden.\nWatching my plants grow day by day.\n\n#GardeniAR #HomeGarden #PlantLovers`
+        );
       } finally {
         setLoading(false);
       }
     };
+
     loadCaption();
-  }, [uri]);
+  }, []);
 
 
   const sharePost = async () => {
     try {
-      if (!caption) {
-        Alert.alert("No caption", "Please capture a plant or garden photo to generate a caption.");
-        return;
-      }
       const available = await Sharing.isAvailableAsync();
       if (!available) {
         Alert.alert("Sharing not available on this device");
         return;
       }
+
       await Sharing.shareAsync(uri);
     } catch (err) {
       Alert.alert("Error", "Could not share image");
@@ -311,6 +261,7 @@ export default function SharePreview() {
             multiline
             style={styles.input}
           />
+
 
           <TouchableOpacity style={styles.shareBtn} onPress={sharePost}>
             <Text style={styles.shareText}>Share Image</Text>
