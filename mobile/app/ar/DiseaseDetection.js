@@ -29,16 +29,19 @@ import * as FileSystem from 'expo-file-system/legacy';
 import Constants from 'expo-constants';
 
 const API_KEY =
+  process.env.EXPO_PUBLIC_AR_GEMINI_API_KEY ||
   process.env.EXPO_PUBLIC_GENAI_API_KEY ||
   process.env.EXPO_PUBLIC_GEMINI_API_KEY ||
   process.env.EXPO_PUBLIC_GOOGLE_API_KEY ||
   (Constants?.expoConfig?.extra &&
-    (Constants.expoConfig.extra.GENAI_API_KEY ||
+    (Constants.expoConfig.extra.AR_GEMINI_API_KEY ||
+     Constants.expoConfig.extra.GENAI_API_KEY ||
      Constants.expoConfig.extra.GEMINI_API_KEY ||
      Constants.expoConfig.extra.GOOGLE_API_KEY)) ||
   '';
-const GENAI_URL =
-  'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent';
+const GENAI_BASE = 'https://generativelanguage.googleapis.com/v1beta/models';
+const GENAI_MODEL_PRIMARY = 'gemini-2.5-flash';
+const GENAI_MODEL_FALLBACK = 'gemini-1.5-flash';
 
 export default function App() {
   const [image, setImage] = useState(null);
@@ -81,11 +84,20 @@ export default function App() {
         ],
       };
 
-      const res = await fetch(`${GENAI_URL}?key=${API_KEY}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-      });
+      const doCall = async (model) => {
+        const url = `${GENAI_BASE}/${model}:generateContent?key=${API_KEY}`;
+        const r = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        });
+        return r;
+      };
+
+      let res = await doCall(GENAI_MODEL_PRIMARY);
+      if (!res.ok && res.status === 404) {
+        res = await doCall(GENAI_MODEL_FALLBACK);
+      }
       if (!res.ok) {
         const txt = await res.text();
         throw new Error(`GenAI error ${res.status}: ${txt}`);

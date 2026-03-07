@@ -47,6 +47,7 @@
       "reactCompiler": true
     },
     "extra": {
+      "AR_GEMINI_API_KEY": "AIzaSyD0UN-Q8N-zFvez_TszpSK29OXCFhK3Bio",
       "router": {},
       "eas": {
         "projectId": "83fb3ab5-0c16-4d8e-a9b5-8e6a909c0ddf"
