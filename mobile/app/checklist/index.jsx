@@ -18,10 +18,11 @@ export default function Checklist() {
   // Smart Add States
   const [smartInput, setSmartInput] = useState('');
   const [isSmartLoading, setIsSmartLoading] = useState(false);
-  
+
   // Smart Optimize States
   const [isOptimizing, setIsOptimizing] = useState(false);
-  
+  const [isGeneratingRoutine, setIsGeneratingRoutine] = useState(false);
+
   const router = useRouter();
 
   const fetchTasks = async () => {
@@ -123,6 +124,37 @@ export default function Checklist() {
       Alert.alert('Error', 'An error occurred while optimizing.');
     } finally {
       setIsOptimizing(false);
+    }
+  };
+
+  const handleGenerateRoutine = async () => {
+    setIsGeneratingRoutine(true);
+    try {
+      const userStr = await AsyncStorage.getItem('user');
+      const user = JSON.parse(userStr);
+
+      const response = await fetch(`${BACKEND_URL}/api/tasks/generate-routine`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          userId: user._id,
+          localDate: getLocalDateString()
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        Alert.alert('✨ Success', `Generated ${data.tasksAdded} tasks based on your tracked plants!`);
+        fetchTasks();
+      } else {
+        Alert.alert('Oops', data.message || 'Failed to generate routine.');
+      }
+    } catch (error) {
+      console.error(error);
+      Alert.alert('Error', 'An error occurred while generating routine.');
+    } finally {
+      setIsGeneratingRoutine(false);
     }
   };
 
@@ -322,6 +354,27 @@ export default function Checklist() {
 
   return (
     <View style={styles.container}>
+      {/* AI Generate Routine Banner */}
+      <View style={styles.aiBannerContainer}>
+        <TouchableOpacity 
+          style={[styles.aiBannerBtn, isGeneratingRoutine && { opacity: 0.7 }]} 
+          onPress={handleGenerateRoutine}
+          disabled={isGeneratingRoutine}
+        >
+          {isGeneratingRoutine ? (
+            <ActivityIndicator size="small" color="#fff" />
+          ) : (
+            <>
+              <Ionicons name="sparkles" size={20} color="#facc15" style={{ marginRight: 8 }} />
+              <View>
+                <Text style={styles.aiBannerTitle}>✨ Generate Weekly Routine</Text>
+                <Text style={styles.aiBannerSub}>AI creates a schedule based on your tracked plants</Text>
+              </View>
+            </>
+          )}
+        </TouchableOpacity>
+      </View>
+
       {loading ? (
         <ActivityIndicator size="large" color="#10b981" style={{ marginTop: 20 }} />
       ) : (
@@ -645,5 +698,28 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 12,
     fontWeight: 'bold',
+  },
+  aiBannerContainer: {
+    paddingHorizontal: 15,
+    paddingTop: 15,
+  },
+  aiBannerBtn: {
+    backgroundColor: '#1e293b',
+    borderWidth: 1,
+    borderColor: '#d97706',
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 15,
+    borderRadius: 12,
+  },
+  aiBannerTitle: {
+    color: '#facc15',
+    fontWeight: 'bold',
+    fontSize: 15,
+  },
+  aiBannerSub: {
+    color: '#94a3b8',
+    fontSize: 12,
+    marginTop: 2,
   }
 });

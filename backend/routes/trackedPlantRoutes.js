@@ -4,10 +4,10 @@ const TrackedPlant = require("../models/TrackedPlant");
 
 const router = express.Router();
 
-// GET all tracked plants with remaining days
-router.get("/", async (req, res) => {
+// GET all tracked plants for a specific user
+router.get("/:userId", async (req, res) => {
   try {
-    const plants = await TrackedPlant.find();
+    const plants = await TrackedPlant.find({ userId: req.params.userId });
     const today = dayjs();
     const response = [];
 
@@ -22,6 +22,8 @@ router.get("/", async (req, res) => {
       response.push({
         _id: plant._id,
         name: plant.name,
+        species: plant.species,
+        status: plant.status,
         plantingDate: dayjs(plant.plantingDate).format("YYYY-MM-DD"),
         harvestingDate: dayjs(plant.harvestingDate).format("YYYY-MM-DD"),
         remainingDays,
@@ -36,21 +38,24 @@ router.get("/", async (req, res) => {
 
 // POST new tracked plant
 router.post("/", async (req, res) => {
-  const { name, plantingDate, harvestingDate } = req.body;
-  if (!name || !plantingDate || !harvestingDate) {
-    return res.status(400).json({ message: "All fields are required" });
+  const { userId, name, species, status, plantingDate, harvestingDate } = req.body;
+  if (!userId || !name || !plantingDate || !harvestingDate) {
+    return res.status(400).json({ message: "userId, name, plantingDate, and harvestingDate are required" });
   }
 
   try {
     const plant = new TrackedPlant({
+      userId,
       name,
+      species: species || 'Unknown',
+      status: status || 'Vegetative',
       plantingDate: new Date(plantingDate),
       harvestingDate: new Date(harvestingDate),
     });
     await plant.save();
     res.status(201).json(plant);
   } catch (err) {
-    res.status(500).json({ message: "Error saving plant" });
+    res.status(500).json({ message: "Error saving plant", error: err.message });
   }
 });
 

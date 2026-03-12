@@ -151,6 +151,64 @@ class GeminiService {
       throw new Error("Failed to reschedule tasks using AI.");
     }
   }
+
+  async generateWeeklyRoutine(plants, existingTasks, localDate) {
+    try {
+      const today = localDate || new Date().toISOString().split('T')[0];
+      const plantData = plants.map(p => ({
+        name: p.name,
+        species: p.species || 'Unknown',
+        status: p.status || 'Vegetative'
+      }));
+
+      const existingData = existingTasks.map(t => ({
+        title: t.title,
+        dueDate: new Date(t.dueDate).toISOString().split('T')[0]
+      }));
+
+      const prompt = `
+        You are an expert horticulturist and intelligent gardening planner. Today's local date is ${today}.
+        The user wants you to generate a 7-day care routine based on the plants currently in their garden.
+
+        Here is the user's garden profile:
+        ${JSON.stringify(plantData, null, 2)}
+
+        Here are the user's EXISTING scheduled tasks for the upcoming week:
+        ${JSON.stringify(existingData, null, 2)}
+
+        Your job is to generate a realistic, balanced 7-day task list (starting from ${today}) for these specific plants.
+        
+        CRITICAL RULES:
+        1. Do NOT duplicate tasks that are already scheduled in the EXISTING tasks list for the same plant on the same or adjacent days.
+        2. If the existing tasks already adequately cover the care needs of ALL plants in the profile for the week, you MUST return an empty array [].
+        3. ONLY generate new tasks if there are gaps in the routine, or if a plant in the profile lacks necessary tasks (e.g., the user added a new plant).
+
+        Consider their "status" (life stage):
+        - Seedlings need frequent, light watering.
+        - Vegetative plants might need fertilizing.
+        - Flowering/Harvesting plants have different needs.
+        
+        Return a strictly valid JSON array of objects representing ONLY the NEW tasks to be added. If no new tasks are needed, return []. Each object has:
+        - "title": A clear, action-oriented title (e.g., "Water the Tomatoes", "Fertilize the Basil").
+        - "description": A short explanation of how to do the task based on the plant's life stage.
+        - "dueDate": The assigned date in YYYY-MM-DD format (must be between ${today} and 7 days from now).
+        - "taskType": Must be one of: 'water', 'fertilize', 'prune', 'harvest', 'pest-control', or 'custom'.
+        - "aiReasoning": A brief, friendly note (e.g., "✨ Added because your new basil needs water.")
+        
+        Return ONLY valid JSON array. No markdown formatting, no code blocks.
+      `;
+
+      const result = await this.model.generateContent([prompt]);
+      const response = await result.response;
+      let text = response.text();
+      
+      text = text.replace(/```json/g, "").replace(/```/g, "").trim();
+      return JSON.parse(text);
+    } catch (error) {
+      console.error("Gemini Generate Routine Error:", error);
+      throw new Error("Failed to generate weekly routine using AI.");
+    }
+  }
 }
 
 module.exports = new GeminiService();

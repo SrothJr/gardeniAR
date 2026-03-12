@@ -220,12 +220,16 @@ import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { BACKEND } from "../../config";
 import { usePremium } from "../../hooks/usePremium";
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import DateTimePicker from '@react-native-community/datetimepicker';
 
 const API_URL = `${BACKEND}/api`;
 
 interface Plant {
   _id: string;
   name: string;
+  species?: string;
+  status?: string;
   plantingDate: string;
   harvestingDate: string;
   remainingDays: number;
@@ -237,13 +241,35 @@ export default function PlantTracker() {
   const { isPremium } = usePremium();
   const [plants, setPlants] = useState<Plant[]>([]);
   const [name, setName] = useState("");
+  const [species, setSpecies] = useState("");
+  const [status, setStatus] = useState("Vegetative");
   const [plantingDate, setPlantingDate] = useState("");
   const [harvestingDate, setHarvestingDate] = useState("");
+  const [showPlantingPicker, setShowPlantingPicker] = useState(false);
+  const [showHarvestingPicker, setShowHarvestingPicker] = useState(false);
   const [adding, setAdding] = useState(false);
+
+  const onPlantingDateChange = (event: any, selectedDate?: Date) => {
+    setShowPlantingPicker(false);
+    if (selectedDate) {
+      setPlantingDate(selectedDate.toISOString().split('T')[0]);
+    }
+  };
+
+  const onHarvestingDateChange = (event: any, selectedDate?: Date) => {
+    setShowHarvestingPicker(false);
+    if (selectedDate) {
+      setHarvestingDate(selectedDate.toISOString().split('T')[0]);
+    }
+  };
 
   const fetchPlants = async () => {
     try {
-      const res = await axios.get<Plant[]>(`${API_URL}/plants`);
+      const userStr = await AsyncStorage.getItem('user');
+      if (!userStr) return;
+      const user = JSON.parse(userStr);
+      
+      const res = await axios.get<Plant[]>(`${API_URL}/tracked-plants/${user._id}`);
       setPlants(res.data);
     } catch (err: any) {
       console.log("Fetch error:", err.message);
@@ -266,9 +292,23 @@ export default function PlantTracker() {
       return;
     }
     try {
+      const userStr = await AsyncStorage.getItem('user');
+      if (!userStr) {
+        Alert.alert('Login Required', 'Please log in to add plants.');
+        return;
+      }
+      const user = JSON.parse(userStr);
+
       setAdding(true);
-      await axios.post(`${API_URL}/plants`, { name, plantingDate, harvestingDate });
-      setName(""); setPlantingDate(""); setHarvestingDate("");
+      await axios.post(`${API_URL}/tracked-plants`, { 
+        userId: user._id,
+        name, 
+        species: species || name, // Fallback to name if not provided
+        status,
+        plantingDate, 
+        harvestingDate 
+      });
+      setName(""); setSpecies(""); setPlantingDate(""); setHarvestingDate(""); setStatus("Vegetative");
       fetchPlants();
     } catch {
       Alert.alert("Error", "Failed to add plant.");
@@ -348,7 +388,7 @@ export default function PlantTracker() {
         <View style={s.card}>
           <Text style={s.cardTitle}>🌱 Add a Plant</Text>
           <TextInput
-            placeholder="Plant name (e.g. Basil)"
+            placeholder="Plant name (e.g. My Favorite Basil)"
             placeholderTextColor="#4b5563"
             value={name}
             onChangeText={setName}
@@ -356,22 +396,69 @@ export default function PlantTracker() {
           />
           <View style={s.row}>
             <TextInput
-              placeholder="Planting date"
+              placeholder="Species (e.g. Basil)"
               placeholderTextColor="#4b5563"
-              value={plantingDate}
-              onChangeText={setPlantingDate}
-              style={[s.input, { flex: 1, marginBottom: 0 }]}
-            />
-            <View style={{ width: 10 }} />
-            <TextInput
-              placeholder="Harvest date"
-              placeholderTextColor="#4b5563"
-              value={harvestingDate}
-              onChangeText={setHarvestingDate}
-              style={[s.input, { flex: 1, marginBottom: 0 }]}
+              value={species}
+              onChangeText={setSpecies}
+              style={[s.input, { flex: 1, marginBottom: 10 }]}
             />
           </View>
-          <Text style={s.hint}>Format: YYYY-MM-DD</Text>
+          
+          <Text style={s.label}>Life Stage:</Text>
+          <View style={s.stageRow}>
+            {['Seedling', 'Vegetative', 'Flowering'].map((stage) => (
+              <TouchableOpacity
+                key={stage}
+                style={[s.stageBtn, status === stage && s.stageBtnActive]}
+                onPress={() => setStatus(stage)}
+              >
+                <Text style={[s.stageBtnText, status === stage && s.stageBtnTextActive]}>
+                  {stage}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+
+          <View style={s.row}>
+            <TouchableOpacity 
+              style={[s.input, { flex: 1, marginBottom: 0, justifyContent: 'center' }]} 
+              onPress={() => setShowPlantingPicker(true)}
+            >
+              <Text style={{ color: plantingDate ? "#e5e7eb" : "#4b5563" }}>
+                {plantingDate || "Planting date"}
+              </Text>
+            </TouchableOpacity>
+            
+            <View style={{ width: 10 }} />
+            
+            <TouchableOpacity 
+              style={[s.input, { flex: 1, marginBottom: 0, justifyContent: 'center' }]} 
+              onPress={() => setShowHarvestingPicker(true)}
+            >
+              <Text style={{ color: harvestingDate ? "#e5e7eb" : "#4b5563" }}>
+                {harvestingDate || "Harvest date"}
+              </Text>
+            </TouchableOpacity>
+          </View>
+
+          {showPlantingPicker && (
+            <DateTimePicker
+              value={plantingDate ? new Date(plantingDate) : new Date()}
+              mode="date"
+              display="default"
+              onChange={onPlantingDateChange}
+            />
+          )}
+          {showHarvestingPicker && (
+            <DateTimePicker
+              value={harvestingDate ? new Date(harvestingDate) : new Date()}
+              mode="date"
+              display="default"
+              onChange={onHarvestingDateChange}
+            />
+          )}
+          
+          <View style={{ height: 14 }} />
           <TouchableOpacity style={[s.addBtn, adding && { opacity: 0.7 }]} onPress={addPlant} disabled={adding}>
             <Ionicons name="add-circle-outline" size={18} color="#051013" />
             <Text style={s.addBtnText}>{adding ? "Adding…" : "Add Plant"}</Text>
@@ -393,7 +480,12 @@ export default function PlantTracker() {
                 <View style={s.plantIcon}>
                   <Ionicons name="leaf" size={16} color="#22c55e" />
                 </View>
-                <Text style={s.plantName}>{item.name}</Text>
+                <View style={{ flex: 1 }}>
+                  <Text style={s.plantName}>{item.name}</Text>
+                  <Text style={{ color: "#9fb1be", fontSize: 12, marginTop: 2 }}>
+                    {item.species ? `${item.species} · ` : ""}{item.status || "Unknown"}
+                  </Text>
+                </View>
                 <View style={item.readyToHarvest ? s.badgeReady : s.badgeGrowing}>
                   <Text style={item.readyToHarvest ? s.badgeReadyTxt : s.badgeGrowingTxt}>
                     {item.readyToHarvest ? "Ready" : "Growing"}
@@ -469,6 +561,15 @@ const s = StyleSheet.create({
     color: "#e5e7eb", padding: 12, borderRadius: 12, fontSize: 14, marginBottom: 10,
   },
   row: { flexDirection: "row", marginBottom: 6 },
+  label: { color: "#9fb1be", fontSize: 13, fontWeight: "700", marginBottom: 8, marginTop: 4 },
+  stageRow: { flexDirection: "row", gap: 8, marginBottom: 14 },
+  stageBtn: {
+    flex: 1, paddingVertical: 8, alignItems: "center", borderRadius: 10,
+    backgroundColor: "rgba(255,255,255,0.05)", borderWidth: 1, borderColor: "rgba(148,163,184,0.15)",
+  },
+  stageBtnActive: { backgroundColor: "rgba(34,197,94,0.15)", borderColor: "#22c55e" },
+  stageBtnText: { color: "#a1a1aa", fontSize: 12, fontWeight: "700" },
+  stageBtnTextActive: { color: "#22c55e", fontWeight: "800" },
   hint: { color: "#374151", fontSize: 11, marginBottom: 14 },
   addBtn: {
     flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8,

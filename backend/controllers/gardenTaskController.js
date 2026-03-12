@@ -136,3 +136,61 @@ exports.optimizeTasks = async (req, res) => {
     res.status(500).json({ message: 'Failed to optimize tasks. Please try again.' });
   }
 };
+
+// Generate Weekly Routine using Gemini
+exports.generateRoutine = async (req, res) => {
+  try {
+    const { userId, localDate } = req.body;
+    if (!userId) return res.status(400).json({ message: 'User ID is required.' });
+
+    // 1. Fetch user's tracked plants
+    const TrackedPlant = require('../models/TrackedPlant');
+    const userPlants = await TrackedPlant.find({ userId });
+
+    if (!userPlants || userPlants.length === 0) {
+      return res.status(400).json({ message: 'Please add some plants to your Plant Tracker first!' });
+    }
+
+    // 2. Fetch existing tasks for the upcoming week to prevent duplicates
+    const todayStr = localDate || new Date().toISOString().split('T')[0];
+    const todayStart = new Date(todayStr);
+    
+    const existingTasks = await GardenTask.find({ 
+      user: userId, 
+      dueDate: { $gte: todayStart },
+      isCompleted: false
+    });
+
+    // 3. Ask Gemini to generate tasks, passing both plants and existing tasks
+    const generatedTasks = await geminiService.generateWeeklyRoutine(userPlants, existingTasks, localDate);
+
+    // 4. If AI determines no new tasks are needed based on the current profile
+    if (!generatedTasks || generatedTasks.length === 0) {
+      return res.status(200).json({ 
+        message: 'Your routine is already fully up to date for your current plants!', 
+        tasksAdded: 0 
+      });
+    }
+
+    // 5. Save the new tasks to the database
+    const tasksToInsert = generatedTasks.map(task => ({
+      title: task.title,
+      description: task.description || '',
+      dueDate: new Date(task.dueDate),
+      taskType: task.taskType || 'custom',
+      aiGenerated: true,
+      aiReasoning: task.aiReasoning,
+      user: userId
+    }));
+
+    const savedTasks = await GardenTask.insertMany(tasksToInsert);
+
+    res.status(201).json({ 
+      message: `Successfully generated ${savedTasks.length} new tasks for your routine!`, 
+      tasksAdded: savedTasks.length 
+    });
+  } catch (error) {
+    console.error("Generate Routine Error:", error);
+    res.status(500).json({ message: 'Failed to generate routine. Please try again.' });
+  }
+};
