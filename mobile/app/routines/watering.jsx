@@ -71,10 +71,10 @@ export default function WateringRoutineScreen() {
           <TouchableOpacity
             activeOpacity={0.9}
             style={styles.primaryBtn}
-            onPress={() => router.push("/care-guides")}
+            onPress={() => router.push("/explore")}
           >
             <Ionicons name="list-outline" size={18} color="#022c22" />
-            <Text style={styles.primaryText}>Open care guides</Text>
+            <Text style={styles.primaryText}>Open plant guides</Text>
           </TouchableOpacity>
 
           <TouchableOpacity

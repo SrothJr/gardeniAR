@@ -1505,7 +1505,6 @@ export default function Index() {
 
         <View style={styles.servicesGrid}>
           <ServiceTile icon="search-outline"      label="Explore"        sub="Plants & tips"   href="/explore"          tone="blue" />
-          <ServiceTile icon="water-outline"       label="Care Guides"    sub="Water & feed"    href="/care-guides"      tone="mint" />
           <ServiceTile icon="leaf-outline"        label="Companions"     sub="Plant buddies"   href="/companions"       tone="amber" />
           <ServiceTile icon="checkbox-outline"    label="Tasks"          sub="Daily checklist" href="/checklist"        tone="amber" />
           <ServiceTile icon="chatbubbles-outline" label="Forum"          sub="Ask & help"      href="/forum"            tone="blue" />
