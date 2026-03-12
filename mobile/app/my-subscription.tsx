@@ -6,11 +6,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { usePremium } from "../hooks/usePremium";
-
-const PREMIUM_KEY = "PREMIUM_ACTIVE";
-const SHARE_COUNT_KEY = "SHARE_COUNT";
 
 const PREMIUM_FEATURES = [
   { icon: "share-social-outline", label: "Unlimited Share Garden", color: "#4ade80" },
@@ -23,7 +19,7 @@ const PREMIUM_FEATURES = [
 
 export default function MySubscription() {
   const router = useRouter();
-  const { isPremium } = usePremium();
+  const { isPremium, resetPremium, user, loaded } = usePremium();
   const [cancelling, setCancelling] = useState(false);
 
   // Simulated billing info — replace with your real payment provider data
@@ -54,7 +50,7 @@ export default function MySubscription() {
     setCancelling(true);
     // 🔌 Call your payment provider cancellation API here
     await new Promise((r) => setTimeout(r, 1000)); // simulate API call
-    await AsyncStorage.multiRemove([PREMIUM_KEY, SHARE_COUNT_KEY]);
+    await resetPremium();
     setCancelling(false);
     Alert.alert(
       "Subscription Cancelled",
@@ -73,7 +69,7 @@ export default function MySubscription() {
         {
           text: "Reset", style: "destructive",
           onPress: async () => {
-            await AsyncStorage.multiRemove([PREMIUM_KEY, SHARE_COUNT_KEY]);
+            await resetPremium();
             Alert.alert("Reset Done", "You are now a free user.", [
               { text: "OK", onPress: () => router.replace("/") },
             ]);
@@ -82,6 +78,34 @@ export default function MySubscription() {
       ]
     );
   };
+
+  if (!loaded) {
+    return (
+      <View style={[styles.safe, styles.center]}>
+        <ActivityIndicator color="#22c55e" size="large" />
+      </View>
+    );
+  }
+
+  if (!user) {
+    return (
+      <SafeAreaView style={styles.safe}>
+        <View style={styles.center}>
+          <Ionicons name="lock-closed" size={64} color="#9fb1be" />
+          <Text style={styles.gateTitle}>Login Required</Text>
+          <Text style={styles.gateSub}>
+            Please sign in to view your subscription details.
+          </Text>
+          <TouchableOpacity style={styles.loginBtn} onPress={() => router.push("/auth/login")}>
+            <Text style={styles.loginBtnText}>Log In to Continue</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.backBtnAlt} onPress={() => router.back()}>
+            <Text style={styles.backTextAlt}>Go Back</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -237,4 +261,12 @@ const styles = StyleSheet.create({
   devBtn: { flexDirection: "row", alignItems: "center", gap: 8, backgroundColor: "rgba(245,158,11,0.1)", borderWidth: 1, borderColor: "rgba(245,158,11,0.2)", borderRadius: 12, paddingVertical: 12, paddingHorizontal: 16, marginBottom: 8 },
   devBtnText: { color: "#f59e0b", fontWeight: "700", fontSize: 14 },
   devNote: { color: "#78716c", fontSize: 11 },
+
+  center: { flex: 1, alignItems: "center", justifyContent: "center", padding: 40 },
+  gateTitle: { color: "#f0fdf4", fontSize: 24, fontWeight: "900", marginTop: 24, marginBottom: 8 },
+  gateSub: { color: "#9fb1be", textAlign: "center", fontSize: 15, lineHeight: 22, marginBottom: 32 },
+  loginBtn: { backgroundColor: "#22c55e", paddingVertical: 16, paddingHorizontal: 32, borderRadius: 16, width: "100%", alignItems: "center" },
+  loginBtnText: { color: "#051013", fontWeight: "900", fontSize: 16 },
+  backBtnAlt: { marginTop: 20, padding: 12 },
+  backTextAlt: { color: "#9fb1be", fontWeight: "700", fontSize: 14 },
 });

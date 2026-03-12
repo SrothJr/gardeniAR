@@ -12,9 +12,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-
-const PREMIUM_KEY = "PREMIUM_ACTIVE";
+import { usePremium } from "../hooks/usePremium";
 
 const FREE_FEATURES = [
   { label: "Share Garden", detail: "2 free shares", locked: false },
@@ -38,18 +36,55 @@ const PREMIUM_FEATURES = [
 export default function PremiumScreen() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const { activatePremium, user, loaded } = usePremium();
 
   const handleUpgrade = async () => {
+    if (!user) {
+      Alert.alert("Login Required", "Please log in to purchase Premium.", [
+        { text: "Cancel", style: "cancel" },
+        { text: "Log In", onPress: () => router.push("/auth/login") },
+      ]);
+      return;
+    }
+
     setLoading(true);
     // 🔌 Wire your real payment flow here (RevenueCat, Stripe, etc.)
     // For now we simulate a successful purchase:
     await new Promise((r) => setTimeout(r, 1200));
-    await AsyncStorage.setItem(PREMIUM_KEY, "1");
+    await activatePremium();
     setLoading(false);
     Alert.alert("🎉 Premium Activated!", "You now have full access to all features.", [
       { text: "Let's go!", onPress: () => router.back() },
     ]);
   };
+
+  if (!loaded) {
+    return (
+      <View style={[styles.safe, styles.center]}>
+        <ActivityIndicator color="#22c55e" size="large" />
+      </View>
+    );
+  }
+
+  if (!user) {
+    return (
+      <SafeAreaView style={styles.safe}>
+        <View style={styles.center}>
+          <Ionicons name="lock-closed" size={64} color="#9fb1be" />
+          <Text style={styles.gateTitle}>Login Required</Text>
+          <Text style={styles.gateSub}>
+            Please sign in to access Premium features and subscriptions.
+          </Text>
+          <TouchableOpacity style={styles.loginBtn} onPress={() => router.push("/auth/login")}>
+            <Text style={styles.loginBtnText}>Log In to Continue</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.backBtnAlt} onPress={() => router.back()}>
+            <Text style={styles.backTextAlt}>Go Back</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -158,6 +193,14 @@ const styles = StyleSheet.create({
   crownEmoji: { fontSize: 34 },
   heroTitle: { fontSize: 28, fontWeight: "900", color: "#f0fdf4", marginBottom: 8, letterSpacing: -0.5 },
   heroSub: { color: "#9fb1be", textAlign: "center", fontSize: 14, lineHeight: 20, paddingHorizontal: 10 },
+
+  center: { flex: 1, alignItems: "center", justifyContent: "center", padding: 40 },
+  gateTitle: { color: "#f0fdf4", fontSize: 24, fontWeight: "900", marginTop: 24, marginBottom: 8 },
+  gateSub: { color: "#9fb1be", textAlign: "center", fontSize: 15, lineHeight: 22, marginBottom: 32 },
+  loginBtn: { backgroundColor: "#22c55e", paddingVertical: 16, paddingHorizontal: 32, borderRadius: 16, width: "100%", alignItems: "center" },
+  loginBtnText: { color: "#051013", fontWeight: "900", fontSize: 16 },
+  backBtnAlt: { marginTop: 20, padding: 12 },
+  backTextAlt: { color: "#9fb1be", fontWeight: "700", fontSize: 14 },
 
   priceCard: { backgroundColor: "rgba(34,197,94,0.08)", borderWidth: 1.5, borderColor: "rgba(34,197,94,0.3)", borderRadius: 20, padding: 22, alignItems: "center", marginBottom: 28, position: "relative" },
   priceBadge: { position: "absolute", top: -12, backgroundColor: "#22c55e", borderRadius: 20, paddingVertical: 3, paddingHorizontal: 12 },

@@ -11,7 +11,9 @@ const userSchema = new mongoose.Schema({
       lng: Number
     }
   },
-  createdAt: { type: Date, default: Date.now }
+  createdAt: { type: Date, default: Date.now },
+  isPremium: { type: Boolean, default: false },
+  profilePicture: { type: String } // Base64 or URL
 });
 
 module.exports = mongoose.model('User', userSchema);

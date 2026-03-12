@@ -30,6 +30,7 @@ import * as FileSystem from 'expo-file-system/legacy';
 import Constants from 'expo-constants';
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { usePremium } from '../../hooks/usePremium';
 
 const API_KEY =
   process.env.EXPO_PUBLIC_AR_GEMINI_API_KEY ||
@@ -51,15 +52,21 @@ export default function App() {
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const { isPremium, loaded } = usePremium();
 
   React.useEffect(() => {
-    (async () => {
-      const v = await AsyncStorage.getItem('PREMIUM_ACTIVE');
-      if (v !== '1') {
-        router.replace('/premium');
-      }
-    })();
-  }, []);
+    if (loaded && !isPremium) {
+      router.replace('/premium');
+    }
+  }, [loaded, isPremium]);
+
+  if (!loaded) {
+    return (
+      <View style={{ flex: 1, backgroundColor: '#071024', justifyContent: 'center', alignItems: 'center' }}>
+        <ActivityIndicator color="#22c55e" size="large" />
+      </View>
+    );
+  }
 
   const analyzeLeaf = async (uri) => {
     if (!API_KEY) {

@@ -553,7 +553,7 @@
 //3/7/2026
 // index.jsx
 // import { Link, useRouter, useFocusEffect } from "expo-router";
-// import { View, StyleSheet, Text, TouchableOpacity, ScrollView, Platform, Image } from "react-native";
+// import { View, StyleSheet, Text, TouchableOpacity, ScrollView, Platform, Image, Alert } from "react-native";
 // import AsyncStorage from "@react-native-async-storage/async-storage";
 // import React, { useState, useCallback } from "react";
 // import { Ionicons } from "@expo/vector-icons";
@@ -912,7 +912,7 @@
 
 // //app/index.jsx
 // import { Link, useRouter, useFocusEffect } from "expo-router";
-// import { View, StyleSheet, Text, TouchableOpacity, ScrollView, Platform, Image } from "react-native";
+// import { View, StyleSheet, Text, TouchableOpacity, ScrollView, Platform, Image, Alert } from "react-native";
 // import AsyncStorage from "@react-native-async-storage/async-storage";
 // import React, { useState, useCallback } from "react";
 // import { Ionicons } from "@expo/vector-icons";
@@ -1269,7 +1269,7 @@
 
 // app/index.jsx
 import { Link, useRouter, useFocusEffect } from "expo-router";
-import { View, StyleSheet, Text, TouchableOpacity, ScrollView, Platform, Image } from "react-native";
+import { View, StyleSheet, Text, TouchableOpacity, ScrollView, Platform, Image, Alert } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import React, { useState, useCallback } from "react";
 import { Ionicons } from "@expo/vector-icons";
@@ -1292,14 +1292,18 @@ export default function Index() {
   useFocusEffect(
     useCallback(() => {
       checkUser();
-      fetchWeather();
     }, [])
   );
 
   const checkUser = async () => {
     try {
       const userStr = await AsyncStorage.getItem("user");
-      setUser(userStr ? JSON.parse(userStr) : null);
+      const userData = userStr ? JSON.parse(userStr) : null;
+      if (userData && userData._id) {
+        setUser(userData);
+      } else {
+        setUser(null);
+      }
     } catch {
       setUser(null);
     }
@@ -1348,6 +1352,15 @@ export default function Index() {
     const showLockIcon = isLocked;
 
     const handlePress = () => {
+      // If not logged in, clicking any premium-related feature should require login
+      if (!user && (premiumLocked || shareGated)) {
+        Alert.alert("Login Required", "Please sign in to access premium features.", [
+          { text: "Cancel", style: "cancel" },
+          { text: "Log In", onPress: () => router.push("/auth/login") },
+        ]);
+        return;
+      }
+
       if (isLocked) {
         router.push("/premium");
         return;
@@ -1445,26 +1458,36 @@ export default function Index() {
             {weather && <View style={styles.bellDot} />}
           </TouchableOpacity>
 
-          {/* Premium chip — opens subscription info if premium, upgrade page if free */}
-          <TouchableOpacity
-            style={[styles.premiumChip, isPremium && styles.premiumChipActive]}
-            onPress={() => router.push(isPremium ? "/my-subscription" : "/premium")}
-            activeOpacity={0.85}
-          >
-            <Text style={[styles.premiumChipText, isPremium && styles.premiumChipTextActive]}>
-              {isPremium ? "✨ Premium" : "Upgrade"}
-            </Text>
-          </TouchableOpacity>
+          {/* Premium chip — only shown for logged in users */}
+          {user && (
+            <TouchableOpacity
+              style={[styles.premiumChip, isPremium && styles.premiumChipActive]}
+              onPress={() => router.push(isPremium ? "/my-subscription" : "/premium")}
+              activeOpacity={0.85}
+            >
+              <Text style={[styles.premiumChipText, isPremium && styles.premiumChipTextActive]}>
+                {isPremium ? "✨ Premium" : "Upgrade"}
+              </Text>
+            </TouchableOpacity>
+          )}
 
-          <View style={styles.avatar}>
-            <Text style={styles.avatarText}>
-              {user ? firstName?.slice?.(0, 1)?.toUpperCase?.() ?? "U" : "?"}
-            </Text>
-          </View>
+          <TouchableOpacity
+            style={styles.avatar}
+            onPress={() => router.push(user ? "/profile" : "/auth/login")}
+            activeOpacity={0.8}
+          >
+            {user?.profilePicture ? (
+              <Image source={{ uri: user.profilePicture }} style={styles.avatarImage} />
+            ) : (
+              <Text style={styles.avatarText}>
+                {user ? firstName?.slice?.(0, 1)?.toUpperCase?.() ?? "U" : "?"}
+              </Text>
+            )}
+          </TouchableOpacity>
         </View>
 
-        {/* Free-user info strip */}
-        {!isPremium && (
+        {/* Free-user info strip — only for logged in users */}
+        {user && !isPremium && (
           <TouchableOpacity style={styles.freeStrip} onPress={() => router.push("/premium")} activeOpacity={0.85}>
             <Ionicons name="information-circle-outline" size={15} color="#9fb1be" />
             <Text style={styles.freeStripText}>
@@ -1584,7 +1607,8 @@ const styles = StyleSheet.create({
   iconBtn: { width: 40, height: 40, borderRadius: 12, alignItems: "center", justifyContent: "center", backgroundColor: "rgba(15, 23, 42, 0.95)", borderWidth: 1, borderColor: "rgba(148,163,184,0.15)" },
   iconBtnActive: { borderColor: "rgba(34,197,94,0.4)", backgroundColor: "rgba(34,197,94,0.1)" },
   bellDot: { position: "absolute", top: 8, right: 8, width: 7, height: 7, borderRadius: 99, backgroundColor: "#22c55e", borderWidth: 1.5, borderColor: "#071024" },
-  avatar: { width: 40, height: 40, borderRadius: 14, alignItems: "center", justifyContent: "center", backgroundColor: "rgba(34,197,94,0.18)", borderWidth: 1, borderColor: "rgba(34,197,94,0.35)" },
+  avatar: { width: 40, height: 40, borderRadius: 14, alignItems: "center", justifyContent: "center", backgroundColor: "rgba(34,197,94,0.18)", borderWidth: 1, borderColor: "rgba(34,197,94,0.35)", overflow: "hidden" },
+  avatarImage: { width: "100%", height: "100%", resizeMode: "cover" },
   avatarText: { color: "#cfe7d4", fontWeight: "800" },
 
   premiumChip: { paddingVertical: 6, paddingHorizontal: 12, borderRadius: 20, backgroundColor: "rgba(255,255,255,0.06)", borderWidth: 1, borderColor: "rgba(255,255,255,0.1)" },

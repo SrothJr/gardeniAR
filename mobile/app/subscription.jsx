@@ -5,13 +5,28 @@ import { usePremium } from "../hooks/usePremium";
 
 export default function Subscription() {
   const router = useRouter();
-  const { isPremium, sharesLeft, activatePremium, resetPremium, loaded } = usePremium();
+  const { isPremium, sharesLeft, activatePremium, resetPremium, loaded, user } = usePremium();
 
   if (!loaded) {
     return (
       <View style={s.page}>
         <Text style={s.title}>Subscription</Text>
         <Text style={s.sub}>Loading...</Text>
+      </View>
+    );
+  }
+
+  if (!user) {
+    return (
+      <View style={s.page}>
+        <Text style={s.title}>Login Required</Text>
+        <Text style={s.sub}>Please log in to manage your subscription.</Text>
+        <TouchableOpacity style={s.btn} onPress={() => router.push("/auth/login")}>
+          <Text style={s.btnText}>Log In</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={s.secondary} onPress={() => router.back()}>
+          <Text style={s.secondaryText}>Back</Text>
+        </TouchableOpacity>
       </View>
     );
   }
