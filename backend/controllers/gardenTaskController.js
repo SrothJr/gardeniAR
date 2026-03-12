@@ -1,4 +1,5 @@
 const GardenTask = require('../models/gardenTaskModel');
+const geminiService = require('../services/geminiService');
 
 // Get tasks for a specific user
 exports.getTasks = async (req, res) => {
@@ -49,5 +50,89 @@ exports.deleteTask = async (req, res) => {
     res.json({ message: 'Task deleted' });
   } catch (error) {
     res.status(500).json({ message: error.message });
+  }
+};
+
+// Smart Add Task using Gemini
+exports.smartAddTask = async (req, res) => {
+  try {
+    const { userInput, userId, localDate } = req.body;
+    if (!userInput) return res.status(400).json({ message: 'User input is required' });
+
+    // 1. Send the natural language string to Gemini
+    const aiParsedData = await geminiService.parseSmartTask(userInput, localDate);
+
+    // 2. Create the new task using the structured data
+    const newTask = new GardenTask({
+      title: aiParsedData.title,
+      description: aiParsedData.description || '',
+      dueDate: new Date(aiParsedData.dueDate),
+      taskType: aiParsedData.taskType || 'custom',
+      aiGenerated: true,
+      aiReasoning: aiParsedData.aiReasoning,
+      user: userId
+    });
+
+    await newTask.save();
+    res.status(201).json(newTask);
+  } catch (error) {
+    console.error("Smart Add Task Error:", error);
+    res.status(500).json({ message: 'Failed to process smart task. Please try again.' });
+  }
+};
+
+// Optimize Overdue Tasks using Gemini
+exports.optimizeTasks = async (req, res) => {
+  try {
+    const { allActiveTasks, localDate } = req.body;
+    if (!allActiveTasks || !Array.isArray(allActiveTasks) || allActiveTasks.length === 0) {
+      return res.status(400).json({ message: 'Active tasks are required for optimization.' });
+    }
+
+    // 1. Separate the tasks into overdue vs. future
+    const todayStr = localDate || new Date().toISOString().split('T')[0];
+    const todayTime = new Date(todayStr).getTime();
+
+    const overdueTasks = [];
+    const futureTasks = [];
+
+    allActiveTasks.forEach(task => {
+      if (!task.dueDate) {
+        futureTasks.push(task);
+        return;
+      }
+      
+      const taskDateStr = new Date(task.dueDate).toISOString().split('T')[0];
+      const taskTime = new Date(taskDateStr).getTime();
+
+      if (taskTime < todayTime) {
+        overdueTasks.push(task);
+      } else {
+        futureTasks.push(task);
+      }
+    });
+
+    if (overdueTasks.length === 0) {
+      return res.status(400).json({ message: 'No overdue tasks to optimize.' });
+    }
+
+    // 2. Send both groups to Gemini so it has full context
+    const rescheduledData = await geminiService.rescheduleTasks(overdueTasks, futureTasks, localDate);
+
+    // 3. Update only the tasks that were rescheduled
+    const updatePromises = rescheduledData.map(async (aiUpdate) => {
+      return GardenTask.findByIdAndUpdate(aiUpdate.id, {
+        dueDate: new Date(aiUpdate.newDueDate),
+        aiReasoning: aiUpdate.aiReasoning,
+        aiGenerated: true
+      });
+    });
+
+    await Promise.all(updatePromises);
+    
+    res.json({ message: 'Tasks successfully optimized!' });
+  } catch (error) {
+    console.error("Optimize Tasks Error:", error);
+    res.status(500).json({ message: 'Failed to optimize tasks. Please try again.' });
   }
 };
