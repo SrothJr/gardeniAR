@@ -1,6 +1,6 @@
 
 // //share/camera.jsx
-// import React, { useState } from "react";
+// import React, { useState, useRef } from "react";
 // import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator } from "react-native";
 // import { CameraView, useCameraPermissions } from "expo-camera";
 // import { useRouter } from "expo-router";
@@ -101,7 +101,7 @@
 
 
 // share/camera.jsx
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator, Alert } from "react-native";
 import { CameraView, useCameraPermissions } from "expo-camera";
 import { useRouter } from "expo-router";
@@ -112,9 +112,10 @@ export default function ShareCamera() {
   const router = useRouter();
   const [permission, requestPermission] = useCameraPermissions();
   const [capturing, setCapturing] = useState(false);
+  const [isCameraReady, setIsCameraReady] = useState(false);
   const { isPremium, shareCount, sharesLeft, canShare, loaded, incrementShare } = usePremium();
 
-  let cameraRef = null;
+  const cameraRef = useRef(null);
 
   if (!loaded) {
     return (
@@ -144,7 +145,7 @@ export default function ShareCamera() {
   }
 
   const takePhoto = async () => {
-    if (!cameraRef || capturing) return;
+    if (!isCameraReady || !cameraRef.current || capturing) return;
 
     // — Premium gate for Share —
     if (!canShare) {
@@ -162,7 +163,7 @@ export default function ShareCamera() {
     try {
       setCapturing(true);
       const newCount = await incrementShare();
-      const photo = await cameraRef.takePictureAsync({ quality: 0.8 });
+      const photo = await cameraRef.current.takePictureAsync({ quality: 0.8 });
 
       // Warn user if this was their last free share
       if (!isPremium && newCount === FREE_SHARE_LIMIT) {
@@ -187,9 +188,10 @@ export default function ShareCamera() {
   return (
     <View style={{ flex: 1 }}>
       <CameraView
-        ref={(ref) => { cameraRef = ref; }}
+        ref={cameraRef}
         style={{ flex: 1 }}
         facing="back"
+        onCameraReady={() => setIsCameraReady(true)}
       />
 
       {/* Share usage banner (free users only) */}
@@ -209,9 +211,10 @@ export default function ShareCamera() {
 
       <View style={styles.captureContainer}>
         <TouchableOpacity
-          style={[styles.btn, !canShare && styles.btnBlocked]}
+          style={[styles.btn, (!canShare || !isCameraReady) && styles.btnBlocked]}
           onPress={takePhoto}
           activeOpacity={0.85}
+          disabled={!isCameraReady}
         >
           {capturing ? (
             <ActivityIndicator color="#021019" />
