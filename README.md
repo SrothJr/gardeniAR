@@ -37,9 +37,7 @@ This project is organized as a monorepo to streamline development across platfor
 /
 ├── backend/      # Server-side API and database logic
 ├── frontend/     # Web application source code
-├── mobile/       # Mobile application source code (AR features)
-├── assets/       # UI screenshots, banners, and design assets
-└── docs/         # Project documentation and academic reports
+└── mobile/       # Mobile application source code (AR features)
 ```
 
 ## Getting Started
