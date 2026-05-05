@@ -37,11 +37,6 @@ const API_KEY =
   process.env.EXPO_PUBLIC_GENAI_API_KEY ||
   process.env.EXPO_PUBLIC_GEMINI_API_KEY ||
   process.env.EXPO_PUBLIC_GOOGLE_API_KEY ||
-  (Constants?.expoConfig?.extra &&
-    (Constants.expoConfig.extra.AR_GEMINI_API_KEY ||
-     Constants.expoConfig.extra.GENAI_API_KEY ||
-     Constants.expoConfig.extra.GEMINI_API_KEY ||
-     Constants.expoConfig.extra.GOOGLE_API_KEY)) ||
   '';
 const GENAI_BASE = 'https://generativelanguage.googleapis.com/v1beta/models';
 const GENAI_MODEL_PRIMARY = 'gemini-2.5-flash';
