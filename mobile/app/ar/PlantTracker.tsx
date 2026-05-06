@@ -325,10 +325,7 @@ export default function PlantTracker() {
       ]);
       return;
     }
-    const url = `intent://#Intent;package=com.ScriptingSanskrit.VirtualGardening;end`;
-    const supported = await Linking.canOpenURL(url).catch(() => false);
-    if (supported) Linking.openURL(url);
-    else Alert.alert("Not installed", "Please install the Unity AR app first.");
+    router.push("/ar/VirtualAR");
   };
 
   const handleDiseasePress = () => {
