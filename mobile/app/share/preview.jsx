@@ -171,8 +171,10 @@ import {
   StyleSheet,
   ActivityIndicator,
   Alert,
+  SafeAreaView,
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
 import * as Sharing from "expo-sharing";
 import { BACKEND } from "../../config";
 
@@ -244,7 +246,7 @@ export default function SharePreview() {
   }
 
   return (
-    <View style={styles.page}>
+    <SafeAreaView style={styles.page}>
 
       <Image source={{ uri }} style={styles.image} />
 
@@ -276,7 +278,7 @@ export default function SharePreview() {
           </TouchableOpacity>
         </>
       )}
-    </View>
+    </SafeAreaView>
   );
 }
 

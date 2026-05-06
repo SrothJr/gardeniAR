@@ -341,15 +341,6 @@ export default function PlantTracker() {
 
   return (
     <SafeAreaView style={s.safe} edges={["top"]}>
-      {/* Header */}
-      <View style={s.topBar}>
-        <TouchableOpacity onPress={() => router.back()} style={s.backBtn}>
-          <Ionicons name="chevron-back" size={22} color="#e6eef3" />
-        </TouchableOpacity>
-        <Text style={s.topTitle}>Plant Tracker</Text>
-        <View style={{ width: 36 }} />
-      </View>
-
       <ScrollView contentContainerStyle={s.scroll} showsVerticalScrollIndicator={false}>
         {/* Action pills */}
         <View style={s.pillRow}>

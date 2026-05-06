@@ -171,13 +171,6 @@ export default function ARScreen(): React.JSX.Element {
       })}
 
       {/* 🎮 CONTROLS */}
-      <View style={styles.topBar}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <Ionicons name="chevron-back" size={24} color="#e6eef3" />
-        </TouchableOpacity>
-        <Text style={styles.topTitle}>Virtual Garden AR</Text>
-      </View>
-
       <View style={styles.bottomBar}>
         <TouchableOpacity onPress={() => (selectedType.current = 'coconut')} style={[styles.btn, selectedType.current === 'coconut' && styles.btnActive]}>
           <Text style={styles.txt}>Coconut</Text>

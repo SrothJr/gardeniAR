@@ -5,9 +5,7 @@ export default function RootLayout() {
   return (
     <Stack
       screenOptions={{
-        headerStyle: { backgroundColor: '#05060a' },
-        headerTintColor: '#fff',
-        headerTitleStyle: { fontWeight: 'bold' },
+        headerShown: false,
         contentStyle: { backgroundColor: '#071024' },
       }}
     >
@@ -75,6 +73,38 @@ export default function RootLayout() {
       <Stack.Screen 
         name="checklist/index" 
         options={{ title: 'Garden Tasks' }} 
+      />
+
+      {/* Share Garden Route */}
+      <Stack.Screen 
+        name="share" 
+        options={{ headerShown: false }} 
+      />
+      <Stack.Screen 
+        name="share/camera" 
+        options={{ headerShown: false }} 
+      />
+      <Stack.Screen 
+        name="share/preview" 
+        options={{ headerShown: false }} 
+      />
+
+      {/* AR Routes */}
+      <Stack.Screen 
+        name="ar" 
+        options={{ headerShown: false }} 
+      />
+      <Stack.Screen 
+        name="ar/PlantTracker" 
+        options={{ headerShown: false }} 
+      />
+      <Stack.Screen 
+        name="ar/DiseaseDetection" 
+        options={{ headerShown: false }} 
+      />
+      <Stack.Screen 
+        name="ar/CropSuggestions" 
+        options={{ headerShown: false }} 
       />
     </Stack>
   );

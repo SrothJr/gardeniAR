@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { View, Text, TouchableOpacity, Alert, StyleSheet } from "react-native";
 import { CameraView, useCameraPermissions } from "expo-camera";
 import * as ImageManipulator from "expo-image-manipulator";
-import { useRouter } from "expo-router";
+import { Stack, useRouter } from "expo-router";
 import { BACKEND } from "../../config";
 
 export default function SoilCamera() {
@@ -100,6 +100,7 @@ export default function SoilCamera() {
 
   return (
     <View style={styles.container}>
+      <Stack.Screen options={{ headerShown: false }} />
       <CameraView
         ref={(ref) => {
           cameraRef = ref;

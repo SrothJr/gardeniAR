@@ -4,18 +4,16 @@ export default function ShareLayout() {
   return (
     <Stack
       screenOptions={{
-        headerStyle: { backgroundColor: "#071024" },
-        headerTintColor: "#e6eef3",
-        headerTitleStyle: { fontWeight: "700" },
+        headerShown: false,
       }}
     >
       <Stack.Screen
         name="camera"
-        options={{ title: "Garden Snapshot" }}
+        options={{ title: "Garden Snapshot", headerShown: false }}
       />
       <Stack.Screen
         name="preview"
-        options={{ title: "Preview & Share" }}
+        options={{ title: "Preview & Share", headerShown: false }}
       />
     </Stack>
   );

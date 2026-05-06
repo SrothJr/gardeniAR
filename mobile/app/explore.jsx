@@ -562,7 +562,7 @@ import {
   ScrollView,
   Image,
 } from "react-native";
-import { useRouter, useLocalSearchParams } from "expo-router";
+import { useRouter, useLocalSearchParams, Stack } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import SearchBar from "../components/SearchBar";
 import PlantCard from "../components/PlantCard";
@@ -1007,6 +1007,7 @@ export default function ExplorePlants() {
 
   return (
     <View style={styles.page}>
+      <Stack.Screen options={{ headerShown: false }} />
 
       {/* ── Header ── */}
       <View style={styles.headerRow}>
@@ -1096,7 +1097,7 @@ export default function ExplorePlants() {
 }
 
 const styles = StyleSheet.create({
-  page: { flex: 1, backgroundColor: "#071024", padding: 16 },
+  page: { flex: 1, backgroundColor: "#071024", padding: 16, paddingTop: 40 },
 
   // ── Header
   headerRow: {

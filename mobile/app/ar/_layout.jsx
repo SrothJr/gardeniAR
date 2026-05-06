@@ -5,15 +5,12 @@ export default function ARLayout() {
   return (
     <Stack
       screenOptions={{
-        headerStyle: { backgroundColor: "#071024" },
-        headerTintColor: "#e6eef3",
-        headerTitleStyle: { fontWeight: "bold" },
-        contentStyle: { backgroundColor: "#071024" },
+        headerShown: false,
       }}
     >
-      <Stack.Screen name="PlantTracker" options={{ headerShown: false }} />
-      <Stack.Screen name="DiseaseDetection" options={{ headerShown: false }} />
-      <Stack.Screen name="CropSuggestions" options={{ title: "Crop Suggestions" }} />
+      <Stack.Screen name="PlantTracker" />
+      <Stack.Screen name="DiseaseDetection" />
+      <Stack.Screen name="CropSuggestions" />
     </Stack>
   );
 }

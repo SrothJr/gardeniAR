@@ -142,30 +142,30 @@ const SoilTest = () => {
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
-            className="bg-surface border border-border rounded-3xl overflow-hidden relative"
+            className="bg-black fixed inset-0 z-[100] flex items-center justify-center"
           >
             <Webcam
               audio={false}
               ref={webcamRef}
               screenshotFormat="image/jpeg"
-              className="w-full aspect-square md:aspect-video object-cover"
+              className="w-full h-full object-cover"
               videoConstraints={{ facingMode: 'environment' }}
             />
-            <div className="absolute inset-0 border-[40px] border-surface/40 pointer-events-none flex items-center justify-center">
-                <div className="w-48 h-48 border-2 border-dashed border-primary/50 rounded-3xl" />
+            <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
+                <div className="w-64 h-64 border-2 border-dashed border-primary/50 rounded-3xl" />
             </div>
-            <div className="absolute bottom-8 left-0 right-0 flex justify-center gap-6">
+            <div className="absolute bottom-12 left-0 right-0 flex justify-center gap-8 px-6">
               <button 
                 onClick={() => setIsCameraOpen(false)}
-                className="w-14 h-14 bg-surface/80 backdrop-blur-md rounded-full flex items-center justify-center text-foreground hover:bg-surface transition-all"
+                className="w-16 h-16 bg-white/10 backdrop-blur-xl rounded-full flex items-center justify-center text-white hover:bg-white/20 transition-all border border-white/20"
               >
-                <X size={24} />
+                <X size={32} />
               </button>
               <button 
                 onClick={capture}
-                className="w-20 h-20 bg-primary text-primary-foreground rounded-full flex items-center justify-center shadow-2xl shadow-primary/50 hover:scale-105 transition-all border-4 border-surface"
+                className="w-20 h-20 bg-primary text-primary-foreground rounded-full flex items-center justify-center shadow-2xl shadow-primary/50 hover:scale-105 transition-all border-4 border-white"
               >
-                <Camera size={32} />
+                <Camera size={40} />
               </button>
             </div>
           </motion.div>
