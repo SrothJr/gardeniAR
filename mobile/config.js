@@ -1,7 +1,4 @@
-//export const nBACKEND = "http://192.168.10.34:5000";
-export const nBACKEND = "http://192.168.0.192:5000";
+export const nBACKEND = "https://gardeniar-0oj7.onrender.com";
 export const BACKEND = nBACKEND;
-
-//export const BACKEND = "http://10.100.202.122:5000";
 
 export const BACKEND_URL = BACKEND;

@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "mobile",
-    "slug": "mobile",
+    "name": "GardeniAR",
+    "slug": "gardeniar-mobile",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icons/gardeniAR_icon.png",
@@ -47,9 +47,8 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "83fb3ab5-0c16-4d8e-a9b5-8e6a909c0ddf"
+        "projectId": "ffccb22e-6fcc-419e-bb75-e6c97d88f326"
       }
     }
   }
 }
-

@@ -6,7 +6,7 @@ console.log(key);
 let model = null;
 try {
   const genAI = new GoogleGenerativeAI(key);
-  model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+  model = genAI.getGenerativeModel({ model: "gemini-3.1-flash-lite-preview" });
 } catch (err) {
   console.warn("⚠ Gemini init failed, returning mock soil results.", err.message);
 }
