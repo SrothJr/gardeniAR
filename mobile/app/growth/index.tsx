@@ -216,8 +216,10 @@ import { Slider } from "@miblanchard/react-native-slider";
 import Svg, { Path, Line, Circle, Text as SvgText } from "react-native-svg";
 import { router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
+import { useTranslation } from "react-i18next";
 import { BACKEND } from "../../config";
 import { usePremium } from "../../hooks/usePremium";
+import { useTheme } from "../../hooks/useTheme";
 
 /* 🌱 STAGE IMAGES */
 const stageImages = {
@@ -232,7 +234,9 @@ type Stage = { stage: string; month: number; height: number };
 type Plant = { _id: string; plantName: string; growthRate?: string; spread?: string; stages?: Stage[] };
 
 export default function Index() {
+  const { t } = useTranslation();
   const { isPremium, loaded } = usePremium();
+  const { colors } = useTheme();
   const [plants, setPlants] = useState<Plant[]>([]);
   const [allPlants, setAllPlants] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -312,23 +316,23 @@ export default function Index() {
             const y = height - (v / 100) * height;
             return (
               <React.Fragment key={v}>
-                <Line x1={leftPadding} y1={y} x2={width + leftPadding} y2={y} stroke="#E0E0E0" strokeWidth="1" />
-                <SvgText x="5" y={y + 8} fontSize="10" fill="#FFFFFF">{v}</SvgText>
+                <Line x1={leftPadding} y1={y} x2={width + leftPadding} y2={y} stroke={colors.border} strokeWidth="1" />
+                <SvgText x="5" y={y + 8} fontSize="10" fill={colors.textMuted}>{v}</SvgText>
               </React.Fragment>
             );
           })}
           {[0, 20, 40, 60, 80, 100].map((v) => (
-            <SvgText key={v} x={leftPadding + (v / 100) * width - 8} y={height + 18} fontSize="10" fill="#FFFFFF">{v}</SvgText>
+            <SvgText key={v} x={leftPadding + (v / 100) * width - 8} y={height + 18} fontSize="10" fill={colors.textMuted}>{v}</SvgText>
           ))}
-          <Line x1={leftPadding} y1={height} x2={width + leftPadding} y2={height} stroke="#BDBDBD" strokeWidth="2" />
-          <Line x1={leftPadding} y1="0" x2={leftPadding} y2={height} stroke="#BDBDBD" strokeWidth="2" />
-          <Path d={areaPath} fill="rgba(106, 110, 128, 0.18)" />
-          <Path d={path} fill="none" stroke="#0b3b0e" strokeWidth="4" />
+          <Line x1={leftPadding} y1={height} x2={width + leftPadding} y2={height} stroke={colors.textMuted} strokeWidth="2" />
+          <Line x1={leftPadding} y1="0" x2={leftPadding} y2={height} stroke={colors.textMuted} strokeWidth="2" />
+          <Path d={areaPath} fill={colors.primary + '15'} />
+          <Path d={path} fill="none" stroke={colors.primary} strokeWidth="4" />
           {points.map((p, index) => (
-            <Circle key={index} cx={p.x + leftPadding} cy={p.y} r="4" fill="#66BB6A" stroke="#2E7D32" strokeWidth="1" />
+            <Circle key={index} cx={p.x + leftPadding} cy={p.y} r="4" fill={colors.primary} stroke={colors.border} strokeWidth="1" />
           ))}
         </Svg>
-        <Text style={{ marginTop: 6, color: "#bbb", fontSize: 14 }}>Growth (%) vs Time (Days)</Text>
+        <Text style={{ marginTop: 6, color: colors.textMuted, fontSize: 14 }}>{t('growth.graph_label')}</Text>
       </View>
     );
   };
@@ -343,37 +347,37 @@ export default function Index() {
 
   // --- Loading states ---
   if (!loaded || loading) {
-    return <View style={styles.center}><ActivityIndicator size="large" color="#22c55e" /></View>;
+    return <View style={[styles.center, { backgroundColor: colors.background }]}><ActivityIndicator size="large" color={colors.primary} /></View>;
   }
 
   // --- Premium gate ---
   if (!isPremium) {
     return (
-      <View style={styles.gateContainer}>
-        <View style={styles.blobA} />
-        <View style={styles.blobB} />
-        <View style={styles.gateCard}>
-          <View style={styles.gateLockWrap}>
-            <Ionicons name="lock-closed" size={32} color="#22c55e" />
+      <View style={[styles.gateContainer, { backgroundColor: colors.background }]}>
+        <View style={[styles.blobA, { backgroundColor: colors.primary + '10' }]} />
+        <View style={[styles.blobB, { backgroundColor: colors.primary + '05' }]} />
+        <View style={[styles.gateCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+          <View style={[styles.gateLockWrap, { backgroundColor: colors.primary + '15', borderColor: colors.primary + '30' }]}>
+            <Ionicons name="lock-closed" size={32} color={colors.primary} />
           </View>
-          <Text style={styles.gateTitle}>Premium Feature</Text>
-          <Text style={styles.gateSub}>
-            Plant Growth Tracking is available exclusively for Premium subscribers.
+          <Text style={[styles.gateTitle, { color: colors.text }]}>{t('premium.premium_label')} {t('premium.feature')}</Text>
+          <Text style={[styles.gateSub, { color: colors.textMuted }]}>
+            {t('growth.premium_gate_sub')}
           </Text>
           <View style={styles.gateFeatureList}>
-            {["Track growth milestones & stages", "Interactive growth graph", "Plant-by-plant timeline"].map((f, i) => (
+            {[t('growth.milestones'), t('growth.interactive_graph'), t('growth.timeline')].map((f, i) => (
               <View key={i} style={styles.gateFeatureRow}>
-                <Ionicons name="checkmark-circle" size={16} color="#22c55e" />
-                <Text style={styles.gateFeatureText}>{f}</Text>
+                <Ionicons name="checkmark-circle" size={16} color={colors.primary} />
+                <Text style={[styles.gateFeatureText, { color: colors.text }]}>{f}</Text>
               </View>
             ))}
           </View>
-          <TouchableOpacity style={styles.gateBtn} onPress={() => router.push("/premium")} activeOpacity={0.88}>
-            <Ionicons name="rocket-outline" size={18} color="#051013" />
-            <Text style={styles.gateBtnText}>Upgrade to Premium</Text>
+          <TouchableOpacity style={[styles.gateBtn, { backgroundColor: colors.primary }]} onPress={() => router.push("/premium")} activeOpacity={0.88}>
+            <Ionicons name="rocket-outline" size={18} color="#000" />
+            <Text style={[styles.gateBtnText, { color: '#000' }]}>{t('premium.upgrade_btn')}</Text>
           </TouchableOpacity>
           <TouchableOpacity onPress={() => router.back()} style={styles.gateBack}>
-            <Text style={styles.gateBackText}>Maybe later</Text>
+            <Text style={[styles.gateBackText, { color: colors.textMuted }]}>{t('growth.maybe_later')}</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -381,33 +385,33 @@ export default function Index() {
   }
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 40 }}>
-      <Text style={styles.title}>My Plants</Text>
+    <ScrollView style={[styles.container, { backgroundColor: colors.background }]} contentContainerStyle={{ paddingBottom: 40 }}>
+      <Text style={[styles.title, { color: colors.text }]}>{t('growth.title')}</Text>
 
       {plants.map((item) => (
         <TouchableOpacity
           key={item._id}
-          style={[styles.card, navigating === item.plantName && { opacity: 0.6 }]}
+          style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }, navigating === item.plantName && { opacity: 0.6 }]}
           onPress={() => navigateToPlant(item.plantName)}
           activeOpacity={0.75}
         >
-          <Text style={styles.plantName}>{item.plantName}</Text>
-          <Text style={styles.cardArrow}>›</Text>
+          <Text style={[styles.plantName, { color: colors.text }]}>{item.plantName}</Text>
+          <Text style={[styles.cardArrow, { color: colors.primary }]}>›</Text>
         </TouchableOpacity>
       ))}
 
-      <Text style={styles.subTitle}>Growth Simulation</Text>
+      <Text style={[styles.subTitle, { color: colors.text }]}>{t('growth.simulation')}</Text>
 
       <Slider
         value={growth}
         onValueChange={(v) => setGrowth(v[0] as number)}
         minimumValue={0} maximumValue={100} step={1}
         containerStyle={{ marginTop: 10 }}
-        minimumTrackTintColor="#114072"
-        thumbTintColor="#2e4f7d"
+        minimumTrackTintColor={colors.primary}
+        thumbTintColor={colors.primary}
       />
 
-      <Text style={styles.percent}>{Math.round(growth)}%</Text>
+      <Text style={[styles.percent, { color: colors.textMuted }]}>{Math.round(growth)}%</Text>
 
       {renderGrowthGraph()}
 
@@ -421,30 +425,30 @@ export default function Index() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, backgroundColor: "#071024" },
-  center: { flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "#071024" },
-  title: { fontSize: 26, fontWeight: "bold", marginBottom: 20, color: "#FFFFFF" },
-  subTitle: { fontSize: 18, marginTop: 20, fontWeight: "600", color: "#FFFFFF" },
-  percent: { textAlign: "center", fontSize: 16, marginTop: 4, color: "#555" },
-  card: { backgroundColor: "#0e1c37", padding: 16, marginBottom: 12, borderRadius: 12, elevation: 3, flexDirection: "row", alignItems: "center" },
-  plantName: { fontSize: 20, fontWeight: "600", color: "#f7f6fb", flex: 1 },
-  cardArrow: { fontSize: 22, color: "#22c55e", fontWeight: "300" },
+  container: { flex: 1, padding: 20 },
+  center: { flex: 1, justifyContent: "center", alignItems: "center" },
+  title: { fontSize: 26, fontWeight: "bold", marginBottom: 20 },
+  subTitle: { fontSize: 18, marginTop: 20, fontWeight: "600" },
+  percent: { textAlign: "center", fontSize: 16, marginTop: 4 },
+  card: { padding: 16, marginBottom: 12, borderRadius: 12, elevation: 3, flexDirection: "row", alignItems: "center", borderWidth: 1 },
+  plantName: { fontSize: 20, fontWeight: "600", flex: 1 },
+  cardArrow: { fontSize: 22, fontWeight: "300" },
   stageRow: { flexDirection: "row", marginTop: 15, alignItems: "center" },
   stageImage: { width: 65, height: 45, marginRight: 10, resizeMode: "contain" },
 
   // Gate styles
-  gateContainer: { flex: 1, backgroundColor: "#071024", justifyContent: "center", alignItems: "center", padding: 24 },
-  blobA: { position: "absolute", top: -80, right: -80, width: 220, height: 220, borderRadius: 999, backgroundColor: "rgba(34,197,94,0.1)" },
-  blobB: { position: "absolute", bottom: -100, left: -80, width: 240, height: 240, borderRadius: 999, backgroundColor: "rgba(59,130,246,0.07)" },
-  gateCard: { backgroundColor: "rgba(15,23,42,0.98)", borderWidth: 1, borderColor: "rgba(148,163,184,0.16)", borderRadius: 24, padding: 28, width: "100%", alignItems: "center" },
-  gateLockWrap: { width: 68, height: 68, borderRadius: 22, backgroundColor: "rgba(34,197,94,0.12)", borderWidth: 1, borderColor: "rgba(34,197,94,0.25)", alignItems: "center", justifyContent: "center", marginBottom: 16 },
-  gateTitle: { fontSize: 22, fontWeight: "900", color: "#f0fdf4", marginBottom: 8 },
-  gateSub: { color: "#9fb1be", textAlign: "center", fontSize: 14, lineHeight: 20, marginBottom: 20 },
+  gateContainer: { flex: 1, justifyContent: "center", alignItems: "center", padding: 24 },
+  blobA: { position: "absolute", top: -80, right: -80, width: 220, height: 220, borderRadius: 999 },
+  blobB: { position: "absolute", bottom: -100, left: -80, width: 240, height: 240, borderRadius: 999 },
+  gateCard: { borderWidth: 1, borderRadius: 24, padding: 28, width: "100%", alignItems: "center" },
+  gateLockWrap: { width: 68, height: 68, borderRadius: 22, borderWidth: 1, alignItems: "center", justifyContent: "center", marginBottom: 16 },
+  gateTitle: { fontSize: 22, fontWeight: "900", marginBottom: 8 },
+  gateSub: { textAlign: "center", fontSize: 14, lineHeight: 20, marginBottom: 20 },
   gateFeatureList: { width: "100%", gap: 10, marginBottom: 24 },
   gateFeatureRow: { flexDirection: "row", alignItems: "center", gap: 10 },
-  gateFeatureText: { color: "#cbd5e1", fontSize: 14 },
-  gateBtn: { flexDirection: "row", alignItems: "center", gap: 8, backgroundColor: "#22c55e", paddingVertical: 14, paddingHorizontal: 28, borderRadius: 14, width: "100%", justifyContent: "center", marginBottom: 12 },
-  gateBtnText: { color: "#051013", fontWeight: "900", fontSize: 15 },
+  gateFeatureText: { fontSize: 14 },
+  gateBtn: { flexDirection: "row", alignItems: "center", gap: 8, paddingVertical: 14, paddingHorizontal: 28, borderRadius: 14, width: "100%", justifyContent: "center", marginBottom: 12 },
+  gateBtnText: { fontWeight: "900", fontSize: 15 },
   gateBack: { paddingVertical: 8 },
-  gateBackText: { color: "#4b5563", fontSize: 13 },
+  gateBackText: { fontSize: 13 },
 });

@@ -1,7 +1,8 @@
 // mobile/app/care-guides/index.jsx
-import { useRouter } from "expo-router";
+import { useRouter, useFocusEffect } from "expo-router";
+import { useTheme } from "../../hooks/useTheme";
 import React, { useEffect, useState } from "react";
-import { nBACKEND } from "../../config";
+import { BACKEND } from "../../config";
 import SearchBar from "../../components/SearchBar";
 import PlantCard from "../../components/PlantCard";
 import {
@@ -11,10 +12,14 @@ import {
   ActivityIndicator,
   StyleSheet,
   Alert,
+  TouchableOpacity,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { Ionicons } from "@expo/vector-icons";
 
 export default function CareGuidesList() {
   const router = useRouter();
+  const { colors } = useTheme();
   const [guides, setGuides] = useState([]);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(false);
@@ -23,8 +28,8 @@ export default function CareGuidesList() {
     setLoading(true);
     try {
       const url = query
-        ? `${nBACKEND}/api/care-guide?search=${encodeURIComponent(query)}`
-        : `${nBACKEND}/api/care-guide`;
+        ? `${BACKEND}/api/care-guide?search=${encodeURIComponent(query)}`
+        : `${BACKEND}/api/care-guide`;
 
       //console.log("Fetching:", url);
 
@@ -56,15 +61,24 @@ export default function CareGuidesList() {
   }, [search]);
 
   return (
-    <View style={styles.page}>
-      <Text style={styles.header}>Tracker & Care Guides</Text>
+    <SafeAreaView style={[styles.page, { backgroundColor: colors.background }]} edges={['top']}>
+      <View style={styles.headerContainer}>
+        <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
+          <Ionicons name="chevron-back" size={24} color={colors.text} />
+        </TouchableOpacity>
+        <Text style={[styles.header, { color: colors.text }]}>Tracker & Care Guides</Text>
+      </View>
 
-      <SearchBar value={search} onChangeText={setSearch} />
+      <SearchBar
+        placeholder="Search care guides..."
+        value={search}
+        onChangeText={setSearch}
+      />
 
       {loading ? (
         <ActivityIndicator
           size="large"
-          color="#22c55e"
+          color={colors.primary}
           style={{ marginTop: 20 }}
         />
       ) : (
@@ -77,30 +91,35 @@ export default function CareGuidesList() {
               onPress={() => router.push(`/care-guides/${item._id}`)}
             />
           )}
-          contentContainerStyle={{ paddingBottom: 50 }}
+          contentContainerStyle={{ paddingBottom: 100 }}
           ListEmptyComponent={
-            <Text style={styles.empty}>No guides found.</Text>
+            <Text style={[styles.empty, { color: colors.textMuted }]}>No guides found.</Text>
           }
         />
       )}
-    </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   page: {
     flex: 1,
-    backgroundColor: "#071024",
-    padding: 16,
+    paddingHorizontal: 16,
+  },
+  headerContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 16,
+    paddingTop: 8,
+  },
+  backBtn: {
+    marginRight: 12,
   },
   header: {
-    color: "#e6eef3",
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: "bold",
-    marginBottom: 16,
   },
   empty: {
-    color: "#94a3b8",
     textAlign: "center",
     marginTop: 30,
   },

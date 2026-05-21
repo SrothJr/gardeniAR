@@ -12,6 +12,7 @@ import {
   ScrollView,
   Dimensions,
 } from "react-native";
+import { useTheme } from "../hooks/useTheme";
 
 const SCREEN_HEIGHT = Dimensions.get("window").height;
 const FULL_SNAP = 0;
@@ -19,6 +20,7 @@ const MINI_SNAP = SCREEN_HEIGHT * 0.42; // minimized — just handle + header vi
 const CLOSE_THRESHOLD = SCREEN_HEIGHT * 0.72; // drag past this → close
 
 export default function WeatherPanel({ visible, onClose, weather, weatherLoading }) {
+  const { colors, resolvedTheme } = useTheme();
   const slideAnim = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const [minimized, setMinimized] = useState(false);
@@ -117,20 +119,20 @@ export default function WeatherPanel({ visible, onClose, weather, weatherLoading
 
       {/* Panel */}
       <Animated.View
-        style={[wp.panel, { transform: [{ translateY: slideAnim }] }]}
+        style={[wp.panel, { backgroundColor: colors.surface, borderColor: colors.border, transform: [{ translateY: slideAnim }] }]}
         {...panResponder.panHandlers}
       >
         {/* Handle bar — also shows expand hint when minimized */}
         <View style={wp.handleWrap}>
-          <View style={wp.handle} />
+          <View style={[wp.handle, { backgroundColor: colors.border }]} />
           {minimized && (
-            <Text style={wp.expandHint}>↑ Swipe up to expand</Text>
+            <Text style={[wp.expandHint, { color: colors.textMuted }]}>↑ Swipe up to expand</Text>
           )}
         </View>
 
         {/* Header — entire row is tappable to toggle minimize/expand */}
         <TouchableOpacity
-          style={wp.header}
+          style={[wp.header, { borderBottomColor: colors.border }]}
           activeOpacity={0.7}
           onPress={() => {
             if (minimized) {
@@ -141,25 +143,25 @@ export default function WeatherPanel({ visible, onClose, weather, weatherLoading
           }}
         >
           <View style={{ flex: 1 }}>
-            <Text style={wp.headerTitle}>🌍 Local Weather</Text>
+            <Text style={[wp.headerTitle, { color: colors.text }]}>🌍 Local Weather</Text>
             {minimized && w && (
-              <Text style={wp.miniPreview}>
+              <Text style={[wp.miniPreview, { color: colors.textMuted }]}>
                 {conditionEmoji()}  {w.temperature}°C · {w.city}
               </Text>
             )}
           </View>
 
           {/* Arrow indicator */}
-          <Text style={wp.arrowIcon}>{minimized ? "⬆" : "⬇"}</Text>
+          <Text style={[wp.arrowIcon, { color: colors.textMuted }]}>{minimized ? "⬆" : "⬇"}</Text>
 
           {/* Close — stopPropagation so tapping ✕ doesn't also toggle */}
           <TouchableOpacity
-            style={wp.closeBtn}
+            style={[wp.closeBtn, { backgroundColor: colors.background }]}
             onPress={(e) => { e.stopPropagation?.(); onClose(); }}
             activeOpacity={0.8}
             hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
           >
-            <Text style={wp.closeBtnText}>✕</Text>
+            <Text style={[wp.closeBtnText, { color: colors.textMuted }]}>✕</Text>
           </TouchableOpacity>
         </TouchableOpacity>
 
@@ -167,14 +169,14 @@ export default function WeatherPanel({ visible, onClose, weather, weatherLoading
         {!minimized && (
           weatherLoading ? (
             <View style={wp.loadingWrap}>
-              <ActivityIndicator size="large" color="#22c55e" />
-              <Text style={wp.loadingText}>Fetching weather…</Text>
+              <ActivityIndicator size="large" color={colors.primary} />
+              <Text style={[wp.loadingText, { color: colors.textMuted }]}>Fetching weather…</Text>
             </View>
           ) : !w ? (
             <View style={wp.loadingWrap}>
               <Text style={wp.noDataEmoji}>📡</Text>
-              <Text style={wp.noDataText}>Weather data unavailable.</Text>
-              <Text style={wp.noDataSub}>Make sure location access is enabled.</Text>
+              <Text style={[wp.noDataText, { color: colors.text }]}>Weather data unavailable.</Text>
+              <Text style={[wp.noDataSub, { color: colors.textMuted }]}>Make sure location access is enabled.</Text>
             </View>
           ) : (
             <ScrollView
@@ -182,38 +184,38 @@ export default function WeatherPanel({ visible, onClose, weather, weatherLoading
               contentContainerStyle={wp.body}
               scrollEventThrottle={16}
             >
-              <View style={wp.heroRow}>
+              <View style={[wp.heroRow, { backgroundColor: colors.primary + '15', borderColor: colors.primary + '30' }]}>
                 <View style={{ flex: 1 }}>
-                  <Text style={wp.city}>📍 {w.city}</Text>
-                  <Text style={wp.conditionText}>{w.condition}</Text>
+                  <Text style={[wp.city, { color: colors.text }]}>📍 {w.city}</Text>
+                  <Text style={[wp.conditionText, { color: colors.primary }]}>{w.condition}</Text>
                 </View>
                 <Text style={wp.conditionEmoji}>{conditionEmoji()}</Text>
               </View>
 
               <View style={wp.statsRow}>
-                <View style={wp.statCard}>
+                <View style={[wp.statCard, { backgroundColor: colors.background, borderColor: colors.border }]}>
                   <Text style={wp.statIcon}>🌡</Text>
-                  <Text style={wp.statValue}>{w.temperature}°C</Text>
-                  <Text style={wp.statLabel}>Temp</Text>
+                  <Text style={[wp.statValue, { color: colors.text }]}>{w.temperature}°C</Text>
+                  <Text style={[wp.statLabel, { color: colors.textMuted }]}>Temp</Text>
                 </View>
-                <View style={wp.statCard}>
+                <View style={[wp.statCard, { backgroundColor: colors.background, borderColor: colors.border }]}>
                   <Text style={wp.statIcon}>💧</Text>
-                  <Text style={wp.statValue}>{w.humidity}%</Text>
-                  <Text style={wp.statLabel}>Humidity</Text>
+                  <Text style={[wp.statValue, { color: colors.text }]}>{w.humidity}%</Text>
+                  <Text style={[wp.statLabel, { color: colors.textMuted }]}>Humidity</Text>
                 </View>
                 {w.windSpeed != null && (
-                  <View style={wp.statCard}>
+                  <View style={[wp.statCard, { backgroundColor: colors.background, borderColor: colors.border }]}>
                     <Text style={wp.statIcon}>💨</Text>
-                    <Text style={wp.statValue}>{w.windSpeed} m/s</Text>
-                    <Text style={wp.statLabel}>Wind</Text>
+                    <Text style={[wp.statValue, { color: colors.text }]}>{w.windSpeed} m/s</Text>
+                    <Text style={[wp.statLabel, { color: colors.textMuted }]}>Wind</Text>
                   </View>
                 )}
               </View>
 
               {!!weather?.alert && (
-                <View style={wp.adviceCard}>
-                  <Text style={wp.adviceTitle}>🧠 Gardening Advice</Text>
-                  <Text style={wp.adviceTip}>{weather.alert}</Text>
+                <View style={[wp.adviceCard, { backgroundColor: colors.primary + '10', borderColor: colors.primary + '25' }]}>
+                  <Text style={[wp.adviceTitle, { color: colors.primary }]}>🧠 Gardening Advice</Text>
+                  <Text style={[wp.adviceTip, { color: colors.textMuted }]}>{weather.alert}</Text>
                 </View>
               )}
             </ScrollView>
@@ -235,11 +237,9 @@ const wp = StyleSheet.create({
     left: 0,
     right: 0,
     height: "78%",           // fixed height so mini snap works correctly
-    backgroundColor: "#0d1f35",
     borderTopLeftRadius: 28,
     borderTopRightRadius: 28,
     borderTopWidth: 1,
-    borderColor: "#1e293b",
     paddingBottom: 40,
   },
   handleWrap: {
@@ -251,10 +251,8 @@ const wp = StyleSheet.create({
     width: 40,
     height: 4,
     borderRadius: 99,
-    backgroundColor: "#334155",
   },
   expandHint: {
-    color: "#64748b",
     fontSize: 11,
     marginTop: 4,
   },
@@ -265,67 +263,59 @@ const wp = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: "#1e293b",
     gap: 8,
   },
-  headerTitle: { color: "#e5e7eb", fontSize: 16, fontWeight: "800" },
-  miniPreview: { color: "#94a3b8", fontSize: 13, marginTop: 2 },
+  headerTitle: { fontSize: 16, fontWeight: "800" },
+  miniPreview: { fontSize: 13, marginTop: 2 },
 
-  arrowIcon: { fontSize: 14, color: "#64748b", marginRight: 4 },
+  arrowIcon: { fontSize: 14, marginRight: 4 },
   closeBtn: {
     width: 32,
     height: 32,
     borderRadius: 99,
-    backgroundColor: "#1e293b",
     alignItems: "center",
     justifyContent: "center",
   },
-  closeBtnText: { color: "#94a3b8", fontSize: 14, fontWeight: "700" },
+  closeBtnText: { fontSize: 14, fontWeight: "700" },
 
   loadingWrap: { alignItems: "center", paddingVertical: 48, gap: 12 },
-  loadingText: { color: "#94a3b8", fontSize: 14 },
+  loadingText: { fontSize: 14 },
   noDataEmoji: { fontSize: 40 },
-  noDataText: { color: "#e5e7eb", fontWeight: "700", fontSize: 15 },
-  noDataSub: { color: "#64748b", fontSize: 13 },
+  noDataText: { fontWeight: "700", fontSize: 15 },
+  noDataSub: { fontSize: 13 },
 
   body: { paddingHorizontal: 20, paddingTop: 16, paddingBottom: 20, gap: 14 },
 
   heroRow: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "rgba(34,197,94,0.08)",
     borderWidth: 1,
-    borderColor: "rgba(34,197,94,0.18)",
     borderRadius: 18,
     padding: 16,
   },
-  city: { color: "#e5e7eb", fontSize: 17, fontWeight: "800", marginBottom: 4 },
-  conditionText: { color: "#a7f3d0", fontSize: 13, textTransform: "capitalize" },
+  city: { fontSize: 17, fontWeight: "800", marginBottom: 4 },
+  conditionText: { fontSize: 13, textTransform: "capitalize" },
   conditionEmoji: { fontSize: 52 },
 
   statsRow: { flexDirection: "row", gap: 10 },
   statCard: {
     flex: 1,
     alignItems: "center",
-    backgroundColor: "#0f172a",
     borderWidth: 1,
-    borderColor: "#1e293b",
     borderRadius: 14,
     paddingVertical: 14,
     gap: 4,
   },
   statIcon: { fontSize: 20 },
-  statValue: { color: "#e5e7eb", fontWeight: "800", fontSize: 15 },
-  statLabel: { color: "#64748b", fontSize: 11 },
+  statValue: { fontWeight: "800", fontSize: 15 },
+  statLabel: { fontSize: 11 },
 
   adviceCard: {
-    backgroundColor: "rgba(251,191,36,0.08)",
     borderWidth: 1,
-    borderColor: "rgba(251,191,36,0.22)",
     borderRadius: 16,
     padding: 14,
     gap: 6,
   },
-  adviceTitle: { color: "#fbbf24", fontWeight: "700", fontSize: 13 },
-  adviceTip: { color: "#cbd5e1", fontSize: 13, lineHeight: 20 },
+  adviceTitle: { fontWeight: "700", fontSize: 13 },
+  adviceTip: { fontSize: 13, lineHeight: 20 },
 });

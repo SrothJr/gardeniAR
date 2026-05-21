@@ -755,6 +755,7 @@ import {
   View, Text, ScrollView, TextInput, TouchableOpacity, StyleSheet,
   ActivityIndicator, Alert, KeyboardAvoidingView, Platform, Image, Share, Dimensions
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
@@ -916,11 +917,21 @@ export default function PostDetail() {
   const isOwner = currentUser && post.author?._id === currentUser._id;
 
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      keyboardVerticalOffset={100}
-      style={styles.container}
-    >
+    <SafeAreaView style={styles.container} edges={['top']}>
+      {/* Header */}
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
+          <Ionicons name="chevron-back" size={24} color="#e6eef3" />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle} numberOfLines={1}>Discussion</Text>
+        <View style={{ width: 40 }} />
+      </View>
+
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={100}
+        style={{ flex: 1 }}
+      >
       <ScrollView ref={scrollRef} contentContainerStyle={styles.scrollContent}>
 
         {/* Post Card */}
@@ -1154,6 +1165,7 @@ export default function PostDetail() {
         </TouchableOpacity>
       </View>
     </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
 
@@ -1171,6 +1183,24 @@ function getTimeAgo(dateStr) {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#0f1923' },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#1e293b',
+    backgroundColor: '#1a2535',
+  },
+  headerTitle: {
+    color: '#f9fafb',
+    fontSize: 18,
+    fontWeight: '800',
+  },
+  backBtn: {
+    padding: 4,
+  },
   scrollContent: { paddingBottom: 100 },
   center: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#0f1923' },
   errorText: { color: '#ef4444', fontSize: 16 },

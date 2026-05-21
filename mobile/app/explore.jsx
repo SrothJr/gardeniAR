@@ -569,51 +569,55 @@ import PlantCard from "../components/PlantCard";
 import WeatherPanel from "../components/WeatherPanel";
 import { BACKEND } from "../config";
 import * as Location from "expo-location";
+import { useTheme } from "../hooks/useTheme";
+import { useTranslation } from "react-i18next";
 
 // ─── Cascading Filter Dropdown ─────────────────────────────────────────────
 // (unchanged from original)
 
-const FILTER_GROUPS = [
-  {
-    id: "type",
-    label: "🌿 Type",
-    options: [
-      { value: "all", label: "All" },
-      { value: "herb", label: "Herbs" },
-      { value: "vegetable", label: "Vegetables" },
-      { value: "houseplant", label: "Houseplants" },
-      { value: "other", label: "Other" },
-    ],
-  },
-  {
-    id: "care",
-    label: "☀️ Care & Weather",
-    options: [
-      { value: "all", label: "All" },
-      { value: "easy", label: "Easy" },
-      { value: "medium", label: "Medium" },
-      { value: "hard", label: "Hard" },
-      { value: "cool", label: "Cool Spots" },
-      { value: "warm", label: "Heat Lovers" },
-    ],
-  },
-  {
-    id: "price",
-    label: "💰 Price",
-    options: [
-      { value: "all", label: "Any Price" },
-      { value: "budget", label: "Budget  (< ৳35)" },
-      { value: "mid", label: "Mid  (৳35–70)" },
-      { value: "premium", label: "Premium  (> ৳70)" },
-    ],
-  },
-];
-
 function CascadeDropdown({ typeFilter, setTypeFilter, difficultyFilter, setDifficultyFilter, heatFilter, setHeatFilter, priceBand, setPriceBand }) {
+  const { colors } = useTheme();
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [activeGroup, setActiveGroup] = useState(null);
   const dropAnim = useRef(new Animated.Value(0)).current;
   const subAnim = useRef(new Animated.Value(0)).current;
+
+  const FILTER_GROUPS = [
+    {
+      id: "type",
+      label: `🌿 ${t("explore.type")}`,
+      options: [
+        { value: "all", label: t("explore.all") },
+        { value: "herb", label: t("explore.herbs") },
+        { value: "vegetable", label: t("explore.vegetables") },
+        { value: "houseplant", label: t("explore.houseplants") },
+        { value: "other", label: t("explore.other") },
+      ],
+    },
+    {
+      id: "care",
+      label: `☀️ ${t("explore.care_weather")}`,
+      options: [
+        { value: "all", label: t("explore.all") },
+        { value: "easy", label: t("explore.easy") },
+        { value: "medium", label: t("explore.medium") },
+        { value: "hard", label: t("explore.hard") },
+        { value: "cool", label: t("explore.cool_spots") },
+        { value: "warm", label: t("explore.heat_lovers") },
+      ],
+    },
+    {
+      id: "price",
+      label: `💰 ${t("explore.price")}`,
+      options: [
+        { value: "all", label: t("explore.any_price") },
+        { value: "budget", label: t("explore.budget") },
+        { value: "mid", label: t("explore.mid") },
+        { value: "premium", label: t("explore.premium") },
+      ],
+    },
+  ];
 
   const toggleOpen = () => {
     if (open) {
@@ -638,14 +642,10 @@ function CascadeDropdown({ typeFilter, setTypeFilter, difficultyFilter, setDiffi
   };
 
   const getActiveLabel = (groupId) => {
-    if (groupId === "type") return typeFilter !== "all" ? typeFilter : null;
-    if (groupId === "care") {
-      if (difficultyFilter !== "all") return difficultyFilter;
-      if (heatFilter !== "all") return heatFilter;
-      return null;
-    }
-    if (groupId === "price") return priceBand !== "all" ? priceBand : null;
-    return null;
+    const group = FILTER_GROUPS.find(g => g.id === groupId);
+    const val = getSelectedValue(groupId);
+    const opt = group?.options.find(o => o.value === val);
+    return val !== "all" ? opt?.label : null;
   };
 
   const handleOptionPress = (groupId, value) => {
@@ -671,47 +671,59 @@ function CascadeDropdown({ typeFilter, setTypeFilter, difficultyFilter, setDiffi
 
   const activeSummary = useMemo(() => {
     const parts = [];
-    if (typeFilter !== "all") parts.push(typeFilter);
-    if (difficultyFilter !== "all") parts.push(difficultyFilter);
-    if (heatFilter !== "all") parts.push(heatFilter);
-    if (priceBand !== "all") parts.push(priceBand);
+    if (typeFilter !== "all") {
+      const opt = FILTER_GROUPS[0].options.find(o => o.value === typeFilter);
+      if (opt) parts.push(opt.label);
+    }
+    if (difficultyFilter !== "all") {
+      const opt = FILTER_GROUPS[1].options.find(o => o.value === difficultyFilter);
+      if (opt) parts.push(opt.label);
+    }
+    if (heatFilter !== "all") {
+      const opt = FILTER_GROUPS[1].options.find(o => o.value === heatFilter);
+      if (opt) parts.push(opt.label);
+    }
+    if (priceBand !== "all") {
+      const opt = FILTER_GROUPS[2].options.find(o => o.value === priceBand);
+      if (opt) parts.push(opt.label);
+    }
     return parts;
-  }, [typeFilter, difficultyFilter, heatFilter, priceBand]);
+  }, [typeFilter, difficultyFilter, heatFilter, priceBand, FILTER_GROUPS]);
 
   const dropTranslate = dropAnim.interpolate({ inputRange: [0, 1], outputRange: [-8, 0] });
   const subTranslate = subAnim.interpolate({ inputRange: [0, 1], outputRange: [-6, 0] });
 
   return (
     <View style={dd.wrapper}>
-      <TouchableOpacity style={dd.trigger} onPress={toggleOpen} activeOpacity={0.8}>
+      <TouchableOpacity style={[dd.trigger, { backgroundColor: colors.surface, borderColor: colors.border }]} onPress={toggleOpen} activeOpacity={0.8}>
         <Text style={dd.triggerIcon}>⚙️</Text>
-        <Text style={dd.triggerText}>Filters</Text>
+        <Text style={[dd.triggerText, { color: colors.text }]}>{t("explore.filters")}</Text>
         {activeSummary.length > 0 && (
-          <View style={dd.badge}>
-            <Text style={dd.badgeText}>{activeSummary.length}</Text>
+          <View style={[dd.badge, { backgroundColor: colors.primary }]}>
+            <Text style={[dd.badgeText, { color: '#000' }]}>{activeSummary.length}</Text>
           </View>
         )}
-        <Text style={[dd.chevron, open && dd.chevronUp]}>›</Text>
+        <Text style={[dd.chevron, { color: colors.textMuted }, open && dd.chevronUp]}>›</Text>
       </TouchableOpacity>
 
       {activeSummary.length > 0 && (
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={dd.activeChipsRow}>
           {activeSummary.map((label) => (
-            <View key={label} style={dd.activeChip}>
-              <Text style={dd.activeChipText}>{label}</Text>
+            <View key={label} style={[dd.activeChip, { backgroundColor: colors.primary + '20', borderColor: colors.primary }]}>
+              <Text style={[dd.activeChipText, { color: colors.primary }]}>{label}</Text>
             </View>
           ))}
           <TouchableOpacity
             onPress={() => { setTypeFilter("all"); setDifficultyFilter("all"); setHeatFilter("all"); setPriceBand("all"); }}
-            style={dd.clearChip}
+            style={[dd.clearChip, { backgroundColor: 'rgba(248,113,113,0.12)', borderColor: '#f87171' }]}
           >
-            <Text style={dd.clearChipText}>✕ Clear</Text>
+            <Text style={[dd.clearChipText, { color: '#f87171' }]}>✕ {t("explore.clear")}</Text>
           </TouchableOpacity>
         </ScrollView>
       )}
 
       {open && (
-        <Animated.View style={[dd.panel, { opacity: dropAnim, transform: [{ translateY: dropTranslate }] }]}>
+        <Animated.View style={[dd.panel, { backgroundColor: colors.surface, borderColor: colors.border, opacity: dropAnim, transform: [{ translateY: dropTranslate }] }]}>
           {FILTER_GROUPS.map((group) => {
             const activeVal = getSelectedValue(group.id);
             const isGroupActive = activeGroup === group.id;
@@ -719,35 +731,35 @@ function CascadeDropdown({ typeFilter, setTypeFilter, difficultyFilter, setDiffi
             return (
               <View key={group.id}>
                 <TouchableOpacity
-                  style={[dd.groupRow, isGroupActive && dd.groupRowActive]}
+                  style={[dd.groupRow, isGroupActive && { backgroundColor: colors.primary + '10' }]}
                   onPress={() => handleGroupPress(group.id)}
                   activeOpacity={0.75}
                 >
-                  <Text style={[dd.groupLabel, hasSelection && dd.groupLabelSelected]}>
+                  <Text style={[dd.groupLabel, { color: colors.text }, hasSelection && { color: colors.primary }]}>
                     {group.label}
-                    {hasSelection ? <Text style={dd.groupSelBadge}> • {getActiveLabel(group.id)}</Text> : ""}
+                    {hasSelection ? <Text style={{ color: colors.primary, fontWeight: '700' }}> • {getActiveLabel(group.id)}</Text> : ""}
                   </Text>
-                  <Text style={[dd.groupChevron, isGroupActive && dd.groupChevronUp]}>›</Text>
+                  <Text style={[dd.groupChevron, { color: colors.textMuted }, isGroupActive && dd.groupChevronUp]}>›</Text>
                 </TouchableOpacity>
                 {isGroupActive && (
-                  <Animated.View style={[dd.subPanel, { opacity: subAnim, transform: [{ translateY: subTranslate }] }]}>
+                  <Animated.View style={[dd.subPanel, { backgroundColor: colors.background + '50', borderTopColor: colors.border, opacity: subAnim, transform: [{ translateY: subTranslate }] }]}>
                     {group.options.map((opt) => {
                       const isSelected = activeVal === opt.value;
                       return (
                         <TouchableOpacity
                           key={opt.value}
-                          style={[dd.optionRow, isSelected && dd.optionRowSelected]}
+                          style={[dd.optionRow, isSelected && { backgroundColor: colors.primary + '15' }]}
                           onPress={() => handleOptionPress(group.id, opt.value)}
                           activeOpacity={0.7}
                         >
-                          <Text style={[dd.optionText, isSelected && dd.optionTextSelected]}>{opt.label}</Text>
-                          {isSelected && <Text style={dd.optionCheck}>✓</Text>}
+                          <Text style={[dd.optionText, { color: colors.textMuted }, isSelected && { color: colors.primary, fontWeight: '700' }]}>{opt.label}</Text>
+                          {isSelected && <Text style={{ color: colors.primary, fontWeight: '800' }}>✓</Text>}
                         </TouchableOpacity>
                       );
                     })}
                   </Animated.View>
                 )}
-                <View style={dd.divider} />
+                <View style={[dd.divider, { backgroundColor: colors.border }]} />
               </View>
             );
           })}
@@ -761,55 +773,60 @@ const dd = StyleSheet.create({
   wrapper: { marginBottom: 10, zIndex: 100 },
   trigger: {
     flexDirection: "row", alignItems: "center",
-    backgroundColor: "#0f172a", borderWidth: 1, borderColor: "#1e293b",
+    borderWidth: 1,
     borderRadius: 12, paddingVertical: 10, paddingHorizontal: 14, gap: 6, alignSelf: "flex-start",
   },
   triggerIcon: { fontSize: 14 },
-  triggerText: { color: "#e5e7eb", fontSize: 13, fontWeight: "600" },
-  badge: { backgroundColor: "#22c55e", borderRadius: 99, width: 18, height: 18, alignItems: "center", justifyContent: "center" },
-  badgeText: { color: "#022c22", fontSize: 10, fontWeight: "800" },
-  chevron: { color: "#94a3b8", fontSize: 18, lineHeight: 20, transform: [{ rotate: "90deg" }], marginLeft: 2 },
+  triggerText: { fontSize: 13, fontWeight: "600" },
+  badge: { borderRadius: 99, width: 18, height: 18, alignItems: "center", justifyContent: "center" },
+  badgeText: { fontSize: 10, fontWeight: "800" },
+  chevron: { fontSize: 18, lineHeight: 20, transform: [{ rotate: "90deg" }], marginLeft: 2 },
   chevronUp: { transform: [{ rotate: "270deg" }] },
   activeChipsRow: { marginTop: 8, marginBottom: 2 },
-  activeChip: { backgroundColor: "rgba(34,197,94,0.15)", borderWidth: 1, borderColor: "#22c55e", borderRadius: 99, paddingVertical: 3, paddingHorizontal: 10, marginRight: 6 },
-  activeChipText: { color: "#22c55e", fontSize: 11, fontWeight: "600", textTransform: "capitalize" },
-  clearChip: { backgroundColor: "rgba(248,113,113,0.12)", borderWidth: 1, borderColor: "#f87171", borderRadius: 99, paddingVertical: 3, paddingHorizontal: 10, marginRight: 6 },
-  clearChipText: { color: "#f87171", fontSize: 11, fontWeight: "600" },
-  panel: { marginTop: 6, backgroundColor: "#0f172a", borderWidth: 1, borderColor: "#1e293b", borderRadius: 14, overflow: "hidden", shadowColor: "#000", shadowOpacity: 0.5, shadowRadius: 12, shadowOffset: { width: 0, height: 4 }, elevation: 8 },
+  activeChip: { borderWidth: 1, borderRadius: 99, paddingVertical: 3, paddingHorizontal: 10, marginRight: 6 },
+  activeChipText: { fontSize: 11, fontWeight: "600" },
+  clearChip: { borderWidth: 1, borderRadius: 99, paddingVertical: 3, paddingHorizontal: 10, marginRight: 6 },
+  clearChipText: { fontSize: 11, fontWeight: "600" },
+  panel: { marginTop: 6, borderWidth: 1, borderRadius: 14, overflow: "hidden", shadowColor: "#000", shadowOpacity: 0.5, shadowRadius: 12, shadowOffset: { width: 0, height: 4 }, elevation: 8 },
   groupRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingVertical: 13, paddingHorizontal: 16 },
-  groupRowActive: { backgroundColor: "rgba(34,197,94,0.07)" },
-  groupLabel: { color: "#e5e7eb", fontSize: 13, fontWeight: "600" },
-  groupLabelSelected: { color: "#22c55e" },
-  groupSelBadge: { color: "#22c55e", fontWeight: "700", textTransform: "capitalize" },
-  groupChevron: { color: "#64748b", fontSize: 18, transform: [{ rotate: "90deg" }] },
+  groupRowActive: { },
+  groupLabel: { fontSize: 13, fontWeight: "600" },
+  groupLabelSelected: { },
+  groupSelBadge: { fontWeight: "700" },
+  groupChevron: { fontSize: 18, transform: [{ rotate: "90deg" }] },
   groupChevronUp: { transform: [{ rotate: "270deg" }] },
-  subPanel: { backgroundColor: "rgba(2,44,34,0.18)", borderTopWidth: 1, borderTopColor: "#1e293b" },
+  subPanel: { borderTopWidth: 1 },
   optionRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingVertical: 11, paddingHorizontal: 28 },
-  optionRowSelected: { backgroundColor: "rgba(34,197,94,0.12)" },
-  optionText: { color: "#94a3b8", fontSize: 13 },
-  optionTextSelected: { color: "#22c55e", fontWeight: "700" },
-  optionCheck: { color: "#22c55e", fontSize: 13, fontWeight: "800" },
-  divider: { height: 1, backgroundColor: "#1e293b" },
+  optionRowSelected: { },
+  optionText: { fontSize: 13 },
+  optionTextSelected: { },
+  optionCheck: { fontSize: 13, fontWeight: "800" },
+  divider: { height: 1 },
 });
 
 // ─── Result count pill ──────────────────────────────────────────────────────
 function ResultCount({ count, loading }) {
+  const { colors } = useTheme();
+  const { t } = useTranslation();
   if (loading) return null;
   return (
     <View style={rc.wrap}>
-      <View style={rc.dot} />
-      <Text style={rc.text}>{count} {count === 1 ? "plant" : "plants"} found</Text>
+      <View style={[rc.dot, { backgroundColor: colors.primary }]} />
+      <Text style={[rc.text, { color: colors.textMuted }]}>
+        {count === 1 ? t("explore.plants_found_one", { count }) : t("explore.plants_found_many", { count })}
+      </Text>
     </View>
   );
 }
 const rc = StyleSheet.create({
   wrap: { flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 10 },
-  dot: { width: 6, height: 6, borderRadius: 99, backgroundColor: "#22c55e" },
-  text: { color: "#64748b", fontSize: 12, fontWeight: "600" },
+  dot: { width: 6, height: 6, borderRadius: 99 },
+  text: { fontSize: 12, fontWeight: "600" },
 });
 
 // ─── Cart FAB with item count badge ────────────────────────────────────────
 function CartFab({ onPress, itemCount }) {
+  const { colors } = useTheme();
   const scaleAnim = useRef(new Animated.Value(1)).current;
   const pulse = () => {
     Animated.sequence([
@@ -819,10 +836,10 @@ function CartFab({ onPress, itemCount }) {
   };
   return (
     <TouchableOpacity onPress={() => { pulse(); onPress(); }} activeOpacity={1}>
-      <Animated.View style={[fab.cartBtn, { transform: [{ scale: scaleAnim }] }]}>
-        <Ionicons name="cart-outline" size={24} color="#071024" />
+      <Animated.View style={[fab.cartBtn, { backgroundColor: colors.primary, shadowColor: colors.primary, transform: [{ scale: scaleAnim }] }]}>
+        <Ionicons name="cart-outline" size={24} color="#000" />
         {itemCount > 0 && (
-          <View style={fab.cartBadge}>
+          <View style={[fab.cartBadge, { borderColor: colors.background }]}>
             <Text style={fab.cartBadgeText}>{itemCount > 99 ? "99+" : itemCount}</Text>
           </View>
         )}
@@ -833,9 +850,8 @@ function CartFab({ onPress, itemCount }) {
 const fab = StyleSheet.create({
   cartBtn: {
     width: 56, height: 56, borderRadius: 18,
-    backgroundColor: "#facc15",
     justifyContent: "center", alignItems: "center",
-    shadowColor: "#facc15", shadowOpacity: 0.45, shadowRadius: 12, shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.45, shadowRadius: 12, shadowOffset: { width: 0, height: 4 },
     elevation: 8,
   },
   cartBadge: {
@@ -844,7 +860,7 @@ const fab = StyleSheet.create({
     borderRadius: 99, minWidth: 20, height: 20,
     paddingHorizontal: 4,
     alignItems: "center", justifyContent: "center",
-    borderWidth: 2, borderColor: "#071024",
+    borderWidth: 2,
   },
   cartBadgeText: { color: "#fff", fontSize: 10, fontWeight: "800" },
 });
@@ -853,6 +869,8 @@ const fab = StyleSheet.create({
 export default function ExplorePlants() {
   const router = useRouter();
   const { fromSeasonal } = useLocalSearchParams();
+  const { t } = useTranslation();
+  const { colors, resolvedTheme } = useTheme();
 
   const [plants, setPlants] = useState([]);
   const [search, setSearch] = useState("");
@@ -1006,22 +1024,22 @@ export default function ExplorePlants() {
   }, [seasonalFilteredPlants, typeFilter, difficultyFilter, heatFilter, priceBand]);
 
   return (
-    <View style={styles.page}>
+    <View style={[styles.page, { backgroundColor: colors.background }]}>
       <Stack.Screen options={{ headerShown: false }} />
 
       {/* ── Header ── */}
       <View style={styles.headerRow}>
         <View>
-          <Text style={styles.title}>Explore Plants</Text>
-          <Text style={styles.subtitle}>Find your perfect green companion</Text>
+          <Text style={[styles.title, { color: colors.text }]}>{t('explore.title')}</Text>
+          <Text style={[styles.subtitle, { color: colors.textMuted }]}>{t('explore.subtitle')}</Text>
         </View>
         <TouchableOpacity
-          style={[styles.bellBtn, weather && styles.bellBtnActive]}
+          style={[styles.bellBtn, { backgroundColor: colors.surface, borderColor: colors.border }, weather && styles.bellBtnActive]}
           onPress={() => setWeatherPanelOpen(true)}
           activeOpacity={0.8}
         >
-          <Ionicons name="notifications-outline" size={20} color={weather ? "#22c55e" : "#94a3b8"} />
-          {weather && <View style={styles.bellDot} />}
+          <Ionicons name="notifications-outline" size={20} color={weather ? colors.primary : colors.textMuted} />
+          {weather && <View style={[styles.bellDot, { backgroundColor: colors.primary, borderColor: colors.background }]} />}
         </TouchableOpacity>
       </View>
 
@@ -1034,7 +1052,7 @@ export default function ExplorePlants() {
       />
 
       {/* ── Search ── */}
-      <SearchBar value={search} onChangeText={setSearch} />
+      <SearchBar value={search} onChangeText={setSearch} placeholder={t('explore.search_placeholder')} />
 
       {/* ── Filters ── */}
       <CascadeDropdown
@@ -1050,8 +1068,8 @@ export default function ExplorePlants() {
       {/* ── Plant list ── */}
       {loading ? (
         <View style={styles.loadingWrap}>
-          <ActivityIndicator size="large" color="#22c55e" />
-          <Text style={styles.loadingText}>Finding plants…</Text>
+          <ActivityIndicator size="large" color={colors.primary} />
+          <Text style={[styles.loadingText, { color: colors.textMuted }]}>{t("explore.finding_plants")}</Text>
         </View>
       ) : (
         <FlatList
@@ -1068,8 +1086,8 @@ export default function ExplorePlants() {
           ListEmptyComponent={
             <View style={styles.emptyWrap}>
               <Text style={styles.emptyEmoji}>🌱</Text>
-              <Text style={styles.emptyTitle}>No plants found</Text>
-              <Text style={styles.emptySub}>Try adjusting your filters or search</Text>
+              <Text style={[styles.emptyTitle, { color: colors.text }]}>{t("explore.no_plants_found")}</Text>
+              <Text style={[styles.emptySub, { color: colors.textMuted }]}>{t("explore.adjust_filters")}</Text>
             </View>
           }
         />
@@ -1080,10 +1098,10 @@ export default function ExplorePlants() {
         {/* Camera */}
         <TouchableOpacity
           onPress={() => router.push("/share/camera")}
-          style={styles.cameraFab}
+          style={[styles.cameraFab, { backgroundColor: colors.primary, shadowColor: colors.primary }]}
           activeOpacity={0.85}
         >
-          <Ionicons name="camera-outline" size={22} color="#071024" />
+          <Ionicons name="camera-outline" size={22} color="#000" />
         </TouchableOpacity>
 
         {/* Cart with badge */}
@@ -1097,7 +1115,7 @@ export default function ExplorePlants() {
 }
 
 const styles = StyleSheet.create({
-  page: { flex: 1, backgroundColor: "#071024", padding: 16, paddingTop: 40 },
+  page: { flex: 1, padding: 16, paddingTop: 40 },
 
   // ── Header
   headerRow: {
@@ -1106,31 +1124,30 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     marginBottom: 14,
   },
-  title: { color: "#e6eef3", fontSize: 26, fontWeight: "800", letterSpacing: -0.5 },
-  subtitle: { color: "#334155", fontSize: 12, marginTop: 2, fontWeight: "500" },
+  title: { fontSize: 26, fontWeight: "800", letterSpacing: -0.5 },
+  subtitle: { fontSize: 12, marginTop: 2, fontWeight: "500" },
   bellBtn: {
     width: 40, height: 40, borderRadius: 12,
     alignItems: "center", justifyContent: "center",
-    backgroundColor: "rgba(15,23,42,0.95)",
-    borderWidth: 1, borderColor: "rgba(148,163,184,0.15)",
+    borderWidth: 1,
     marginTop: 4,
   },
-  bellBtnActive: { borderColor: "rgba(34,197,94,0.4)", backgroundColor: "rgba(34,197,94,0.1)" },
+  bellBtnActive: { },
   bellDot: {
     position: "absolute", top: 8, right: 8,
     width: 7, height: 7, borderRadius: 99,
-    backgroundColor: "#22c55e", borderWidth: 1.5, borderColor: "#071024",
+    borderWidth: 1.5,
   },
 
   // ── Loading
   loadingWrap: { flex: 1, alignItems: "center", justifyContent: "center", gap: 12 },
-  loadingText: { color: "#475569", fontSize: 13 },
+  loadingText: { fontSize: 13 },
 
   // ── Empty state
   emptyWrap: { alignItems: "center", paddingTop: 60, gap: 8 },
   emptyEmoji: { fontSize: 48 },
-  emptyTitle: { color: "#e2e8f0", fontSize: 16, fontWeight: "700" },
-  emptySub: { color: "#475569", fontSize: 13 },
+  emptyTitle: { fontSize: 16, fontWeight: "700" },
+  emptySub: { fontSize: 13 },
 
   // ── List
   listContent: { paddingBottom: 120, gap: 0 },
@@ -1146,9 +1163,8 @@ const styles = StyleSheet.create({
   },
   cameraFab: {
     width: 56, height: 56, borderRadius: 18,
-    backgroundColor: "#22c55e",
     justifyContent: "center", alignItems: "center",
-    shadowColor: "#22c55e", shadowOpacity: 0.4, shadowRadius: 12, shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.4, shadowRadius: 12, shadowOffset: { width: 0, height: 4 },
     elevation: 8,
   },
 });

@@ -1,213 +1,3 @@
-// // mobile/app/ar/PlantTracker.tsx
-// import React, { useState, useEffect } from "react";
-// import {
-//   View,
-//   Text,
-//   TextInput,
-//   TouchableOpacity,
-//   FlatList,
-//   StyleSheet,
-//   Alert,
-//   Linking,
-//   ImageBackground,
-// } from "react-native";
-// import axios from "axios";
-// import { useRouter } from "expo-router";
-// import { BACKEND } from "../../config";
-
-// const API_URL = `${BACKEND}/api`;
-
-// interface Plant {
-//   _id: string;
-//   name: string;
-//   plantingDate: string;
-//   harvestingDate: string;
-//   remainingDays: number;
-//   readyToHarvest?: boolean;
-// }
-
-// export default function PlantTracker() {
-//   const router = useRouter();
-//   const [plants, setPlants] = useState<Plant[]>([]);
-//   const [name, setName] = useState("");
-//   const [plantingDate, setPlantingDate] = useState("");
-//   const [harvestingDate, setHarvestingDate] = useState("");
-
-//   const fetchPlants = async () => {
-//     try {
-//       const res = await axios.get<Plant[]>(`${API_URL}/plants`);
-//       setPlants(res.data);
-//     } catch (err: any) {
-//       console.log("Fetch Plants Error:", err.response?.data || err.message);
-//     }
-//   };
-
-//   useEffect(() => {
-//     fetchPlants();
-//     const interval = setInterval(fetchPlants, 60 * 1000);
-//     return () => clearInterval(interval);
-//   }, []);
-
-//   const addPlant = async () => {
-//     if (!name || !plantingDate || !harvestingDate) {
-//       Alert.alert("Error", "Please fill all fields");
-//       return;
-//     }
-
-//     if (isNaN(Date.parse(plantingDate)) || isNaN(Date.parse(harvestingDate))) {
-//       Alert.alert("Error", "Please enter valid dates in YYYY-MM-DD format");
-//       return;
-//     }
-
-//     try {
-//       const res = await axios.post<Plant>(`${API_URL}/plants`, {
-//         name,
-//         plantingDate,
-//         harvestingDate,
-//       });
-//       console.log("Added plant:", res.data);
-//       setName("");
-//       setPlantingDate("");
-//       setHarvestingDate("");
-//       fetchPlants();
-//     } catch (err: any) {
-//       console.log("Add Plant Error:", err.response?.data || err.message);
-//       Alert.alert("Error", "Failed to add plant. Check your server.");
-//     }
-//   };
-
-//   const Header = () => (
-//     <View style={styles.header}>
-//       <Text style={styles.brand}>GardeniAR</Text>
-//       <Text style={styles.subtitle}>Track, plan and view in AR</Text>
-//       <View style={styles.actionsRow}>
-//         <TouchableOpacity style={[styles.pill, styles.pillPrimary]} onPress={() => router.push("/ar/CropSuggestions")}>
-//           <Text style={styles.pillText}>Crop Suggestions</Text>
-//         </TouchableOpacity>
-//         <TouchableOpacity style={[styles.pill, styles.pillSecondary]} onPress={() => router.push("/ar/DiseaseDetection")}>
-//           <Text style={styles.pillTextAlt}>Disease Detection</Text>
-//         </TouchableOpacity>
-//         <TouchableOpacity
-//           style={[styles.pill, styles.pillOutline]}
-//           onPress={async () => {
-//             const unityPackage = 'com.ScriptingSanskrit.VirtualGardening';
-//             const url = `intent://#Intent;package=${unityPackage};end`;
-//             try {
-//               const supported = await Linking.canOpenURL(url);
-//               if (supported) {
-//                 Linking.openURL(url);
-//               } else {
-//                 Alert.alert("Unity app not installed", "Please install the Unity AR app first.");
-//               }
-//             } catch (error) {
-//               Alert.alert("Error", "Cannot open Unity app.");
-//             }
-//           }}
-//         >
-//           <Text style={styles.pillTextOutline}>View in AR</Text>
-//         </TouchableOpacity>
-//       </View>
-//     </View>
-//   );
-
-//   const renderItem = ({ item }: { item: Plant }) => (
-//     <View style={styles.plantCard}>
-//       <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
-//         <Text style={styles.plantName}>{item.name}</Text>
-//         {item.readyToHarvest ? <Text style={styles.badgeReady}>Ready</Text> : <Text style={styles.badgeSoon}>Growing</Text>}
-//       </View>
-//       <View style={styles.row}>
-//         <Text style={styles.text}>Planting: <Text style={styles.textStrong}>{item.plantingDate}</Text></Text>
-//         <Text style={styles.text}>Harvest: <Text style={styles.textStrong}>{item.harvestingDate}</Text></Text>
-//       </View>
-//       <Text style={styles.days}>Remaining {item.remainingDays} days</Text>
-//     </View>
-//   );
-
-//   return (
-//     <View style={{ flex: 1 }}>
-//       <ImageBackground source={require("../../assets/images/splash.png")} style={StyleSheet.absoluteFill} resizeMode="cover" />
-//       <View style={styles.overlay} />
-//       <View style={styles.container}>
-//         <Header />
-//         <View style={styles.formCard}>
-//           <Text style={styles.formTitle}>Add a plant</Text>
-//           <View style={styles.inputRow}>
-//             <TextInput placeholder="Name" placeholderTextColor="#a3a3a3" value={name} onChangeText={setName} style={[styles.input, { flex: 1 }]} />
-//           </View>
-//           <View style={styles.inputRow}>
-//             <TextInput placeholder="Planting (YYYY-MM-DD)" placeholderTextColor="#a3a3a3" value={plantingDate} onChangeText={setPlantingDate} style={[styles.input, { flex: 1 }]} />
-//             <View style={{ width: 10 }} />
-//             <TextInput placeholder="Harvest (YYYY-MM-DD)" placeholderTextColor="#a3a3a3" value={harvestingDate} onChangeText={setHarvestingDate} style={[styles.input, { flex: 1 }]} />
-//           </View>
-//           <TouchableOpacity style={styles.button} onPress={addPlant}>
-//             <Text style={styles.buttonText}>Add Plant</Text>
-//           </TouchableOpacity>
-//         </View>
-//         <FlatList
-//           data={plants}
-//           keyExtractor={(item) => item._id}
-//           contentContainerStyle={{ paddingBottom: 100 }}
-//           renderItem={renderItem}
-//         />
-//       </View>
-//     </View>
-//   );
-// }
-
-// const styles = StyleSheet.create({
-//   overlay: { ...StyleSheet.absoluteFillObject, backgroundColor: "rgba(0,0,0,0.55)" },
-//   container: { flex: 1, padding: 18 },
-//   header: { marginBottom: 14 },
-//   brand: { fontSize: 22, fontWeight: "800", color: "#e6eef3" },
-//   subtitle: { color: "#aab8c2", marginTop: 4, fontSize: 13 },
-//   actionsRow: { flexDirection: "row", gap: 8, marginTop: 10 },
-//   pill: { paddingVertical: 10, paddingHorizontal: 12, borderRadius: 12, borderWidth: 1, borderColor: "rgba(148,163,184,0.25)" },
-//   pillPrimary: { backgroundColor: "rgba(34,197,94,0.92)", borderColor: "rgba(34,197,94,0.92)" },
-//   pillSecondary: { backgroundColor: "rgba(59,130,246,0.18)", borderColor: "rgba(59,130,246,0.28)" },
-//   pillOutline: { backgroundColor: "rgba(15, 23, 42, 0.75)" },
-//   pillText: { color: "#051013", fontWeight: "800" },
-//   pillTextAlt: { color: "#93c5fd", fontWeight: "700" },
-//   pillTextOutline: { color: "#e5e7eb", fontWeight: "700" },
-//   formCard: { backgroundColor: "rgba(15, 23, 42, 0.95)", borderRadius: 16, borderWidth: 1, borderColor: "rgba(148,163,184,0.18)", padding: 14, marginBottom: 14 },
-//   formTitle: { color: "#e6eef3", fontWeight: "800", marginBottom: 10, fontSize: 16 },
-//   inputRow: { flexDirection: "row" },
-//   input: {
-//     borderWidth: 1,
-//     borderColor: "#1e293b",
-//     backgroundColor: "#0f172a",
-//     color: "#e5e7eb",
-//     padding: 12,
-//     borderRadius: 10,
-//     marginBottom: 10,
-//     fontSize: 14,
-//   },
-//   button: {
-//     backgroundColor: "#22c55e",
-//     padding: 13,
-//     borderRadius: 12,
-//     alignItems: "center",
-//     marginTop: 6,
-//   },
-//   buttonText: { color: "#051013", fontWeight: "900", fontSize: 15 },
-//   plantCard: {
-//     backgroundColor: "rgba(15, 23, 42, 0.95)",
-//     borderWidth: 1,
-//     borderColor: "rgba(148,163,184,0.16)",
-//     padding: 14,
-//     borderRadius: 16,
-//     marginBottom: 12,
-//   },
-//   plantName: { fontSize: 16, fontWeight: "800", marginBottom: 6, color: "#e6eef3" },
-//   text: { fontSize: 13, color: "#9fb1be" },
-//   textStrong: { color: "#cfe7d4", fontWeight: "700" },
-//   row: { flexDirection: "row", justifyContent: "space-between", marginTop: 4 },
-//   days: { marginTop: 8, color: "#93c5fd", fontWeight: "700" },
-//   badgeReady: { backgroundColor: "rgba(34,197,94,0.15)", color: "#22c55e", paddingVertical: 4, paddingHorizontal: 8, borderRadius: 10, fontSize: 12, fontWeight: "800" },
-//   badgeSoon: { backgroundColor: "rgba(59,130,246,0.14)", color: "#93c5fd", paddingVertical: 4, paddingHorizontal: 8, borderRadius: 10, fontSize: 12, fontWeight: "800" },
-// });
-
-
 // app/ar/PlantTracker.tsx
 import React, { useState, useEffect } from "react";
 import {
@@ -222,6 +12,8 @@ import { BACKEND } from "../../config";
 import { usePremium } from "../../hooks/usePremium";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import { useTheme } from "../../hooks/useTheme";
+import { useTranslation } from "react-i18next";
 
 const API_URL = `${BACKEND}/api`;
 
@@ -239,6 +31,8 @@ interface Plant {
 export default function PlantTracker() {
   const router = useRouter();
   const { isPremium } = usePremium();
+  const { colors, resolvedTheme } = useTheme();
+  const { t } = useTranslation();
   const [plants, setPlants] = useState<Plant[]>([]);
   const [name, setName] = useState("");
   const [species, setSpecies] = useState("");
@@ -340,68 +134,77 @@ export default function PlantTracker() {
   };
 
   return (
-    <SafeAreaView style={s.safe} edges={["top"]}>
+    <SafeAreaView style={[s.safe, { backgroundColor: colors.background }]} edges={["top"]}>
+      {/* Header */}
+      <View style={[s.topBar, { borderBottomColor: colors.border }]}>
+        <TouchableOpacity onPress={() => router.back()} style={[s.backBtn, { backgroundColor: colors.surface }]}>
+          <Ionicons name="chevron-back" size={24} color={colors.text} />
+        </TouchableOpacity>
+        <Text style={[s.topTitle, { color: colors.text }]}>{t('tracker.title')}</Text>
+        <View style={{ width: 40 }} />
+      </View>
+
       <ScrollView contentContainerStyle={s.scroll} showsVerticalScrollIndicator={false}>
         {/* Action pills */}
         <View style={s.pillRow}>
-          <TouchableOpacity style={[s.pill, s.pillGreen]} onPress={() => router.push("/ar/CropSuggestions")}>
-            <Ionicons name="leaf-outline" size={13} color="#051013" />
-            <Text style={s.pillTextGreen}>Crop Suggestions</Text>
+          <TouchableOpacity style={[s.pill, { backgroundColor: colors.primary, borderColor: 'transparent' }]} onPress={() => router.push("/ar/CropSuggestions")}>
+            <Ionicons name="leaf-outline" size={13} color="#000" />
+            <Text style={[s.pillText, { color: "#000" }]}>{t('tracker.crop_suggestions')}</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={[s.pill, s.pillBlue, !isPremium && s.pillDim]} onPress={handleDiseasePress}>
-            {!isPremium && <Ionicons name="lock-closed" size={11} color="#93c5fd" />}
-            <Text style={s.pillTextBlue}>Disease Detection</Text>
+          <TouchableOpacity style={[s.pill, { backgroundColor: colors.surface, borderColor: colors.border }, !isPremium && s.pillDim]} onPress={handleDiseasePress}>
+            {!isPremium && <Ionicons name="lock-closed" size={11} color={colors.textMuted} />}
+            <Text style={[s.pillText, { color: colors.text }]}>{t('tracker.disease_detection')}</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={[s.pill, s.pillDark, !isPremium && s.pillDim]} onPress={handleARPress}>
-            {!isPremium && <Ionicons name="lock-closed" size={11} color="#9ca3af" />}
-            <Text style={s.pillTextWhite}>View in AR</Text>
+          <TouchableOpacity style={[s.pill, { backgroundColor: colors.surface, borderColor: colors.border }, !isPremium && s.pillDim]} onPress={handleARPress}>
+            {!isPremium && <Ionicons name="lock-closed" size={11} color={colors.textMuted} />}
+            <Text style={[s.pillText, { color: colors.text }]}>{t('tracker.view_ar')}</Text>
           </TouchableOpacity>
         </View>
 
         {/* Upgrade banner */}
         {!isPremium && (
-          <TouchableOpacity style={s.upgradeBanner} onPress={() => router.push("/premium")}>
-            <Ionicons name="rocket-outline" size={14} color="#22c55e" />
-            <Text style={s.upgradeBannerText}>
-              Unlock Disease Detection & AR —{" "}
-              <Text style={{ color: "#22c55e", fontWeight: "800" }}>Upgrade to Premium</Text>
+          <TouchableOpacity style={[s.upgradeBanner, { backgroundColor: colors.primary + '15', borderColor: colors.primary + '35' }]} onPress={() => router.push("/premium")}>
+            <Ionicons name="rocket-outline" size={14} color={colors.primary} />
+            <Text style={[s.upgradeBannerText, { color: colors.textMuted }]}>
+              {t('tracker.upgrade_msg')}{" "}
+              <Text style={{ color: colors.primary, fontWeight: "800" }}>{t('tracker.upgrade_btn')}</Text>
             </Text>
-            <Ionicons name="chevron-forward" size={13} color="#22c55e" />
+            <Ionicons name="chevron-forward" size={13} color={colors.primary} />
           </TouchableOpacity>
         )}
 
         {/* Add plant form */}
-        <View style={s.card}>
-          <Text style={s.cardTitle}>🌱 Add a Plant</Text>
+        <View style={[s.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+          <Text style={[s.cardTitle, { color: colors.text }]}>🌱 {t('tracker.add_plant')}</Text>
           <TextInput
-            placeholder="Plant name (e.g. My Favorite Basil)"
-            placeholderTextColor="#4b5563"
+            placeholder={t('tracker.name_placeholder')}
+            placeholderTextColor={colors.textMuted}
             value={name}
             onChangeText={setName}
-            style={s.input}
+            style={[s.input, { backgroundColor: colors.background, borderColor: colors.border, color: colors.text }]}
           />
           <View style={s.row}>
             <TextInput
-              placeholder="Species (e.g. Basil)"
-              placeholderTextColor="#4b5563"
+              placeholder={t('tracker.species_placeholder')}
+              placeholderTextColor={colors.textMuted}
               value={species}
               onChangeText={setSpecies}
-              style={[s.input, { flex: 1, marginBottom: 10 }]}
+              style={[s.input, { flex: 1, marginBottom: 10, backgroundColor: colors.background, borderColor: colors.border, color: colors.text }]}
             />
           </View>
           
-          <Text style={s.label}>Life Stage:</Text>
+          <Text style={[s.label, { color: colors.textMuted }]}>{t('tracker.life_stage')}</Text>
           <View style={s.stageRow}>
             {['Seedling', 'Vegetative', 'Flowering'].map((stage) => (
               <TouchableOpacity
                 key={stage}
-                style={[s.stageBtn, status === stage && s.stageBtnActive]}
+                style={[s.stageBtn, { backgroundColor: colors.background, borderColor: colors.border }, status === stage && { backgroundColor: colors.primary + '20', borderColor: colors.primary }]}
                 onPress={() => setStatus(stage)}
               >
-                <Text style={[s.stageBtnText, status === stage && s.stageBtnTextActive]}>
-                  {stage}
+                <Text style={[s.stageBtnText, { color: colors.textMuted }, status === stage && { color: colors.primary, fontWeight: "800" }]}>
+                  {stage === 'Seedling' ? t('tracker.seedling') : stage === 'Vegetative' ? t('tracker.vegetative') : t('tracker.flowering')}
                 </Text>
               </TouchableOpacity>
             ))}
@@ -409,22 +212,22 @@ export default function PlantTracker() {
 
           <View style={s.row}>
             <TouchableOpacity 
-              style={[s.input, { flex: 1, marginBottom: 0, justifyContent: 'center' }]} 
+              style={[s.input, { flex: 1, marginBottom: 0, justifyContent: 'center', backgroundColor: colors.background, borderColor: colors.border }]} 
               onPress={() => setShowPlantingPicker(true)}
             >
-              <Text style={{ color: plantingDate ? "#e5e7eb" : "#4b5563" }}>
-                {plantingDate || "Planting date"}
+              <Text style={{ color: plantingDate ? colors.text : colors.textMuted }}>
+                {plantingDate || t('tracker.planting_date')}
               </Text>
             </TouchableOpacity>
             
             <View style={{ width: 10 }} />
             
             <TouchableOpacity 
-              style={[s.input, { flex: 1, marginBottom: 0, justifyContent: 'center' }]} 
+              style={[s.input, { flex: 1, marginBottom: 0, justifyContent: 'center', backgroundColor: colors.background, borderColor: colors.border }]} 
               onPress={() => setShowHarvestingPicker(true)}
             >
-              <Text style={{ color: harvestingDate ? "#e5e7eb" : "#4b5563" }}>
-                {harvestingDate || "Harvest date"}
+              <Text style={{ color: harvestingDate ? colors.text : colors.textMuted }}>
+                {harvestingDate || t('tracker.harvest_date')}
               </Text>
             </TouchableOpacity>
           </View>
@@ -447,53 +250,53 @@ export default function PlantTracker() {
           )}
           
           <View style={{ height: 14 }} />
-          <TouchableOpacity style={[s.addBtn, adding && { opacity: 0.7 }]} onPress={addPlant} disabled={adding}>
-            <Ionicons name="add-circle-outline" size={18} color="#051013" />
-            <Text style={s.addBtnText}>{adding ? "Adding…" : "Add Plant"}</Text>
+          <TouchableOpacity style={[s.addBtn, { backgroundColor: colors.primary }, adding && { opacity: 0.7 }]} onPress={addPlant} disabled={adding}>
+            <Ionicons name="add-circle-outline" size={18} color="#000" />
+            <Text style={[s.addBtnText, { color: "#000" }]}>{adding ? t('tracker.adding') : t('tracker.add_btn')}</Text>
           </TouchableOpacity>
         </View>
 
         {/* Plant list */}
-        <Text style={s.listLabel}>Your Plants{plants.length > 0 ? `  (${plants.length})` : ""}</Text>
+        <Text style={[s.listLabel, { color: colors.textMuted }]}>{t('tracker.your_plants')}{plants.length > 0 ? `  (${plants.length})` : ""}</Text>
 
         {plants.length === 0 ? (
           <View style={s.empty}>
             <Text style={{ fontSize: 40, marginBottom: 10 }}>🪴</Text>
-            <Text style={s.emptyText}>No plants yet — add your first one above!</Text>
+            <Text style={[s.emptyText, { color: colors.textMuted }]}>{t('tracker.empty')}</Text>
           </View>
         ) : (
           plants.map((item) => (
-            <View key={item._id} style={s.plantCard}>
+            <View key={item._id} style={[s.plantCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
               <View style={s.plantTop}>
-                <View style={s.plantIcon}>
-                  <Ionicons name="leaf" size={16} color="#22c55e" />
+                <View style={[s.plantIcon, { backgroundColor: colors.primary + '20' }]}>
+                  <Ionicons name="leaf" size={16} color={colors.primary} />
                 </View>
                 <View style={{ flex: 1 }}>
-                  <Text style={s.plantName}>{item.name}</Text>
-                  <Text style={{ color: "#9fb1be", fontSize: 12, marginTop: 2 }}>
+                  <Text style={[s.plantName, { color: colors.text }]}>{item.name}</Text>
+                  <Text style={{ color: colors.textMuted, fontSize: 12, marginTop: 2 }}>
                     {item.species ? `${item.species} · ` : ""}{item.status || "Unknown"}
                   </Text>
                 </View>
-                <View style={item.readyToHarvest ? s.badgeReady : s.badgeGrowing}>
-                  <Text style={item.readyToHarvest ? s.badgeReadyTxt : s.badgeGrowingTxt}>
-                    {item.readyToHarvest ? "Ready" : "Growing"}
+                <View style={item.readyToHarvest ? [s.badgeReady, { backgroundColor: colors.primary + '20' }] : [s.badgeGrowing, { backgroundColor: colors.secondary + '20' }]}>
+                  <Text style={[item.readyToHarvest ? s.badgeReadyTxt : s.badgeGrowingTxt, { color: item.readyToHarvest ? colors.primary : colors.secondary }]}>
+                    {item.readyToHarvest ? t('tracker.ready') : t('tracker.growing')}
                   </Text>
                 </View>
               </View>
-              <View style={s.plantDates}>
+              <View style={[s.plantDates, { backgroundColor: colors.background }]}>
                 <View style={s.dateCol}>
-                  <Text style={s.dateLabel}>Planting</Text>
-                  <Text style={s.dateVal}>{item.plantingDate || "—"}</Text>
+                  <Text style={[s.dateLabel, { color: colors.textMuted }]}>{t('tracker.planting')}</Text>
+                  <Text style={[s.dateVal, { color: colors.text }]}>{item.plantingDate || "—"}</Text>
                 </View>
-                <View style={s.dateSep} />
+                <View style={[s.dateSep, { backgroundColor: colors.border }]} />
                 <View style={s.dateCol}>
-                  <Text style={s.dateLabel}>Harvest</Text>
-                  <Text style={s.dateVal}>{item.harvestingDate || "—"}</Text>
+                  <Text style={[s.dateLabel, { color: colors.textMuted }]}>{t('tracker.harvest')}</Text>
+                  <Text style={[s.dateVal, { color: colors.text }]}>{item.harvestingDate || "—"}</Text>
                 </View>
-                <View style={s.dateSep} />
+                <View style={[s.dateSep, { backgroundColor: colors.border }]} />
                 <View style={s.dateCol}>
-                  <Text style={s.dateLabel}>Days left</Text>
-                  <Text style={[s.dateVal, { color: "#60a5fa" }]}>
+                  <Text style={[s.dateLabel, { color: colors.textMuted }]}>{t('tracker.days_left')}</Text>
+                  <Text style={[s.dateVal, { color: colors.primary }]}>
                     {item.remainingDays != null ? `${item.remainingDays}d` : "—"}
                   </Text>
                 </View>
@@ -508,89 +311,76 @@ export default function PlantTracker() {
 }
 
 const s = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: "#071024" },
+  safe: { flex: 1 },
   scroll: { paddingHorizontal: 18, paddingBottom: 24 },
 
   topBar: {
     flexDirection: "row", alignItems: "center", justifyContent: "space-between",
     paddingHorizontal: 14, paddingVertical: 12,
-    borderBottomWidth: 1, borderBottomColor: "rgba(148,163,184,0.1)",
+    borderBottomWidth: 1,
   },
   backBtn: {
     width: 36, height: 36, borderRadius: 12, alignItems: "center", justifyContent: "center",
-    backgroundColor: "rgba(255,255,255,0.05)",
   },
-  topTitle: { fontSize: 17, fontWeight: "800", color: "#e6eef3" },
+  topTitle: { fontSize: 17, fontWeight: "800" },
 
   pillRow: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 16, marginBottom: 12 },
   pill: { flexDirection: "row", alignItems: "center", gap: 5, paddingVertical: 8, paddingHorizontal: 12, borderRadius: 10, borderWidth: 1 },
-  pillGreen: { backgroundColor: "rgba(34,197,94,0.9)", borderColor: "transparent" },
-  pillBlue: { backgroundColor: "rgba(59,130,246,0.15)", borderColor: "rgba(59,130,246,0.25)" },
-  pillDark: { backgroundColor: "rgba(255,255,255,0.06)", borderColor: "rgba(255,255,255,0.1)" },
   pillDim: { opacity: 0.6 },
-  pillTextGreen: { color: "#051013", fontWeight: "800", fontSize: 13 },
-  pillTextBlue: { color: "#93c5fd", fontWeight: "700", fontSize: 13 },
-  pillTextWhite: { color: "#d1d5db", fontWeight: "700", fontSize: 13 },
+  pillText: { fontWeight: "800", fontSize: 13 },
 
   upgradeBanner: {
     flexDirection: "row", alignItems: "center", gap: 6,
-    backgroundColor: "rgba(34,197,94,0.05)", borderWidth: 1, borderColor: "rgba(34,197,94,0.15)",
-    borderRadius: 12, paddingVertical: 10, paddingHorizontal: 14, marginBottom: 16,
+    borderWidth: 1, borderRadius: 12, paddingVertical: 10, paddingHorizontal: 14, marginBottom: 16,
   },
-  upgradeBannerText: { flex: 1, color: "#9fb1be", fontSize: 12 },
+  upgradeBannerText: { flex: 1, fontSize: 12 },
 
   card: {
-    backgroundColor: "rgba(15,23,42,0.98)", borderWidth: 1, borderColor: "rgba(148,163,184,0.1)",
-    borderRadius: 18, padding: 18, marginBottom: 24,
+    borderRadius: 18, padding: 18, marginBottom: 24, borderWidth: 1,
   },
-  cardTitle: { color: "#e6eef3", fontWeight: "800", fontSize: 16, marginBottom: 14 },
+  cardTitle: { fontWeight: "800", fontSize: 16, marginBottom: 14 },
   input: {
-    borderWidth: 1, borderColor: "rgba(148,163,184,0.12)", backgroundColor: "rgba(255,255,255,0.03)",
-    color: "#e5e7eb", padding: 12, borderRadius: 12, fontSize: 14, marginBottom: 10,
+    borderWidth: 1, padding: 12, borderRadius: 12, fontSize: 14, marginBottom: 10,
   },
   row: { flexDirection: "row", marginBottom: 6 },
-  label: { color: "#9fb1be", fontSize: 13, fontWeight: "700", marginBottom: 8, marginTop: 4 },
+  label: { fontSize: 13, fontWeight: "700", marginBottom: 8, marginTop: 4 },
   stageRow: { flexDirection: "row", gap: 8, marginBottom: 14 },
   stageBtn: {
     flex: 1, paddingVertical: 8, alignItems: "center", borderRadius: 10,
-    backgroundColor: "rgba(255,255,255,0.05)", borderWidth: 1, borderColor: "rgba(148,163,184,0.15)",
+    borderWidth: 1,
   },
-  stageBtnActive: { backgroundColor: "rgba(34,197,94,0.15)", borderColor: "#22c55e" },
-  stageBtnText: { color: "#a1a1aa", fontSize: 12, fontWeight: "700" },
-  stageBtnTextActive: { color: "#22c55e", fontWeight: "800" },
-  hint: { color: "#374151", fontSize: 11, marginBottom: 14 },
+  stageBtnText: { fontSize: 12, fontWeight: "700" },
   addBtn: {
     flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8,
-    backgroundColor: "#22c55e", paddingVertical: 13, borderRadius: 12,
+    paddingVertical: 13, borderRadius: 12,
   },
-  addBtnText: { color: "#051013", fontWeight: "900", fontSize: 15 },
+  addBtnText: { fontWeight: "900", fontSize: 15 },
 
-  listLabel: { color: "#6b7280", fontSize: 12, fontWeight: "700", letterSpacing: 0.8, textTransform: "uppercase", marginBottom: 12 },
+  listLabel: { fontSize: 12, fontWeight: "700", letterSpacing: 0.8, textTransform: "uppercase", marginBottom: 12 },
 
   empty: { alignItems: "center", paddingVertical: 48 },
-  emptyText: { color: "#374151", fontSize: 14, textAlign: "center" },
+  emptyText: { fontSize: 14, textAlign: "center" },
 
   plantCard: {
-    backgroundColor: "rgba(15,23,42,0.98)", borderWidth: 1, borderColor: "rgba(148,163,184,0.1)",
-    borderRadius: 16, padding: 16, marginBottom: 10,
+    borderRadius: 16, padding: 16, marginBottom: 10, borderWidth: 1,
   },
   plantTop: { flexDirection: "row", alignItems: "center", gap: 10, marginBottom: 12 },
   plantIcon: {
     width: 32, height: 32, borderRadius: 10,
-    backgroundColor: "rgba(34,197,94,0.1)", alignItems: "center", justifyContent: "center",
+    alignItems: "center", justifyContent: "center",
   },
-  plantName: { flex: 1, fontSize: 16, fontWeight: "800", color: "#e6eef3" },
-  badgeReady: { backgroundColor: "rgba(34,197,94,0.12)", borderRadius: 8, paddingVertical: 3, paddingHorizontal: 10 },
-  badgeReadyTxt: { color: "#22c55e", fontSize: 12, fontWeight: "800" },
-  badgeGrowing: { backgroundColor: "rgba(59,130,246,0.12)", borderRadius: 8, paddingVertical: 3, paddingHorizontal: 10 },
-  badgeGrowingTxt: { color: "#93c5fd", fontSize: 12, fontWeight: "800" },
+  plantName: { flex: 1, fontSize: 16, fontWeight: "800" },
+  badgeReady: { borderRadius: 8, paddingVertical: 3, paddingHorizontal: 10 },
+  badgeReadyTxt: { fontSize: 12, fontWeight: "800" },
+  badgeGrowing: { borderRadius: 8, paddingVertical: 3, paddingHorizontal: 10 },
+  badgeGrowingTxt: { fontSize: 12, fontWeight: "800" },
 
   plantDates: {
-    flexDirection: "row", backgroundColor: "rgba(255,255,255,0.02)",
+    flexDirection: "row",
     borderRadius: 10, padding: 12,
   },
   dateCol: { flex: 1, alignItems: "center" },
-  dateLabel: { color: "#4b5563", fontSize: 10, fontWeight: "700", marginBottom: 4, textTransform: "uppercase" },
-  dateVal: { color: "#cbd5e1", fontSize: 13, fontWeight: "700" },
-  dateSep: { width: 1, backgroundColor: "rgba(148,163,184,0.08)" },
+  dateLabel: { fontSize: 10, fontWeight: "700", marginBottom: 4, textTransform: "uppercase" },
+  dateVal: { fontSize: 13, fontWeight: "700" },
+  dateSep: { width: 1 },
 });

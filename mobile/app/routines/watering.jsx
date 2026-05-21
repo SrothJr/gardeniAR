@@ -2,6 +2,8 @@ import React from "react";
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from "react-native";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
+import { useTheme } from "../../hooks/useTheme";
+import { StatusBar } from "expo-status-bar";
 
 const STEPS = [
   {
@@ -32,16 +34,18 @@ const STEPS = [
 
 export default function WateringRoutineScreen() {
   const router = useRouter();
+  const { colors, resolvedTheme } = useTheme();
 
   return (
-    <View style={styles.page}>
+    <View style={[styles.page, { backgroundColor: colors.background }]}>
+      <StatusBar style={resolvedTheme === 'dark' ? 'light' : 'dark'} />
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <Ionicons name="arrow-back" size={22} color="#e5e7eb" />
+        <TouchableOpacity onPress={() => router.back()} style={[styles.backBtn, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+          <Ionicons name="arrow-back" size={22} color={colors.text} />
         </TouchableOpacity>
         <View style={{ flex: 1 }}>
-          <Text style={styles.title}>Watering routine</Text>
-          <Text style={styles.subtitle}>A simple 4-step pattern you can follow.</Text>
+          <Text style={[styles.title, { color: colors.text }]}>Watering routine</Text>
+          <Text style={[styles.subtitle, { color: colors.textMuted }]}>A simple 4-step pattern you can follow.</Text>
         </View>
       </View>
 
@@ -51,18 +55,18 @@ export default function WateringRoutineScreen() {
       >
         {STEPS.map((step, index) => (
           <View key={step.id} style={styles.stepRow}>
-            <View style={styles.stepBadge}>
-              <Text style={styles.stepNumber}>{index + 1}</Text>
+            <View style={[styles.stepBadge, { backgroundColor: colors.primary + '20', borderColor: colors.primary + '50' }]}>
+              <Text style={[styles.stepNumber, { color: colors.primary }]}>{index + 1}</Text>
             </View>
 
-            <View style={styles.stepCard}>
+            <View style={[styles.stepCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
               <View style={styles.stepHeader}>
-                <View style={styles.stepIcon}>
-                  <Ionicons name={step.icon} size={18} color="#022c22" />
+                <View style={[styles.stepIcon, { backgroundColor: colors.primary }]}>
+                  <Ionicons name={step.icon} size={18} color="#000" />
                 </View>
-                <Text style={styles.stepTitle}>{step.title}</Text>
+                <Text style={[styles.stepTitle, { color: colors.text }]}>{step.title}</Text>
               </View>
-              <Text style={styles.stepBody}>{step.body}</Text>
+              <Text style={[styles.stepBody, { color: colors.textMuted }]}>{step.body}</Text>
             </View>
           </View>
         ))}
@@ -70,20 +74,20 @@ export default function WateringRoutineScreen() {
         <View style={styles.actionsRow}>
           <TouchableOpacity
             activeOpacity={0.9}
-            style={styles.primaryBtn}
+            style={[styles.primaryBtn, { backgroundColor: colors.primary }]}
             onPress={() => router.push("/explore")}
           >
-            <Ionicons name="list-outline" size={18} color="#022c22" />
-            <Text style={styles.primaryText}>Open plant guides</Text>
+            <Ionicons name="list-outline" size={18} color="#000" />
+            <Text style={[styles.primaryText, { color: '#000' }]}>Open plant guides</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
             activeOpacity={0.9}
-            style={styles.secondaryBtn}
+            style={[styles.secondaryBtn, { backgroundColor: colors.surface, borderColor: colors.border }]}
             onPress={() => router.push("/checklist")}
           >
-            <Ionicons name="checkbox-outline" size={18} color="#e5e7eb" />
-            <Text style={styles.secondaryText}>Add to tasks</Text>
+            <Ionicons name="checkbox-outline" size={18} color={colors.text} />
+            <Text style={[styles.secondaryText, { color: colors.text }]}>Add to tasks</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -94,7 +98,6 @@ export default function WateringRoutineScreen() {
 const styles = StyleSheet.create({
   page: {
     flex: 1,
-    backgroundColor: "#020617",
     paddingHorizontal: 18,
     paddingTop: 16,
   },
@@ -109,18 +112,14 @@ const styles = StyleSheet.create({
     height: 36,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: "rgba(148,163,184,0.3)",
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "rgba(15,23,42,0.9)",
   },
   title: {
-    color: "#e5e7eb",
     fontSize: 20,
     fontWeight: "800",
   },
   subtitle: {
-    color: "#9ca3af",
     marginTop: 2,
     fontSize: 13,
   },
@@ -136,12 +135,9 @@ const styles = StyleSheet.create({
     borderRadius: 999,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "rgba(34,197,94,0.15)",
     borderWidth: 1,
-    borderColor: "rgba(34,197,94,0.5)",
   },
   stepNumber: {
-    color: "#bbf7d0",
     fontWeight: "800",
     fontSize: 13,
   },
@@ -149,9 +145,7 @@ const styles = StyleSheet.create({
     flex: 1,
     borderRadius: 14,
     padding: 12,
-    backgroundColor: "rgba(15,23,42,0.95)",
     borderWidth: 1,
-    borderColor: "rgba(148,163,184,0.25)",
   },
   stepHeader: {
     flexDirection: "row",
@@ -165,15 +159,12 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#4ade80",
   },
   stepTitle: {
-    color: "#e5e7eb",
     fontWeight: "700",
     fontSize: 14,
   },
   stepBody: {
-    color: "#9ca3af",
     fontSize: 12,
     lineHeight: 18,
     marginTop: 2,
@@ -192,10 +183,8 @@ const styles = StyleSheet.create({
     gap: 6,
     paddingVertical: 12,
     borderRadius: 999,
-    backgroundColor: "#4ade80",
   },
   primaryText: {
-    color: "#052e16",
     fontWeight: "800",
     fontSize: 13,
   },
@@ -207,12 +196,9 @@ const styles = StyleSheet.create({
     paddingVertical: 11,
     paddingHorizontal: 14,
     borderRadius: 999,
-    backgroundColor: "rgba(15,23,42,1)",
     borderWidth: 1,
-    borderColor: "rgba(148,163,184,0.4)",
   },
   secondaryText: {
-    color: "#e5e7eb",
     fontWeight: "700",
     fontSize: 13,
   },

@@ -135,6 +135,7 @@ import React from "react";
 import { View, Text, StyleSheet, ScrollView } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
+import { useTheme } from "../../hooks/useTheme";
 
 type Stage = {
   stage: string;
@@ -165,6 +166,7 @@ const stageEmoji: Record<string, string> = {
 
 export default function PlantDetails() {
   const router = useRouter();
+  const { colors } = useTheme();
   const params = useLocalSearchParams<{ plant?: string }>();
 
   let plant: Plant | undefined;
@@ -178,8 +180,8 @@ export default function PlantDetails() {
 
   if (!plant) {
     return (
-      <View style={styles.center}>
-        <Text style={styles.errorText}>No plant provided</Text>
+      <View style={[styles.center, { backgroundColor: colors.background }]}>
+        <Text style={[styles.errorText, { color: colors.textMuted }]}>No plant provided</Text>
       </View>
     );
   }
@@ -188,46 +190,46 @@ export default function PlantDetails() {
 
   return (
     // ✅ ScrollView only — no FlatList inside
-    <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 48 }}>
+    <ScrollView style={[styles.container, { backgroundColor: colors.background }]} contentContainerStyle={{ paddingBottom: 48 }}>
 
       {/* Back */}
       <View style={styles.backRow}>
-        <Ionicons name="arrow-back" size={20} color="#22c55e" onPress={() => router.back()} />
-        <Text style={styles.backText} onPress={() => router.back()}>Back</Text>
+        <Ionicons name="arrow-back" size={20} color={colors.primary} onPress={() => router.back()} />
+        <Text style={[styles.backText, { color: colors.primary }]} onPress={() => router.back()}>Back</Text>
       </View>
 
       {/* Title */}
-      <Text style={styles.title}>{plant.plantName}</Text>
+      <Text style={[styles.title, { color: colors.text }]}>{plant.plantName}</Text>
 
       {/* Info row */}
       <View style={styles.infoRow}>
-        <View style={styles.infoCard}>
-          <Text style={styles.infoLabel}>Growth Rate</Text>
-          <Text style={styles.infoValue}>{plant.growthRate || "N/A"}</Text>
+        <View style={[styles.infoCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+          <Text style={[styles.infoLabel, { color: colors.textMuted }]}>Growth Rate</Text>
+          <Text style={[styles.infoValue, { color: colors.text }]}>{plant.growthRate || "N/A"}</Text>
         </View>
-        <View style={styles.infoCard}>
-          <Text style={styles.infoLabel}>Spread</Text>
-          <Text style={styles.infoValue}>{plant.spread || "N/A"}</Text>
+        <View style={[styles.infoCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+          <Text style={[styles.infoLabel, { color: colors.textMuted }]}>Spread</Text>
+          <Text style={[styles.infoValue, { color: colors.text }]}>{plant.spread || "N/A"}</Text>
         </View>
       </View>
 
       {/* Growth stages — .map() instead of FlatList */}
-      <Text style={styles.subtitle}>Growth Stages:</Text>
+      <Text style={[styles.subtitle, { color: colors.text }]}>Growth Stages:</Text>
       {stages.map((item) => (
         <View
           key={item.stage}
-          style={[styles.stageCard, { backgroundColor: stageColors[item.stage] || "#0e1c37" }]}
+          style={[styles.stageCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
         >
           <Text style={styles.stageEmoji}>{stageEmoji[item.stage] || "🌿"}</Text>
           <View style={styles.stageInfo}>
-            <Text style={styles.stageText}>{item.stage}</Text>
-            <Text style={styles.stageMeta}>Month {item.month} · {item.height} cm</Text>
+            <Text style={[styles.stageText, { color: colors.text }]}>{item.stage}</Text>
+            <Text style={[styles.stageMeta, { color: colors.textMuted }]}>Month {item.month} · {item.height} cm</Text>
           </View>
         </View>
       ))}
 
       {stages.length === 0 && (
-        <Text style={styles.empty}>No stage data available.</Text>
+        <Text style={[styles.empty, { color: colors.textMuted }]}>No stage data available.</Text>
       )}
     </ScrollView>
   );

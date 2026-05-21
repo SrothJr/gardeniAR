@@ -288,6 +288,9 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import * as Location from "expo-location";
 import { BACKEND, nBACKEND } from "../../config";
+import { useTheme } from "../../hooks/useTheme";
+import { useTranslation } from "react-i18next";
+import { StatusBar } from "expo-status-bar";
 
 const STAGES = ["Seedling", "Vegetative", "Flowering"];
 const SEASONS = ["Spring", "Summer", "Autumn", "Winter"];
@@ -295,6 +298,8 @@ const SEASONS = ["Spring", "Summer", "Autumn", "Winter"];
 export default function PlantDetail() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
+  const { colors, resolvedTheme } = useTheme();
+  const { t } = useTranslation();
 
   const [plant, setPlant] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -379,7 +384,7 @@ export default function PlantDetail() {
         arr.push(id);
         await AsyncStorage.setItem("myGarden", JSON.stringify(arr));
       }
-      Alert.alert("🌱 Added", "Plant saved to My Garden!");
+      Alert.alert("🌱 " + t("plant.added"), t("plant.added_msg"));
     } catch (err) {
       Alert.alert("Error", "Could not save plant.");
     } finally {
@@ -393,7 +398,7 @@ export default function PlantDetail() {
     try {
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== "granted") {
-        Alert.alert("Permission denied", "Location access is needed.");
+        Alert.alert(t("plant.permission_denied"), t("plant.location_needed"));
         return;
       }
       const loc = await Location.getCurrentPositionAsync({});
@@ -425,15 +430,15 @@ export default function PlantDetail() {
   // Loading / error
   if (loading) {
     return (
-      <View style={s.center}>
-        <ActivityIndicator size="large" color="#22c55e" />
+      <View style={[s.center, { backgroundColor: colors.background }]}>
+        <ActivityIndicator size="large" color={colors.primary} />
       </View>
     );
   }
   if (!plant) {
     return (
-      <View style={s.center}>
-        <Text style={{ color: "#fff" }}>Plant not found</Text>
+      <View style={[s.center, { backgroundColor: colors.background }]}>
+        <Text style={{ color: colors.text }}>{t("plant.not_found")}</Text>
       </View>
     );
   }
@@ -453,41 +458,44 @@ export default function PlantDetail() {
     plant?.waterConfig?.length > 0 || plant?.fertilizerConfig?.length > 0;
 
   return (
-    <ScrollView style={s.page} contentContainerStyle={{ paddingBottom: 48 }}>
-
-      {/* Back */}
-      <TouchableOpacity onPress={() => router.back()} style={s.backRow}>
-        <Ionicons name="arrow-back" size={20} color="#22c55e" />
-        <Text style={s.backText}>Back</Text>
+    <View style={[s.page, { backgroundColor: colors.background }]}>
+      <StatusBar style={resolvedTheme === 'dark' ? 'light' : 'dark'} />
+      {/* Floating Back Button */}
+      <TouchableOpacity 
+        onPress={() => router.back()} 
+        style={s.floatingBackBtn}
+      >
+        <Ionicons name="chevron-back" size={24} color="#fff" />
       </TouchableOpacity>
 
-      {/* Hero */}
-      <Image source={{ uri: heroImage }} style={s.hero} />
+      <ScrollView contentContainerStyle={{ paddingBottom: 48 }}>
+        {/* Hero */}
+        <Image source={{ uri: heroImage }} style={s.hero} />
 
       {/* Name + tags */}
-      <View style={s.block}>
-        <Text style={s.name}>{plant.name}</Text>
+      <View style={[s.block, { borderBottomColor: colors.border }]}>
+        <Text style={[s.name, { color: colors.text }]}>{plant.name}</Text>
         {!!plant.scientificName && (
-          <Text style={s.scientific}>{plant.scientificName}</Text>
+          <Text style={[s.scientific, { color: colors.textMuted }]}>{plant.scientificName}</Text>
         )}
 
         <View style={s.tagRow}>
           {!!plant.sunlight && (
-            <View style={s.tag}>
+            <View style={[s.tag, { backgroundColor: colors.surface, borderColor: colors.border }]}>
               <Ionicons name="sunny-outline" size={12} color="#fbbf24" />
-              <Text style={s.tagText}>{plant.sunlight}</Text>
+              <Text style={[s.tagText, { color: colors.text }]}>{plant.sunlight}</Text>
             </View>
           )}
           {!!plant.water && (
-            <View style={s.tag}>
+            <View style={[s.tag, { backgroundColor: colors.surface, borderColor: colors.border }]}>
               <Ionicons name="water-outline" size={12} color="#60a5fa" />
-              <Text style={s.tagText}>{plant.water}</Text>
+              <Text style={[s.tagText, { color: colors.text }]}>{plant.water}</Text>
             </View>
           )}
           {!!plant.type && (
-            <View style={s.tag}>
-              <Ionicons name="leaf-outline" size={12} color="#34d399" />
-              <Text style={s.tagText}>{plant.type}</Text>
+            <View style={[s.tag, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+              <Ionicons name="leaf-outline" size={12} color={colors.primary} />
+              <Text style={[s.tagText, { color: colors.text }]}>{plant.type}</Text>
             </View>
           )}
         </View>
@@ -498,37 +506,37 @@ export default function PlantDetail() {
             {beginner && (
               <View style={[s.metaTag, s.metaEasy]}>
                 <Ionicons name="happy-outline" size={13} color="#022c22" />
-                <Text style={[s.metaText, { color: "#022c22" }]}>Beginner friendly</Text>
+                <Text style={[s.metaText, { color: "#022c22" }]}>{t("plant.beginner_friendly")}</Text>
               </View>
             )}
             {!!difficulty && (
-              <View style={s.metaTag}>
+              <View style={[s.metaTag, { backgroundColor: colors.surface, borderColor: colors.border }]}>
                 <Ionicons name="leaf-outline" size={13} color="#bae6fd" />
-                <Text style={s.metaText}>
-                  {difficulty === "easy" ? "Easy care" : difficulty === "hard" ? "Advanced care" : "Moderate care"}
+                <Text style={[s.metaText, { color: colors.text }]}>
+                  {difficulty === "easy" ? t("plant.easy_care") : difficulty === "hard" ? t("plant.advanced_care") : t("plant.moderate_care")}
                 </Text>
               </View>
             )}
             {!!growthSpeed && (
-              <View style={s.metaTag}>
+              <View style={[s.metaTag, { backgroundColor: colors.surface, borderColor: colors.border }]}>
                 <Ionicons name="speedometer-outline" size={13} color="#facc15" />
-                <Text style={s.metaText}>
-                  {growthSpeed === "fast" ? "Fast growth" : growthSpeed === "slow" ? "Slow growth" : "Medium growth"}
+                <Text style={[s.metaText, { color: colors.text }]}>
+                  {growthSpeed === "fast" ? t("plant.fast_growth") : growthSpeed === "slow" ? t("plant.slow_growth") : t("plant.medium_growth")}
                 </Text>
               </View>
             )}
             {!!heatTol && (
-              <View style={s.metaTag}>
+              <View style={[s.metaTag, { backgroundColor: colors.surface, borderColor: colors.border }]}>
                 <Ionicons name="flame-outline" size={13} color="#fb7185" />
-                <Text style={s.metaText}>
-                  {heatTol === "high" ? "Heat tolerant" : heatTol === "low" ? "Heat sensitive" : "Normal heat tolerance"}
+                <Text style={[s.metaText, { color: colors.text }]}>
+                  {heatTol === "high" ? t("plant.heat_tolerant") : heatTol === "low" ? t("plant.heat_sensitive") : t("plant.normal_heat")}
                 </Text>
               </View>
             )}
             {!!plant?.season && (
-              <View style={s.metaTag}>
+              <View style={[s.metaTag, { backgroundColor: colors.surface, borderColor: colors.border }]}>
                 <Ionicons name="calendar-outline" size={13} color="#a5b4fc" />
-                <Text style={s.metaText}>{plant.season}</Text>
+                <Text style={[s.metaText, { color: colors.text }]}>{plant.season}</Text>
               </View>
             )}
           </View>
@@ -537,43 +545,43 @@ export default function PlantDetail() {
 
       {/* Care Tips */}
       {plant.careTips?.length > 0 && (
-        <View style={s.block}>
-          <Text style={s.blockTitle}>🌿 Care Tips</Text>
+        <View style={[s.block, { borderBottomColor: colors.border }]}>
+          <Text style={[s.blockTitle, { color: colors.text }]}>🌿 {t("plant.care_tips")}</Text>
           {plant.careTips.map((t, i) => (
-            <Text key={i} style={s.bullet}>• {t}</Text>
+            <Text key={i} style={[s.bullet, { color: colors.textMuted }]}>• {t}</Text>
           ))}
         </View>
       )}
 
       {/* Stage + Season selectors */}
-      <View style={s.block}>
-        <Text style={s.blockTitle}>📅 Life Stage & Season</Text>
+      <View style={[s.block, { borderBottomColor: colors.border }]}>
+        <Text style={[s.blockTitle, { color: colors.text }]}>📅 {t("plant.life_stage_season")}</Text>
 
-        <Text style={s.selectorLabel}>Life Stage</Text>
+        <Text style={[s.selectorLabel, { color: colors.textMuted }]}>{t("plant.life_stage")}</Text>
         <View style={s.pillRow}>
           {STAGES.map((stage) => (
             <TouchableOpacity
               key={stage}
-              style={[s.pill, activeStage === stage && s.pillActive]}
+              style={[s.pill, { backgroundColor: colors.surface, borderColor: colors.border }, activeStage === stage && [s.pillActive, { backgroundColor: colors.primary, borderColor: colors.primary }]]}
               onPress={() => { setActiveStage(stage); setTodayAdvice(null); }}
             >
-              <Text style={[s.pillText, activeStage === stage && s.pillTextActive]}>
+              <Text style={[s.pillText, { color: colors.textMuted }, activeStage === stage && [s.pillTextActive, { color: '#000' }]]}>
                 {stage}
               </Text>
             </TouchableOpacity>
           ))}
         </View>
 
-        <Text style={[s.selectorLabel, { marginTop: 10 }]}>Season</Text>
+        <Text style={[s.selectorLabel, { marginTop: 10, color: colors.textMuted }]}>{t("plant.season")}</Text>
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
           <View style={s.pillRow}>
             {SEASONS.map((season) => (
               <TouchableOpacity
                 key={season}
-                style={[s.pill, activeSeason === season && s.pillActive]}
+                style={[s.pill, { backgroundColor: colors.surface, borderColor: colors.border }, activeSeason === season && [s.pillActive, { backgroundColor: colors.primary, borderColor: colors.primary }]]}
                 onPress={() => { setActiveSeason(season); setTodayAdvice(null); }}
               >
-                <Text style={[s.pillText, activeSeason === season && s.pillTextActive]}>
+                <Text style={[s.pillText, { color: colors.textMuted }, activeSeason === season && [s.pillTextActive, { color: '#000' }]]}>
                   {season}
                 </Text>
               </TouchableOpacity>
@@ -584,13 +592,13 @@ export default function PlantDetail() {
 
       {/* AI Weather button */}
       <View style={{ paddingHorizontal: 16, marginBottom: 4 }}>
-        <TouchableOpacity style={s.aiBtn} onPress={handleForToday} disabled={analyzing}>
+        <TouchableOpacity style={[s.aiBtn, { backgroundColor: '#facc15' }]} onPress={handleForToday} disabled={analyzing}>
           {analyzing ? (
             <ActivityIndicator color="#000" />
           ) : (
             <>
               <Ionicons name="sunny" size={18} color="#000" />
-              <Text style={s.aiBtnText}>Today's AI Weather Advice</Text>
+              <Text style={[s.aiBtnText, { color: '#000' }]}>{t("plant.ai_weather_advice")}</Text>
             </>
           )}
         </TouchableOpacity>
@@ -598,59 +606,59 @@ export default function PlantDetail() {
 
       {/* Today's Advice card */}
       {!!todayAdvice && (
-        <View style={[s.card, s.adviceCard]}>
+        <View style={[s.card, s.adviceCard, { backgroundColor: colors.surface, borderColor: '#facc15' }]}>
           <View style={s.cardHeader}>
             <Ionicons name="sparkles" size={20} color="#facc15" />
-            <Text style={[s.cardTitle, { color: "#facc15" }]}>Today's Advice</Text>
+            <Text style={[s.cardTitle, { color: "#facc15" }]}>{t("plant.todays_advice")}</Text>
           </View>
-          <Text style={s.adviceWeather}>
+          <Text style={[s.adviceWeather, { color: colors.textMuted }]}>
             {todayAdvice.weather.condition} · {Math.round(todayAdvice.weather.temperature)}°C
           </Text>
           <View style={{ marginTop: 10, gap: 8 }}>
-            <Text style={[s.label, { color: "#60a5fa" }]}>💧 Water</Text>
-            <Text style={s.adviceValue}>{todayAdvice.adjustment.waterAdvice}</Text>
-            <Text style={[s.label, { color: "#22c55e", marginTop: 6 }]}>🌱 Fertilizer</Text>
-            <Text style={s.adviceValue}>{todayAdvice.adjustment.fertilizerAdvice}</Text>
-            <Text style={s.adviceReasoning}>{todayAdvice.adjustment.reasoning}</Text>
+            <Text style={[s.label, { color: "#60a5fa" }]}>💧 {t("plant.water")}</Text>
+            <Text style={[s.adviceValue, { color: colors.text }]}>{todayAdvice.adjustment.waterAdvice}</Text>
+            <Text style={[s.label, { color: colors.primary, marginTop: 6 }]}>🌱 {t("plant.fertilizer")}</Text>
+            <Text style={[s.adviceValue, { color: colors.text }]}>{todayAdvice.adjustment.fertilizerAdvice}</Text>
+            <Text style={[s.adviceReasoning, { color: colors.textMuted, borderTopColor: 'rgba(250,204,21,0.2)' }]}>{todayAdvice.adjustment.reasoning}</Text>
           </View>
         </View>
       )}
 
       {/* Watering card */}
       {hasCareGuide ? (
-        <View style={s.card}>
+        <View style={[s.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
           <View style={s.cardHeader}>
             <Ionicons name="water" size={20} color="#3b82f6" />
-            <Text style={s.cardTitle}>Watering</Text>
+            <Text style={[s.cardTitle, { color: colors.text }]}>{t("plant.watering")}</Text>
           </View>
           {waterRule ? (
             <>
               <View style={s.cardRow}>
-                <Text style={s.label}>Amount</Text>
-                <Text style={s.value}>{waterRule.amount}</Text>
+                <Text style={[s.label, { color: colors.textMuted }]}>{t("plant.amount")}</Text>
+                <Text style={[s.value, { color: colors.text }]}>{waterRule.amount}</Text>
               </View>
               <View style={s.cardRow}>
-                <Text style={s.label}>Frequency</Text>
-                <Text style={s.value}>{waterRule.frequency}</Text>
+                <Text style={[s.label, { color: colors.textMuted }]}>{t("plant.frequency")}</Text>
+                <Text style={[s.value, { color: colors.text }]}>{waterRule.frequency}</Text>
               </View>
               {!!waterRule.description && (
-                <Text style={s.cardDesc}>{waterRule.description}</Text>
+                <Text style={[s.cardDesc, { color: colors.textMuted, borderTopColor: colors.border }]}>{waterRule.description}</Text>
               )}
             </>
           ) : (
-            <Text style={s.missing}>No data for {activeStage} in {activeSeason}</Text>
+            <Text style={[s.missing, { color: colors.textMuted }]}>{t("plant.no_data", { stage: activeStage, season: activeSeason })}</Text>
           )}
         </View>
       ) : (
-        <View style={[s.card, { borderColor: "#854d0e" }]}>
+        <View style={[s.card, { backgroundColor: colors.surface, borderColor: "#854d0e" }]}>
           <View style={s.cardHeader}>
             <Ionicons name="water" size={20} color="#3b82f6" />
-            <Text style={s.cardTitle}>Watering</Text>
+            <Text style={[s.cardTitle, { color: colors.text }]}>{t("plant.watering")}</Text>
           </View>
-          <Text style={s.missing}>
-            No care guide found for "{plant.name}".{"\n"}
-            <Text style={{ color: "#64748b", fontSize: 11 }}>
-              Add a care guide in the Care Guides section to see watering details.
+          <Text style={[s.missing, { color: colors.textMuted }]}>
+            {t("plant.no_care_guide", { name: plant.name })}{"\n"}
+            <Text style={{ color: colors.textMuted, fontSize: 11 }}>
+              {t("plant.add_care_guide_hint")}
             </Text>
           </Text>
         </View>
@@ -658,43 +666,43 @@ export default function PlantDetail() {
 
       {/* Fertilizer card */}
       {hasCareGuide ? (
-        <View style={s.card}>
+        <View style={[s.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
           <View style={s.cardHeader}>
-            <Ionicons name="leaf" size={20} color="#22c55e" />
-            <Text style={s.cardTitle}>Fertilizer</Text>
+            <Ionicons name="leaf" size={20} color={colors.primary} />
+            <Text style={[s.cardTitle, { color: colors.text }]}>{t("plant.fertilizer")}</Text>
           </View>
           {fertRule ? (
             <>
               <View style={s.cardRow}>
-                <Text style={s.label}>Type</Text>
-                <Text style={s.value}>{fertRule.type || fertRule.name || "General"}</Text>
+                <Text style={[s.label, { color: colors.textMuted }]}>{t("plant.type")}</Text>
+                <Text style={[s.value, { color: colors.text }]}>{fertRule.type || fertRule.name || "General"}</Text>
               </View>
               <View style={s.cardRow}>
-                <Text style={s.label}>Dosage</Text>
-                <Text style={s.value}>{fertRule.dosage}</Text>
+                <Text style={[s.label, { color: colors.textMuted }]}>{t("plant.dosage")}</Text>
+                <Text style={[s.value, { color: colors.text }]}>{fertRule.dosage}</Text>
               </View>
               <View style={s.cardRow}>
-                <Text style={s.label}>Frequency</Text>
-                <Text style={s.value}>{fertRule.frequency}</Text>
+                <Text style={[s.label, { color: colors.textMuted }]}>{t("plant.frequency")}</Text>
+                <Text style={[s.value, { color: colors.text }]}>{fertRule.frequency}</Text>
               </View>
               {!!fertRule.description && (
-                <Text style={s.cardDesc}>{fertRule.description}</Text>
+                <Text style={[s.cardDesc, { color: colors.textMuted, borderTopColor: colors.border }]}>{fertRule.description}</Text>
               )}
             </>
           ) : (
-            <Text style={s.missing}>No data for {activeStage} in {activeSeason}</Text>
+            <Text style={[s.missing, { color: colors.textMuted }]}>{t("plant.no_data", { stage: activeStage, season: activeSeason })}</Text>
           )}
         </View>
       ) : (
-        <View style={[s.card, { borderColor: "#166534" }]}>
+        <View style={[s.card, { backgroundColor: colors.surface, borderColor: "#166534" }]}>
           <View style={s.cardHeader}>
-            <Ionicons name="leaf" size={20} color="#22c55e" />
-            <Text style={s.cardTitle}>Fertilizer</Text>
+            <Ionicons name="leaf" size={20} color={colors.primary} />
+            <Text style={[s.cardTitle, { color: colors.text }]}>{t("plant.fertilizer")}</Text>
           </View>
-          <Text style={s.missing}>
-            No care guide found for "{plant.name}".{"\n"}
-            <Text style={{ color: "#64748b", fontSize: 11 }}>
-              Add a care guide in the Care Guides section to see fertilizer details.
+          <Text style={[s.missing, { color: colors.textMuted }]}>
+            {t("plant.no_care_guide", { name: plant.name })}{"\n"}
+            <Text style={{ color: colors.textMuted, fontSize: 11 }}>
+              {t("plant.add_care_guide_hint")}
             </Text>
           </Text>
         </View>
@@ -702,102 +710,113 @@ export default function PlantDetail() {
 
       {/* Action buttons */}
       <View style={s.actions}>
-        <TouchableOpacity style={s.soilBtn} onPress={() => router.push("/soil")}>
+        <TouchableOpacity style={[s.soilBtn, { backgroundColor: colors.primary }]} onPress={() => router.push("/soil")}>
           <Ionicons name="color-wand-outline" size={18} color="#071024" />
-          <Text style={s.soilBtnText}>Run Soil Test</Text>
+          <Text style={[s.soilBtnText, { color: '#071024' }]}>{t("plant.run_soil_test")}</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={s.addBtn} onPress={addToGarden} disabled={saving}>
+        <TouchableOpacity style={[s.addBtn, { backgroundColor: colors.primary }]} onPress={addToGarden} disabled={saving}>
           <Ionicons name="add-circle-outline" size={18} color="#031018" />
-          <Text style={s.addBtnText}>{saving ? "Adding…" : "Add to My Garden"}</Text>
+          <Text style={[s.addBtnText, { color: '#031018' }]}>{saving ? t("plant.adding") : t("plant.add_to_garden")}</Text>
         </TouchableOpacity>
       </View>
 
     </ScrollView>
+    </View>
   );
 }
 
 const s = StyleSheet.create({
-  page: { flex: 1, backgroundColor: "#071024" },
-  center: { flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "#071024" },
+  page: { flex: 1 },
+  center: { flex: 1, justifyContent: "center", alignItems: "center" },
 
-  backRow: { flexDirection: "row", alignItems: "center", paddingHorizontal: 14, paddingVertical: 10, gap: 6 },
-  backText: { color: "#22c55e", fontSize: 14, fontWeight: "600" },
+  floatingBackBtn: {
+    position: 'absolute',
+    top: 50,
+    left: 20,
+    zIndex: 10,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
 
   hero: { width: "100%", height: 280 },
 
-  block: { padding: 16, borderBottomWidth: 1, borderBottomColor: "#0f172a" },
-  name: { color: "#e6eef3", fontSize: 24, fontWeight: "800" },
-  scientific: { color: "#9aa6b2", marginTop: 4, fontStyle: "italic", fontSize: 14 },
+  block: { padding: 16, borderBottomWidth: 1 },
+  name: { fontSize: 24, fontWeight: "800" },
+  scientific: { marginTop: 4, fontStyle: "italic", fontSize: 14 },
 
   tagRow: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 10 },
   tag: {
     flexDirection: "row", alignItems: "center", gap: 4,
-    backgroundColor: "#0b1220", borderWidth: 1, borderColor: "#12323a",
+    borderWidth: 1,
     paddingHorizontal: 8, paddingVertical: 5, borderRadius: 8,
   },
-  tagText: { color: "#cde7da", fontSize: 12 },
+  tagText: { fontSize: 12 },
 
   metaRow: { flexDirection: "row", flexWrap: "wrap", marginTop: 10, gap: 6 },
   metaTag: {
     flexDirection: "row", alignItems: "center", gap: 4,
     paddingHorizontal: 8, paddingVertical: 4, borderRadius: 999,
-    backgroundColor: "rgba(15,23,42,0.9)", borderWidth: 1, borderColor: "rgba(148,163,184,0.35)",
+    borderWidth: 1,
   },
   metaEasy: { backgroundColor: "#4ade80", borderColor: "#16a34a" },
-  metaText: { color: "#e5e7eb", fontSize: 11, fontWeight: "600" },
+  metaText: { fontSize: 11, fontWeight: "600" },
 
-  blockTitle: { color: "#e6eef3", fontWeight: "700", fontSize: 15, marginBottom: 10 },
-  bullet: { color: "#d4edd7", marginVertical: 5, lineHeight: 20 },
+  blockTitle: { fontWeight: "700", fontSize: 15, marginBottom: 10 },
+  bullet: { marginVertical: 5, lineHeight: 20 },
 
-  selectorLabel: { color: "#64748b", fontSize: 11, textTransform: "uppercase", letterSpacing: 1, marginBottom: 8 },
+  selectorLabel: { fontSize: 11, textTransform: "uppercase", letterSpacing: 1, marginBottom: 8 },
   pillRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
   pill: {
     paddingHorizontal: 14, paddingVertical: 7, borderRadius: 999,
-    backgroundColor: "#0f172a", borderWidth: 1, borderColor: "#1e293b",
+    borderWidth: 1,
   },
-  pillActive: { backgroundColor: "#22c55e", borderColor: "#22c55e" },
-  pillText: { color: "#94a3b8", fontSize: 13, fontWeight: "600" },
-  pillTextActive: { color: "#071024", fontWeight: "800" },
+  pillActive: { },
+  pillText: { fontSize: 13, fontWeight: "600" },
+  pillTextActive: { fontWeight: "800" },
 
   aiBtn: {
     flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8,
-    backgroundColor: "#facc15", paddingVertical: 13, borderRadius: 14,
+    paddingVertical: 13, borderRadius: 14,
   },
-  aiBtnText: { color: "#000", fontWeight: "800", fontSize: 15 },
+  aiBtnText: { fontWeight: "800", fontSize: 15 },
 
   card: {
-    backgroundColor: "#0f172a", borderRadius: 16, padding: 16,
+    borderRadius: 16, padding: 16,
     marginHorizontal: 16, marginBottom: 12,
-    borderWidth: 1, borderColor: "#1e293b",
+    borderWidth: 1,
   },
-  adviceCard: { borderColor: "#facc15" },
+  adviceCard: { },
   cardHeader: { flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 12 },
-  cardTitle: { color: "#e6eef3", fontSize: 16, fontWeight: "800" },
+  cardTitle: { fontSize: 16, fontWeight: "800" },
   cardRow: { flexDirection: "row", justifyContent: "space-between", marginBottom: 8 },
-  label: { color: "#94a3b8", fontSize: 13 },
-  value: { color: "#e6eef3", fontWeight: "600", fontSize: 13, maxWidth: "60%", textAlign: "right" },
+  label: { fontSize: 13 },
+  value: { fontWeight: "600", fontSize: 13, maxWidth: "60%", textAlign: "right" },
   cardDesc: {
-    color: "#cbd5e1", fontSize: 13, fontStyle: "italic",
-    borderTopWidth: 1, borderTopColor: "#1e293b", paddingTop: 8, marginTop: 4,
+    fontSize: 13, fontStyle: "italic",
+    borderTopWidth: 1, paddingTop: 8, marginTop: 4,
   },
-  missing: { color: "#64748b", fontStyle: "italic", textAlign: "center", paddingVertical: 8 },
+  missing: { fontStyle: "italic", textAlign: "center", paddingVertical: 8 },
 
-  adviceWeather: { color: "#94a3b8", fontSize: 13 },
-  adviceValue: { color: "#e6eef3", fontWeight: "600", fontSize: 14 },
+  adviceWeather: { fontSize: 13 },
+  adviceValue: { fontWeight: "600", fontSize: 14 },
   adviceReasoning: {
-    color: "#cbd5e1", fontSize: 13, fontStyle: "italic",
-    borderTopWidth: 1, borderTopColor: "rgba(250,204,21,0.2)", paddingTop: 8, marginTop: 6,
+    fontSize: 13, fontStyle: "italic",
+    borderTopWidth: 1, paddingTop: 8, marginTop: 6,
   },
 
   actions: { paddingHorizontal: 16, paddingTop: 8, gap: 10 },
   soilBtn: {
     flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8,
-    backgroundColor: "#22c55e", paddingVertical: 13, borderRadius: 14,
+    paddingVertical: 13, borderRadius: 14,
   },
-  soilBtnText: { color: "#071024", fontWeight: "800", fontSize: 15 },
+  soilBtnText: { fontWeight: "800", fontSize: 15 },
   addBtn: {
     flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8,
-    backgroundColor: "#10b981", paddingVertical: 13, borderRadius: 14,
+    paddingVertical: 13, borderRadius: 14,
   },
-  addBtnText: { color: "#031018", fontWeight: "800", fontSize: 15 },
+  addBtnText: { fontWeight: "800", fontSize: 15 },
 });

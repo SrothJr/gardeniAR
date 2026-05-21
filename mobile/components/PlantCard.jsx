@@ -33,7 +33,12 @@ import React from "react";
 import { TouchableOpacity, View, Text, Image, StyleSheet, Alert } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { BACKEND } from "../config";
+import { useTheme } from "../hooks/useTheme";
+import { useTranslation } from "react-i18next";
+
 export default function PlantCard({ plant, onPress }) {
+  const { colors } = useTheme();
+  const { t } = useTranslation();
   const imageUri = plant?.image || "https://picsum.photos/seed/plant/800/600";
 
   const difficulty = plant?.difficulty?.toLowerCase?.();
@@ -41,22 +46,34 @@ export default function PlantCard({ plant, onPress }) {
   const heatTol = plant?.heatTolerance?.toLowerCase?.();
   const beginner = plant?.beginnerFriendly === true;
 
+  const translateTag = (val) => {
+    if (!val) return null;
+    const lower = val.toLowerCase();
+    if (lower.includes("full")) return t("plant.full");
+    if (lower.includes("partial")) return t("plant.partial");
+    if (lower.includes("shade")) return t("plant.shade");
+    if (lower.includes("low")) return t("plant.low");
+    if (lower.includes("medium")) return t("plant.medium");
+    if (lower.includes("high")) return t("plant.high");
+    return val;
+  };
+
   return (
     <View style={styles.wrapper}>
       {/* MAIN CARD — tap goes to plant detail */}
       <TouchableOpacity
-        style={styles.card}
+        style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}
         onPress={onPress}
         activeOpacity={0.9}
       >
-        <Image source={{ uri: imageUri }} style={styles.image} />
+        <Image source={{ uri: imageUri }} style={[styles.image, { backgroundColor: colors.background }]} />
 
         <View style={styles.info}>
-          <Text style={styles.name}>{plant?.name ?? "Unknown"}</Text>
+          <Text style={[styles.name, { color: colors.text }]}>{plant?.name ?? t("plant.unknown")}</Text>
 
           <View style={styles.tags}>
-            {plant?.sunlight ? <Text style={styles.tag}>{plant.sunlight}</Text> : null}
-            {plant?.water ? <Text style={styles.tag}>{plant.water}</Text> : null}
+            {plant?.sunlight ? <Text style={[styles.tag, { color: colors.primary, backgroundColor: colors.background }]}>{translateTag(plant.sunlight)}</Text> : null}
+            {plant?.water ? <Text style={[styles.tag, { color: colors.primary, backgroundColor: colors.background }]}>{translateTag(plant.water)}</Text> : null}
           </View>
 
           {(difficulty || growthSpeed || heatTol || beginner) && (
@@ -64,45 +81,45 @@ export default function PlantCard({ plant, onPress }) {
               {beginner && (
                 <View style={[styles.metaTag, styles.metaEasy]}>
                   <Ionicons name="happy-outline" size={12} color="#022c22" />
-                  <Text style={styles.metaText}>Beginner</Text>
+                  <Text style={styles.metaText}>{t("plant.beginner")}</Text>
                 </View>
               )}
 
               {difficulty && (
-                <View style={styles.metaTag}>
-                  <Ionicons name="leaf-outline" size={12} color="#bae6fd" />
-                  <Text style={styles.metaText}>
+                <View style={[styles.metaTag, { backgroundColor: colors.background + '80', borderColor: colors.border }]}>
+                  <Ionicons name="leaf-outline" size={12} color={colors.primary} />
+                  <Text style={[styles.metaText, { color: colors.text }]}>
                     {difficulty === "easy"
-                      ? "Easy care"
+                      ? t("plant.easy_care")
                       : difficulty === "hard"
-                        ? "Advanced"
-                        : "Moderate"}
+                        ? t("plant.advanced_care")
+                        : t("plant.moderate_care")}
                   </Text>
                 </View>
               )}
 
               {growthSpeed && (
-                <View style={styles.metaTag}>
+                <View style={[styles.metaTag, { backgroundColor: colors.background + '80', borderColor: colors.border }]}>
                   <Ionicons name="speedometer-outline" size={12} color="#facc15" />
-                  <Text style={styles.metaText}>
+                  <Text style={[styles.metaText, { color: colors.text }]}>
                     {growthSpeed === "fast"
-                      ? "Fast growth"
+                      ? t("plant.fast_growth")
                       : growthSpeed === "slow"
-                        ? "Slow growth"
-                        : "Medium growth"}
+                        ? t("plant.slow_growth")
+                        : t("plant.medium_growth")}
                   </Text>
                 </View>
               )}
 
               {heatTol && (
-                <View style={styles.metaTag}>
+                <View style={[styles.metaTag, { backgroundColor: colors.background + '80', borderColor: colors.border }]}>
                   <Ionicons name="flame-outline" size={12} color="#fb7185" />
-                  <Text style={styles.metaText}>
+                  <Text style={[styles.metaText, { color: colors.text }]}>
                     {heatTol === "high"
-                      ? "Heat tolerant"
+                      ? t("plant.heat_tolerant")
                       : heatTol === "low"
-                        ? "Heat sensitive"
-                        : "Normal heat"}
+                        ? t("plant.heat_sensitive")
+                        : t("plant.normal_heat")}
                   </Text>
                 </View>
               )}
@@ -111,7 +128,7 @@ export default function PlantCard({ plant, onPress }) {
 
           {/* 💰 PRICE (read-only, subtle) */}
           {plant?.price !== undefined && (
-            <Text style={styles.price}>Tk {plant.price}</Text>
+            <Text style={[styles.price, { color: colors.primary }]}>{t("plant.price_tk", { price: plant.price })}</Text>
           )}
         </View>
       </TouchableOpacity>
@@ -119,7 +136,7 @@ export default function PlantCard({ plant, onPress }) {
       {/* ➕ ADD TO CART BUTTON (separate touch) */}
       {plant?.price !== undefined && (
         <TouchableOpacity
-          style={styles.plus}
+          style={[styles.plus, { backgroundColor: colors.primary }]}
           activeOpacity={0.8}
           onPress={async () => {
             try {
@@ -152,14 +169,14 @@ export default function PlantCard({ plant, onPress }) {
                 body: JSON.stringify({ items: updated }),
               });
 
-              Alert.alert("Added to cart", plant.name);
+              Alert.alert(t("plant.added_to_cart"), plant.name);
             } catch (err) {
               console.error(err);
-              Alert.alert("Error", "Could not add to cart");
+              Alert.alert(t("plant.error"), t("plant.could_not_add_to_cart"));
             }
           }}
         >
-          <Text style={styles.plusText}>+</Text>
+          <Text style={[styles.plusText, { color: '#000' }]}>+</Text>
         </TouchableOpacity>
       )}
     </View>
@@ -175,15 +192,12 @@ const styles = StyleSheet.create({
   card: {
     borderRadius: 12,
     overflow: "hidden",
-    backgroundColor: "#0b1220",
     borderWidth: 1,
-    borderColor: "#12202b",
   },
 
   image: {
     width: "100%",
     height: 180,
-    backgroundColor: "#0f1724",
   },
 
   info: {
@@ -191,7 +205,6 @@ const styles = StyleSheet.create({
   },
 
   name: {
-    color: "#e6eef3",
     fontWeight: "700",
     fontSize: 18,
   },
@@ -203,10 +216,8 @@ const styles = StyleSheet.create({
   },
 
   tag: {
-    color: "#cde7da",
     marginRight: 10,
     marginBottom: 4,
-    backgroundColor: "#0b1220",
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 999,
@@ -226,16 +237,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 3,
     borderRadius: 999,
-    backgroundColor: "rgba(15,23,42,0.9)",
     borderWidth: 1,
-    borderColor: "rgba(148,163,184,0.4)",
   },
   metaEasy: {
     backgroundColor: "#4ade80",
     borderColor: "#16a34a",
   },
   metaText: {
-    color: "#e5e7eb",
     fontSize: 11,
     fontWeight: "600",
   },
@@ -245,7 +253,6 @@ const styles = StyleSheet.create({
     marginTop: 8,
     fontSize: 13,
     fontWeight: "600",
-    color: "#a7f3d0",
   },
 
   /* ➕ BUTTON */
@@ -256,7 +263,6 @@ const styles = StyleSheet.create({
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: "#22c55e",
     justifyContent: "center",
     alignItems: "center",
   },
@@ -264,6 +270,5 @@ const styles = StyleSheet.create({
   plusText: {
     fontSize: 18,
     fontWeight: "700",
-    color: "#022c22",
   },
 });

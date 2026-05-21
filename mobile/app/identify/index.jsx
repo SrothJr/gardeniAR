@@ -4,6 +4,7 @@ import { CameraView, useCameraPermissions } from 'expo-camera';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { BACKEND_URL } from '../../config';
+import { useTheme } from '../../hooks/useTheme';
 
 // Local Asset Mapping
 const WEED_IMAGES = {
@@ -23,6 +24,7 @@ export default function IdentifyScreen() {
   const [currentIndex, setCurrentIndex] = useState(0);
   
   const router = useRouter();
+  const { colors } = useTheme();
 
   useEffect(() => {
     // Fetch weeds for manual mode
@@ -34,15 +36,15 @@ export default function IdentifyScreen() {
 
   if (!permission) {
     // Camera permissions are still loading.
-    return <View />;
+    return <View style={{ flex: 1, backgroundColor: '#000' }} />;
   }
 
   if (!permission.granted) {
     return (
-      <View style={styles.container}>
+      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
         <Text style={styles.message}>We need your permission to show the camera</Text>
-        <TouchableOpacity style={styles.btn} onPress={requestPermission}>
-            <Text style={styles.btnText}>Grant Permission</Text>
+        <TouchableOpacity style={[styles.btn, { backgroundColor: colors.primary }]} onPress={requestPermission}>
+            <Text style={[styles.btnText, { color: "#000" }]}>Grant Permission</Text>
         </TouchableOpacity>
       </View>
     );
@@ -132,16 +134,16 @@ export default function IdentifyScreen() {
                 
                 <View style={styles.toggleContainer}>
                     <TouchableOpacity 
-                        style={StyleSheet.flatten([styles.toggleBtn, mode === 'auto' && styles.activeToggle])}
+                        style={[styles.toggleBtn, mode === 'auto' && { backgroundColor: colors.primary }]}
                         onPress={() => setMode('auto')}
                     >
-                        <Text style={StyleSheet.flatten([styles.toggleText, mode === 'auto' && styles.activeToggleText])}>AI Scan</Text>
+                        <Text style={[styles.toggleText, mode === 'auto' && { color: "#000" }]}>AI Scan</Text>
                     </TouchableOpacity>
                     <TouchableOpacity 
-                        style={StyleSheet.flatten([styles.toggleBtn, mode === 'manual' && styles.activeToggle])}
+                        style={[styles.toggleBtn, mode === 'manual' && { backgroundColor: colors.primary }]}
                         onPress={() => setMode('manual')}
                     >
-                        <Text style={StyleSheet.flatten([styles.toggleText, mode === 'manual' && styles.activeToggleText])}>Manual AR</Text>
+                        <Text style={[styles.toggleText, mode === 'manual' && { color: "#000" }]}>Manual AR</Text>
                     </TouchableOpacity>
                 </View>
             </View>
@@ -166,8 +168,8 @@ export default function IdentifyScreen() {
                         </TouchableOpacity>
                         <View style={styles.weedLabel}>
                             <Text style={styles.weedName}>{weeds[currentIndex].name}</Text>
-                            <TouchableOpacity style={styles.matchBtn} onPress={selectManualWeed}>
-                                <Text style={styles.matchBtnText}>It's a Match!</Text>
+                            <TouchableOpacity style={[styles.matchBtn, { backgroundColor: colors.primary }]} onPress={selectManualWeed}>
+                                <Text style={[styles.matchBtnText, { color: "#000" }]}>It's a Match!</Text>
                             </TouchableOpacity>
                         </View>
                         <TouchableOpacity onPress={nextWeed} style={styles.navBtn}>
@@ -188,8 +190,8 @@ export default function IdentifyScreen() {
 
             {loading && (
                 <View style={styles.loadingOverlay}>
-                    <ActivityIndicator size="large" color="#22c55e" />
-                    <Text style={styles.loadingText}>Analyzing...</Text>
+                    <ActivityIndicator size="large" color={colors.primary} />
+                    <Text style={[styles.loadingText, { color: colors.primary }]}>Analyzing...</Text>
                 </View>
             )}
         </View>
@@ -199,8 +201,8 @@ export default function IdentifyScreen() {
             <Image source={{ uri: imgSrc }} style={styles.previewImage} />
             {loading && (
                  <View style={styles.loadingOverlay}>
-                    <ActivityIndicator size="large" color="#22c55e" />
-                    <Text style={styles.loadingText}>Analyzing...</Text>
+                    <ActivityIndicator size="large" color={colors.primary} />
+                    <Text style={[styles.loadingText, { color: colors.primary }]}>Analyzing...</Text>
                  </View>
             )}
         </View>
@@ -209,25 +211,25 @@ export default function IdentifyScreen() {
       {/* Result Modal */}
       <Modal visible={!!result} animationType="slide" transparent={true} onRequestClose={resetScan}>
         <View style={styles.modalOverlay}>
-            <View style={styles.resultCard}>
-                <ScrollView contentContainerStyle={{ paddingBottom: 20 }}>
+            <View style={[styles.resultCard, { backgroundColor: colors.surface }]}>
+                <ScrollView contentContainerStyle={{ paddingBottom: 20 }} showsVerticalScrollIndicator={false}>
                     <View style={styles.resultHeader}>
                         <View style={{ flex: 1 }}>
-                            <Text style={styles.resultName}>{result?.name || "Unknown"}</Text>
-                            <Text style={styles.resultScientific}>{result?.scientificName}</Text>
+                            <Text style={[styles.resultName, { color: colors.text }]}>{result?.name || "Unknown"}</Text>
+                            <Text style={[styles.resultScientific, { color: colors.textMuted }]}>{result?.scientificName}</Text>
                         </View>
-                        <View style={styles.confidenceBadge}>
-                            <Text style={styles.confidenceText}>{result?.confidence}</Text>
+                        <View style={[styles.confidenceBadge, { backgroundColor: colors.background }]}>
+                            <Text style={[styles.confidenceText, { color: colors.primary }]}>{result?.confidence}</Text>
                         </View>
                     </View>
 
-                    <View style={styles.divider} />
+                    <View style={[styles.divider, { backgroundColor: colors.border }]} />
                     
-                    <Text style={styles.sectionTitle}>🌱 Description</Text>
-                    <Text style={styles.bodyText}>{result?.description}</Text>
+                    <Text style={[styles.sectionTitle, { color: colors.text }]}>🌱 Description</Text>
+                    <Text style={[styles.bodyText, { color: colors.textMuted }]}>{result?.description}</Text>
                     
-                    <Text style={styles.sectionTitle}>⚠️ Is it a Weed?</Text>
-                    <Text style={styles.bodyText}>
+                    <Text style={[styles.sectionTitle, { color: colors.text }]}>⚠️ Is it a Weed?</Text>
+                    <Text style={[styles.bodyText, { color: colors.textMuted }]}>
                         {result?.isPlant === false ? "No plant detected." : 
                          result?.isWeed ? "Yes, this is considered a weed." : 
                          "No, this might be a beneficial plant."}
@@ -235,20 +237,20 @@ export default function IdentifyScreen() {
 
                     {result?.isWeed && (
                         <>
-                            <Text style={styles.sectionTitle}>🛠️ Removal Instructions</Text>
-                            <Text style={styles.bodyText}>{result?.removalInstructions}</Text>
+                            <Text style={[styles.sectionTitle, { color: colors.text }]}>🛠️ Removal Instructions</Text>
+                            <Text style={[styles.bodyText, { color: colors.textMuted }]}>{result?.removalInstructions}</Text>
                         </>
                     )}
 
                     {result?.warning && (
                         <>
-                            <Text style={StyleSheet.flatten([styles.sectionTitle, { color: '#ef4444' }])}>☣️ Warning</Text>
-                            <Text style={StyleSheet.flatten([styles.bodyText, { color: '#ef4444' }])}>{result?.warning}</Text>
+                            <Text style={[styles.sectionTitle, { color: '#ef4444' }]}>☣️ Warning</Text>
+                            <Text style={[styles.bodyText, { color: '#ef4444' }]}>{result?.warning}</Text>
                         </>
                     )}
 
-                    <TouchableOpacity style={styles.closeBtn} onPress={resetScan}>
-                        <Text style={styles.closeBtnText}>
+                    <TouchableOpacity style={[styles.closeBtn, { backgroundColor: colors.primary }]} onPress={resetScan}>
+                        <Text style={[styles.closeBtnText, { color: "#000" }]}>
                             {mode === 'auto' ? "Scan Another" : "Back to AR"}
                         </Text>
                     </TouchableOpacity>
@@ -293,16 +295,10 @@ const styles = StyleSheet.create({
       paddingHorizontal: 16,
       borderRadius: 20,
   },
-  activeToggle: {
-      backgroundColor: '#22c55e',
-  },
   toggleText: {
       color: '#fff',
       fontWeight: '600',
       fontSize: 14,
-  },
-  activeToggleText: {
-      color: '#000',
   },
 
   bottomBar: {
@@ -334,7 +330,6 @@ const styles = StyleSheet.create({
       alignItems: 'center',
   },
   loadingText: {
-      color: '#22c55e',
       marginTop: 10,
       fontSize: 18,
       fontWeight: 'bold',
@@ -393,13 +388,11 @@ const styles = StyleSheet.create({
       textShadowRadius: 10
   },
   matchBtn: {
-      backgroundColor: '#22c55e',
       paddingHorizontal: 20,
       paddingVertical: 10,
       borderRadius: 20,
   },
   matchBtnText: {
-      color: '#000',
       fontWeight: 'bold',
   },
 
@@ -410,7 +403,6 @@ const styles = StyleSheet.create({
       justifyContent: 'flex-end',
   },
   resultCard: {
-      backgroundColor: '#1a202c',
       borderTopLeftRadius: 20,
       borderTopRightRadius: 20,
       padding: 20,
@@ -422,58 +414,48 @@ const styles = StyleSheet.create({
       alignItems: 'flex-start',
   },
   resultName: {
-      color: '#fff',
       fontSize: 24,
       fontWeight: 'bold',
   },
   resultScientific: {
-      color: '#a0aec0',
       fontSize: 16,
       fontStyle: 'italic',
   },
   confidenceBadge: {
-      backgroundColor: '#2d3748',
       paddingHorizontal: 10,
       paddingVertical: 4,
       borderRadius: 8,
   },
   confidenceText: {
-      color: '#22c55e',
       fontSize: 12,
       fontWeight: 'bold',
   },
   divider: {
       height: 1,
-      backgroundColor: '#2d3748',
       marginVertical: 15,
   },
   sectionTitle: {
-      color: '#fff',
       fontSize: 18,
       fontWeight: 'bold',
       marginTop: 10,
       marginBottom: 5,
   },
   bodyText: {
-      color: '#cbd5e0',
       fontSize: 16,
       lineHeight: 24,
       marginBottom: 10,
   },
   closeBtn: {
-      backgroundColor: '#22c55e',
       padding: 15,
       borderRadius: 10,
       alignItems: 'center',
       marginTop: 20,
   },
   closeBtnText: {
-      color: '#000',
       fontWeight: 'bold',
       fontSize: 16,
   },
   btn: {
-    backgroundColor: '#10b981',
     padding: 15,
     borderRadius: 8,
     alignItems: 'center',
@@ -482,7 +464,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   btnText: {
-    color: '#000',
     fontWeight: 'bold',
   }
 });

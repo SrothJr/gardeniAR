@@ -1,12 +1,17 @@
 import React, { useState, useCallback, useMemo } from 'react';
 import { View, Text, SectionList, TouchableOpacity, TextInput, StyleSheet, ActivityIndicator, Alert, Modal } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useFocusEffect } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
 import { BACKEND_URL } from '../../config';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import { useTheme } from '../../hooks/useTheme';
+import { useTranslation } from 'react-i18next';
 
 export default function Checklist() {
+  const { colors, resolvedTheme } = useTheme();
+  const { t } = useTranslation();
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [modalVisible, setModalVisible] = useState(false);
@@ -29,7 +34,7 @@ export default function Checklist() {
     try {
       const userStr = await AsyncStorage.getItem('user');
       if (!userStr) {
-        Alert.alert('Login Required', 'Please log in to manage your garden tasks.');
+        Alert.alert(t('checklist.login_required'), t('checklist.login_msg'));
         router.push('/auth/login');
         return;
       }
@@ -77,11 +82,11 @@ export default function Checklist() {
         setModalVisible(false);
         fetchTasks();
       } else {
-        Alert.alert('Error', 'Failed to add smart task. Please try again.');
+        Alert.alert(t('plant.error'), t('checklist.error_smart'));
       }
     } catch (error) {
       console.error(error);
-      Alert.alert('Error', 'An error occurred while adding smart task.');
+      Alert.alert(t('plant.error'), t('checklist.error_smart_generic'));
     } finally {
       setIsSmartLoading(false);
     }
@@ -114,14 +119,14 @@ export default function Checklist() {
       });
 
       if (response.ok) {
-        Alert.alert('Success', '✨ AI has successfully rescheduled your overdue tasks!');
+        Alert.alert(t('plant.added'), t('checklist.optimize_success'));
         fetchTasks();
       } else {
-        Alert.alert('Error', 'Failed to optimize tasks.');
+        Alert.alert(t('plant.error'), t('checklist.error_optimize'));
       }
     } catch (error) {
       console.error(error);
-      Alert.alert('Error', 'An error occurred while optimizing.');
+      Alert.alert(t('plant.error'), t('checklist.error_optimize_generic'));
     } finally {
       setIsOptimizing(false);
     }
@@ -145,14 +150,14 @@ export default function Checklist() {
       const data = await response.json();
 
       if (response.ok) {
-        Alert.alert('✨ Success', `Generated ${data.tasksAdded} tasks based on your tracked plants!`);
+        Alert.alert('✨ ' + t('plant.added'), t('checklist.routine_success', { count: data.tasksAdded }));
         fetchTasks();
       } else {
-        Alert.alert('Oops', data.message || 'Failed to generate routine.');
+        Alert.alert(t('plant.error'), data.message || t('checklist.error_routine'));
       }
     } catch (error) {
       console.error(error);
-      Alert.alert('Error', 'An error occurred while generating routine.');
+      Alert.alert(t('plant.error'), t('checklist.error_routine_generic'));
     } finally {
       setIsGeneratingRoutine(false);
     }
@@ -160,7 +165,7 @@ export default function Checklist() {
 
   const handleAddTask = async () => {
     if (!newTaskTitle) {
-      Alert.alert('Error', 'Task title is required');
+      Alert.alert(t('plant.error'), t('checklist.title_required'));
       return;
     }
 
@@ -185,7 +190,7 @@ export default function Checklist() {
         setNewTaskDesc('');
         fetchTasks();
       } else {
-        Alert.alert('Error', 'Failed to add task');
+        Alert.alert(t('plant.error'), t('checklist.error_add'));
       }
     } catch (error) {
       console.error(error);
@@ -208,12 +213,12 @@ export default function Checklist() {
 
   const deleteTask = async (id) => {
     Alert.alert(
-      "Delete Task",
-      "Are you sure?",
+      t('checklist.delete_title'),
+      t('checklist.delete_confirm'),
       [
-        { text: "Cancel", style: "cancel" },
+        { text: t('checklist.cancel'), style: "cancel" },
         { 
-          text: "Delete", 
+          text: t('checklist.delete_btn'), 
           style: "destructive",
           onPress: async () => {
             try {
@@ -278,45 +283,45 @@ export default function Checklist() {
     });
 
     const sections = [];
-    if (groups.overdue.length > 0) sections.push({ title: 'Overdue', data: groups.overdue, color: '#ef4444' });
-    if (groups.today.length > 0) sections.push({ title: 'Today', data: groups.today, color: '#10b981' });
-    if (groups.tomorrow.length > 0) sections.push({ title: 'Tomorrow', data: groups.tomorrow, color: '#3b82f6' });
-    if (groups.upcoming.length > 0) sections.push({ title: 'Upcoming', data: groups.upcoming, color: '#a855f7' });
-    if (groups.completed.length > 0) sections.push({ title: 'Completed', data: groups.completed, color: '#6b7280' });
+    if (groups.overdue.length > 0) sections.push({ title: t('checklist.overdue'), data: groups.overdue, color: '#ef4444' });
+    if (groups.today.length > 0) sections.push({ title: t('checklist.today'), data: groups.today, color: '#10b981' });
+    if (groups.tomorrow.length > 0) sections.push({ title: t('checklist.tomorrow'), data: groups.tomorrow, color: '#3b82f6' });
+    if (groups.upcoming.length > 0) sections.push({ title: t('checklist.upcoming'), data: groups.upcoming, color: '#a855f7' });
+    if (groups.completed.length > 0) sections.push({ title: t('checklist.completed'), data: groups.completed, color: '#6b7280' });
 
     return sections;
-  }, [tasks]);
+  }, [tasks, t]);
 
 
   const renderItem = ({ item }) => (
-    <View style={styles.taskCard}>
+    <View style={[styles.taskCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
       <TouchableOpacity onPress={() => toggleTask(item._id)} style={styles.checkbox}>
         <Ionicons 
           name={item.isCompleted ? "checkbox" : "square-outline"} 
           size={24} 
-          color={item.isCompleted ? "#10b981" : "#aaa"} 
+          color={item.isCompleted ? colors.primary : colors.textMuted} 
         />
       </TouchableOpacity>
       
       <View style={styles.taskInfo}>
         <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap' }}>
           {item.aiGenerated && (
-            <Ionicons name="sparkles" size={14} color="#facc15" style={{ marginRight: 6 }} />
+            <Ionicons name="sparkles" size={14} color={colors.primary} style={{ marginRight: 6 }} />
           )}
-          <Text style={[styles.taskTitle, item.isCompleted && styles.completedText]}>
+          <Text style={[styles.taskTitle, { color: colors.text }, item.isCompleted && styles.completedText]}>
             {item.title}
           </Text>
         </View>
         
-        {item.description ? <Text style={styles.taskDesc}>{item.description}</Text> : null}
+        {item.description ? <Text style={[styles.taskDesc, { color: colors.textMuted }]}>{item.description}</Text> : null}
         
         {item.aiReasoning && !item.isCompleted ? (
-          <Text style={styles.aiReasoningText}>{item.aiReasoning}</Text>
+          <Text style={[styles.aiReasoningText, { color: colors.primary }]}>{item.aiReasoning}</Text>
         ) : null}
 
         {item.dueDate && (
-          <Text style={styles.taskDate}>
-            Due: {new Date(item.dueDate).toLocaleDateString()}
+          <Text style={[styles.taskDate, { color: colors.primary }]}>
+            {t('checklist.due')}: {new Date(item.dueDate).toLocaleDateString()}
           </Text>
         )}
       </View>
@@ -328,23 +333,23 @@ export default function Checklist() {
   );
 
   const renderSectionHeader = ({ section: { title, color } }) => (
-    <View style={styles.sectionHeaderContainer}>
+    <View style={[styles.sectionHeaderContainer, { backgroundColor: colors.background }]}>
       <View style={styles.sectionHeader}>
         <View style={[styles.sectionIndicator, { backgroundColor: color }]} />
         <Text style={[styles.sectionTitle, { color }]}>{title}</Text>
       </View>
-      {title === 'Overdue' && (
+      {title === t('checklist.overdue') && (
         <TouchableOpacity 
-          style={[styles.optimizeBtn, isOptimizing && { opacity: 0.7 }]} 
+          style={[styles.optimizeBtn, { backgroundColor: colors.primary }, isOptimizing && { opacity: 0.7 }]} 
           onPress={handleOptimize}
           disabled={isOptimizing}
         >
           {isOptimizing ? (
-            <ActivityIndicator size="small" color="#fff" />
+            <ActivityIndicator size="small" color="#000" />
           ) : (
             <>
-              <Ionicons name="sparkles" size={16} color="#fff" style={{ marginRight: 6 }} />
-              <Text style={styles.optimizeBtnText}>Smart Reschedule</Text>
+              <Ionicons name="sparkles" size={16} color="#000" style={{ marginRight: 6 }} />
+              <Text style={[styles.optimizeBtnText, { color: "#000" }]}>{t('checklist.smart_reschedule')}</Text>
             </>
           )}
         </TouchableOpacity>
@@ -353,22 +358,31 @@ export default function Checklist() {
   );
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top']}>
+      {/* Header */}
+      <View style={[styles.header, { borderBottomColor: colors.border }]}>
+        <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
+          <Ionicons name="chevron-back" size={24} color={colors.text} />
+        </TouchableOpacity>
+        <Text style={[styles.headerTitle, { color: colors.text }]}>{t('checklist.title')}</Text>
+        <View style={{ width: 40 }} />
+      </View>
+
       {/* AI Generate Routine Banner */}
       <View style={styles.aiBannerContainer}>
         <TouchableOpacity 
-          style={[styles.aiBannerBtn, isGeneratingRoutine && { opacity: 0.7 }]} 
+          style={[styles.aiBannerBtn, { backgroundColor: colors.surface, borderColor: colors.primary }, isGeneratingRoutine && { opacity: 0.7 }]} 
           onPress={handleGenerateRoutine}
           disabled={isGeneratingRoutine}
         >
           {isGeneratingRoutine ? (
-            <ActivityIndicator size="small" color="#fff" />
+            <ActivityIndicator size="small" color={colors.primary} />
           ) : (
             <>
-              <Ionicons name="sparkles" size={20} color="#facc15" style={{ marginRight: 8 }} />
+              <Ionicons name="sparkles" size={20} color={colors.primary} style={{ marginRight: 8 }} />
               <View>
-                <Text style={styles.aiBannerTitle}>✨ Generate Weekly Routine</Text>
-                <Text style={styles.aiBannerSub}>AI creates a schedule based on your tracked plants</Text>
+                <Text style={[styles.aiBannerTitle, { color: colors.primary }]}>{t('checklist.generate_routine')}</Text>
+                <Text style={[styles.aiBannerSub, { color: colors.textMuted }]}>{t('checklist.generate_routine_sub')}</Text>
               </View>
             </>
           )}
@@ -376,7 +390,7 @@ export default function Checklist() {
       </View>
 
       {loading ? (
-        <ActivityIndicator size="large" color="#10b981" style={{ marginTop: 20 }} />
+        <ActivityIndicator size="large" color={colors.primary} style={{ marginTop: 20 }} />
       ) : (
         <SectionList
           sections={groupedTasks}
@@ -384,12 +398,12 @@ export default function Checklist() {
           renderItem={renderItem}
           renderSectionHeader={renderSectionHeader}
           contentContainerStyle={{ padding: 15, paddingBottom: 80 }}
-          ListEmptyComponent={<Text style={styles.emptyText}>No tasks yet. Add one!</Text>}
+          ListEmptyComponent={<Text style={[styles.emptyText, { color: colors.textMuted }]}>{t('checklist.empty')}</Text>}
           stickySectionHeadersEnabled={false}
         />
       )}
 
-      <TouchableOpacity style={styles.fab} onPress={() => setModalVisible(true)}>
+      <TouchableOpacity style={[styles.fab, { backgroundColor: colors.primary }]} onPress={() => setModalVisible(true)}>
         <Ionicons name="add" size={30} color="#000" />
       </TouchableOpacity>
 
@@ -401,62 +415,62 @@ export default function Checklist() {
         onRequestClose={() => setModalVisible(false)}
       >
         <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
+          <View style={[styles.modalContent, { backgroundColor: colors.surface }]}>
             
-            <Text style={styles.modalTitle}>✨ Smart Add</Text>
+            <Text style={[styles.modalTitle, { color: colors.text }]}>{t('checklist.smart_add')}</Text>
             <View style={styles.smartInputContainer}>
               <TextInput
-                style={styles.smartInput}
-                placeholder='e.g., "Water tomatoes next Friday"'
-                placeholderTextColor="#aaa"
+                style={[styles.smartInput, { backgroundColor: colors.background, color: colors.text, borderColor: colors.primary }]}
+                placeholder={t('checklist.smart_input_placeholder')}
+                placeholderTextColor={colors.textMuted}
                 value={smartInput}
                 onChangeText={setSmartInput}
                 editable={!isSmartLoading}
                 onSubmitEditing={handleSmartAdd}
               />
               <TouchableOpacity 
-                style={[styles.smartAddBtn, isSmartLoading && { opacity: 0.7 }]} 
+                style={[styles.smartAddBtn, { backgroundColor: colors.primary }, isSmartLoading && { opacity: 0.7 }]} 
                 onPress={handleSmartAdd} 
                 disabled={isSmartLoading}
               >
                 {isSmartLoading ? (
-                  <ActivityIndicator size="small" color="#fff" />
+                  <ActivityIndicator size="small" color="#000" />
                 ) : (
-                  <Ionicons name="sparkles" size={20} color="#fff" />
+                  <Ionicons name="sparkles" size={20} color="#000" />
                 )}
               </TouchableOpacity>
             </View>
 
             <View style={styles.divider}>
-              <View style={styles.line} />
-              <Text style={styles.orText}>OR ADD MANUALLY</Text>
-              <View style={styles.line} />
+              <View style={[styles.line, { backgroundColor: colors.border }]} />
+              <Text style={[styles.orText, { color: colors.textMuted }]}>{t('checklist.add_manually')}</Text>
+              <View style={[styles.line, { backgroundColor: colors.border }]} />
             </View>
             
             <TextInput
-              style={styles.input}
-              placeholder="Task Title (e.g., Water Roses)"
-              placeholderTextColor="#aaa"
+              style={[styles.input, { backgroundColor: colors.background, color: colors.text, borderColor: colors.border }]}
+              placeholder={t('checklist.task_title_placeholder')}
+              placeholderTextColor={colors.textMuted}
               value={newTaskTitle}
               onChangeText={setNewTaskTitle}
             />
 
             <TextInput
-              style={StyleSheet.flatten([styles.input, styles.textArea])}
-              placeholder="Description (Optional)"
-              placeholderTextColor="#aaa"
+              style={[styles.input, styles.textArea, { backgroundColor: colors.background, color: colors.text, borderColor: colors.border }]}
+              placeholder={t('checklist.desc_placeholder')}
+              placeholderTextColor={colors.textMuted}
               value={newTaskDesc}
               onChangeText={setNewTaskDesc}
               multiline
             />
 
             <TouchableOpacity 
-              style={styles.dateBtn} 
+              style={[styles.dateBtn, { backgroundColor: colors.background, borderColor: colors.border }]} 
               onPress={() => setShowDatePicker(true)}
             >
-              <Ionicons name="calendar-outline" size={20} color="#10b981" />
-              <Text style={styles.dateBtnText}>
-                Due: {date.toLocaleDateString()}
+              <Ionicons name="calendar-outline" size={20} color={colors.primary} />
+              <Text style={[styles.dateBtnText, { color: colors.text }]}>
+                {t('checklist.due')}: {date.toLocaleDateString()}
               </Text>
             </TouchableOpacity>
 
@@ -471,39 +485,62 @@ export default function Checklist() {
 
             <View style={styles.modalButtons}>
               <TouchableOpacity 
-                style={StyleSheet.flatten([styles.btn, styles.cancelBtn])} 
+                style={[styles.btn, styles.cancelBtn, { backgroundColor: colors.border }]} 
                 onPress={() => setModalVisible(false)}
               >
-                <Text style={styles.btnText}>Cancel</Text>
+                <Text style={[styles.btnText, { color: colors.text }]}>{t('checklist.cancel')}</Text>
               </TouchableOpacity>
               <TouchableOpacity 
-                style={StyleSheet.flatten([styles.btn, styles.saveBtn])} 
+                style={[styles.btn, styles.saveBtn, { backgroundColor: colors.primary }]} 
                 onPress={handleAddTask}
               >
-                <Text style={styles.btnText}>Save</Text>
+                <Text style={[styles.btnText, { color: "#000" }]}>{t('checklist.save')}</Text>
               </TouchableOpacity>
             </View>
           </View>
         </View>
       </Modal>
-    </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#071024',
   },
-  taskCard: {
-    backgroundColor: '#1a202c',
-    padding: 15,
-    borderRadius: 12,
-    marginBottom: 10,
+  header: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+  },
+  headerTitle: {
+    fontSize: 18,
+    fontWeight: '800',
+  },
+  backBtn: {
+    padding: 4,
+  },
+  aiBannerContainer: {
+    paddingHorizontal: 15,
+    paddingTop: 15,
+  },
+  aiBannerBtn: {
     borderWidth: 1,
-    borderColor: '#2d3748',
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 15,
+    borderRadius: 12,
+  },
+  aiBannerTitle: {
+    fontWeight: 'bold',
+    fontSize: 15,
+  },
+  aiBannerSub: {
+    fontSize: 12,
+    marginTop: 2,
   },
   checkbox: {
     marginRight: 15,
@@ -512,7 +549,6 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   taskTitle: {
-    color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',
   },
@@ -521,18 +557,15 @@ const styles = StyleSheet.create({
     color: '#718096',
   },
   taskDesc: {
-    color: '#a0aec0',
     fontSize: 12,
     marginTop: 2,
   },
   aiReasoningText: {
-    color: '#facc15',
     fontSize: 11,
     fontStyle: 'italic',
     marginTop: 4,
   },
   taskDate: {
-    color: '#10b981',
     fontSize: 12,
     marginTop: 4,
   },
@@ -543,7 +576,6 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 30,
     right: 30,
-    backgroundColor: '#10b981',
     width: 60,
     height: 60,
     borderRadius: 30,
@@ -552,10 +584,17 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   emptyText: {
-    color: '#aaa',
     textAlign: 'center',
     marginTop: 50,
     fontSize: 16,
+  },
+  taskCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 15,
+    borderRadius: 12,
+    marginBottom: 10,
+    borderWidth: 1,
   },
   // Modal Styles
   modalOverlay: {
@@ -565,7 +604,6 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   modalContent: {
-    backgroundColor: '#1a202c',
     borderRadius: 15,
     padding: 20,
     elevation: 5,
@@ -573,7 +611,6 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#fff',
     marginBottom: 15,
     textAlign: 'center',
   },
@@ -584,16 +621,12 @@ const styles = StyleSheet.create({
   },
   smartInput: {
     flex: 1,
-    backgroundColor: '#071024',
-    color: '#fff',
     padding: 12,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#facc15',
     marginRight: 10,
   },
   smartAddBtn: {
-    backgroundColor: '#d97706',
     width: 48,
     height: 48,
     borderRadius: 8,
@@ -608,22 +641,17 @@ const styles = StyleSheet.create({
   line: {
     flex: 1,
     height: 1,
-    backgroundColor: '#4a5568',
   },
   orText: {
-    color: '#a0aec0',
     marginHorizontal: 10,
     fontSize: 12,
     fontWeight: 'bold',
   },
   input: {
-    backgroundColor: '#071024',
-    color: '#fff',
     padding: 12,
     borderRadius: 8,
     marginBottom: 15,
     borderWidth: 1,
-    borderColor: '#2d3748',
   },
   textArea: {
     height: 80,
@@ -634,13 +662,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 20,
     padding: 10,
-    backgroundColor: '#071024',
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#2d3748',
   },
   dateBtnText: {
-    color: '#fff',
     marginLeft: 10,
   },
   modalButtons: {
@@ -655,13 +680,10 @@ const styles = StyleSheet.create({
     marginHorizontal: 5,
   },
   cancelBtn: {
-    backgroundColor: '#4a5568',
   },
   saveBtn: {
-    backgroundColor: '#10b981',
   },
   btnText: {
-    color: '#fff',
     fontWeight: 'bold',
   },
   sectionHeader: {
@@ -689,37 +711,12 @@ const styles = StyleSheet.create({
   optimizeBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#d97706',
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 20,
   },
   optimizeBtnText: {
-    color: '#fff',
     fontSize: 12,
     fontWeight: 'bold',
-  },
-  aiBannerContainer: {
-    paddingHorizontal: 15,
-    paddingTop: 15,
-  },
-  aiBannerBtn: {
-    backgroundColor: '#1e293b',
-    borderWidth: 1,
-    borderColor: '#d97706',
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 15,
-    borderRadius: 12,
-  },
-  aiBannerTitle: {
-    color: '#facc15',
-    fontWeight: 'bold',
-    fontSize: 15,
-  },
-  aiBannerSub: {
-    color: '#94a3b8',
-    fontSize: 12,
-    marginTop: 2,
   }
 });

@@ -11,75 +11,78 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
+import { useRouter, Stack } from "expo-router";
+import { StatusBar } from "expo-status-bar";
 import { usePremium } from "../hooks/usePremium";
-
-const FREE_FEATURES = [
-  { label: "Share Garden", detail: "2 free shares", locked: false },
-  { label: "Weed Scanner", detail: "Unlimited", locked: false },
-  { label: "Soil Test", detail: "Unlimited", locked: false },
-  { label: "Crop Suggestions", detail: "Unlimited", locked: false },
-  { label: "Plant Growth Tracking", detail: "Locked", locked: true },
-  { label: "Disease Detection", detail: "Locked", locked: true },
-  { label: "View in AR", detail: "Locked", locked: true },
-];
-
-const PREMIUM_FEATURES = [
-  { icon: "share-social-outline", label: "Unlimited Share Garden", color: "#4ade80" },
-  { icon: "trending-up-outline", label: "Plant Growth Tracking", color: "#34d399" },
-  { icon: "medkit-outline", label: "Disease Detection AI", color: "#a78bfa" },
-  { icon: "cube-outline", label: "View in AR", color: "#60a5fa" },
-  { icon: "notifications-outline", label: "Harvest Alerts", color: "#fbbf24" },
-  { icon: "cloud-offline-outline", label: "Offline Mode", color: "#f87171" },
-];
+import { useTheme } from "../hooks/useTheme";
+import { useTranslation } from "react-i18next";
 
 export default function PremiumScreen() {
   const router = useRouter();
+  const { t } = useTranslation();
+  const { colors, resolvedTheme } = useTheme();
   const [loading, setLoading] = useState(false);
   const { activatePremium, user, loaded } = usePremium();
 
+  const FREE_FEATURES = [
+    { label: t("premium.share_garden"), detail: t("premium.shares_2"), locked: false },
+    { label: t("premium.weed_scanner"), detail: t("premium.unlimited"), locked: false },
+    { label: t("premium.soil_test"), detail: t("premium.unlimited"), locked: false },
+    { label: t("premium.crop_suggestions"), detail: t("premium.unlimited"), locked: false },
+    { label: t("premium.plant_growth"), detail: t("premium.locked"), locked: true },
+    { label: t("premium.disease_ai"), detail: t("premium.locked"), locked: true },
+    { label: t("premium.view_ar"), detail: t("premium.locked"), locked: true },
+  ];
+
+  const PREMIUM_FEATURES = [
+    { icon: "share-social-outline", label: t("premium.unlimited_share"), color: "#4ade80" },
+    { icon: "trending-up-outline", label: t("premium.plant_growth"), color: "#34d399" },
+    { icon: "medkit-outline", label: t("premium.disease_ai"), color: "#a78bfa" },
+    { icon: "cube-outline", label: t("premium.view_ar"), color: "#60a5fa" },
+    { icon: "notifications-outline", label: t("premium.harvest_alerts"), color: "#fbbf24" },
+    { icon: "cloud-offline-outline", label: t("premium.offline_mode"), color: "#f87171" },
+  ];
+
   const handleUpgrade = async () => {
     if (!user) {
-      Alert.alert("Login Required", "Please log in to purchase Premium.", [
+      Alert.alert(t("premium.login_required"), t("premium.login_required_sub"), [
         { text: "Cancel", style: "cancel" },
-        { text: "Log In", onPress: () => router.push("/auth/login") },
+        { text: t("premium.login_btn"), onPress: () => router.push("/auth/login") },
       ]);
       return;
     }
 
     setLoading(true);
-    // 🔌 Wire your real payment flow here (RevenueCat, Stripe, etc.)
-    // For now we simulate a successful purchase:
     await new Promise((r) => setTimeout(r, 1200));
     await activatePremium();
     setLoading(false);
-    Alert.alert("🎉 Premium Activated!", "You now have full access to all features.", [
-      { text: "Let's go!", onPress: () => router.back() },
+    Alert.alert(t("premium.activated_title"), t("premium.activated_sub"), [
+      { text: t("premium.lets_go"), onPress: () => router.back() },
     ]);
   };
 
   if (!loaded) {
     return (
-      <View style={[styles.safe, styles.center]}>
-        <ActivityIndicator color="#22c55e" size="large" />
+      <View style={[styles.safe, styles.center, { backgroundColor: colors.background }]}>
+        <ActivityIndicator color={colors.primary} size="large" />
       </View>
     );
   }
 
   if (!user) {
     return (
-      <SafeAreaView style={styles.safe}>
+      <SafeAreaView style={[styles.safe, { backgroundColor: colors.background }]}>
         <View style={styles.center}>
-          <Ionicons name="lock-closed" size={64} color="#9fb1be" />
-          <Text style={styles.gateTitle}>Login Required</Text>
-          <Text style={styles.gateSub}>
-            Please sign in to access Premium features and subscriptions.
+          <Ionicons name="lock-closed" size={64} color={colors.textMuted} />
+          <Text style={[styles.gateTitle, { color: colors.text }]}>{t("premium.login_required")}</Text>
+          <Text style={[styles.gateSub, { color: colors.textMuted }]}>
+            {t("premium.login_required_sub")}
           </Text>
-          <TouchableOpacity style={styles.loginBtn} onPress={() => router.push("/auth/login")}>
-            <Text style={styles.loginBtnText}>Log In to Continue</Text>
+          <TouchableOpacity style={[styles.loginBtn, { backgroundColor: colors.primary }]} onPress={() => router.push("/auth/login")}>
+            <Text style={[styles.loginBtnText, { color: '#000' }]}>{t("premium.login_btn")}</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.backBtnAlt} onPress={() => router.back()}>
-            <Text style={styles.backTextAlt}>Go Back</Text>
+            <Text style={[styles.backTextAlt, { color: colors.textMuted }]}>{t("premium.go_back")}</Text>
           </TouchableOpacity>
         </View>
       </SafeAreaView>
@@ -87,91 +90,95 @@ export default function PremiumScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.safe}>
+    <SafeAreaView style={[styles.safe, { backgroundColor: colors.background }]} edges={['top']}>
+      <StatusBar style={resolvedTheme === 'dark' ? 'light' : 'dark'} />
       {/* Decorative blobs */}
-      <View style={styles.blobA} />
-      <View style={styles.blobB} />
+      <View style={[styles.blobA, { backgroundColor: colors.primary + '12' }]} />
+      <View style={[styles.blobB, { backgroundColor: colors.primary + '08' }]} />
 
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
         {/* Back */}
-        <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
-          <Ionicons name="chevron-back" size={22} color="#9fb1be" />
-          <Text style={styles.backText}>Back</Text>
-        </TouchableOpacity>
+        <View style={styles.header}>
+          <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
+            <Ionicons name="chevron-back" size={24} color={colors.primary} />
+          </TouchableOpacity>
+          <Text style={[styles.headerTitle, { color: colors.primary }]}>{t("premium.title")}</Text>
+          <View style={{ width: 40 }} />
+        </View>
 
         {/* Hero */}
         <View style={styles.hero}>
-          <View style={styles.crownWrap}>
+          <View style={[styles.crownWrap, { backgroundColor: colors.primary + '15', borderColor: colors.primary + '25' }]}>
             <Text style={styles.crownEmoji}>✨</Text>
           </View>
-          <Text style={styles.heroTitle}>GardeniAR Premium</Text>
-          <Text style={styles.heroSub}>
-            Unlock every feature and grow your garden to its full potential
+          <Text style={[styles.heroTitle, { color: colors.text }]}>{t("premium.title")}</Text>
+          <Text style={[styles.heroSub, { color: colors.textMuted }]}>
+            {t("premium.unlock_full")}
           </Text>
         </View>
 
         {/* Price card */}
-        <View style={styles.priceCard}>
-          <View style={styles.priceBadge}>
-            <Text style={styles.priceBadgeText}>MOST POPULAR</Text>
+        <View style={[styles.priceCard, { backgroundColor: colors.primary + '08', borderColor: colors.primary + '30' }]}>
+          <View style={[styles.priceBadge, { backgroundColor: colors.primary }]}>
+            <Text style={[styles.priceBadgeText, { color: '#000' }]}>{t("premium.most_popular")}</Text>
           </View>
-          <Text style={styles.price}>
-            $4.99<Text style={styles.pricePer}> / month</Text>
+          <Text style={[styles.price, { color: colors.text }]}>
+            $4.99<Text style={[styles.pricePer, { color: colors.textMuted }]}> / {t("premium.month")}</Text>
           </Text>
-          <Text style={styles.priceNote}>Cancel anytime · Secure payment</Text>
+          <Text style={[styles.priceNote, { color: colors.textMuted }]}>{t("premium.secure_payment")}</Text>
 
           <TouchableOpacity
-            style={[styles.upgradeBtn, loading && { opacity: 0.7 }]}
+            style={[styles.upgradeBtn, { backgroundColor: colors.primary }, loading && { opacity: 0.7 }]}
             onPress={handleUpgrade}
             disabled={loading}
             activeOpacity={0.88}
           >
             {loading ? (
-              <ActivityIndicator color="#051013" />
+              <ActivityIndicator color="#000" />
             ) : (
               <>
-                <Ionicons name="rocket-outline" size={18} color="#051013" />
-                <Text style={styles.upgradeBtnText}>Upgrade to Premium</Text>
+                <Ionicons name="rocket-outline" size={18} color="#000" />
+                <Text style={[styles.upgradeBtnText, { color: '#000' }]}>{t("premium.upgrade_btn")}</Text>
               </>
             )}
           </TouchableOpacity>
         </View>
 
         {/* Premium features */}
-        <Text style={styles.sectionLabel}>Everything in Premium</Text>
-        <View style={styles.featuresCard}>
+        <Text style={[styles.sectionLabel, { color: colors.text }]}>{t("premium.everything_premium")}</Text>
+        <View style={[styles.featuresCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
           {PREMIUM_FEATURES.map((f, i) => (
-            <View key={i} style={[styles.featureRow, i < PREMIUM_FEATURES.length - 1 && styles.featureRowBorder]}>
+            <View key={i} style={[styles.featureRow, i < PREMIUM_FEATURES.length - 1 && [styles.featureRowBorder, { borderBottomColor: colors.border }]]}>
               <View style={[styles.featureIconWrap, { backgroundColor: f.color + "22" }]}>
                 <Ionicons name={f.icon as any} size={18} color={f.color} />
               </View>
-              <Text style={styles.featureLabel}>{f.label}</Text>
-              <Ionicons name="checkmark-circle" size={20} color="#22c55e" />
+              <Text style={[styles.featureLabel, { color: colors.text }]}>{f.label}</Text>
+              <Ionicons name="checkmark-circle" size={20} color={colors.primary} />
             </View>
           ))}
         </View>
 
         {/* Comparison table */}
-        <Text style={styles.sectionLabel}>Free vs Premium</Text>
-        <View style={styles.tableCard}>
-          <View style={styles.tableHeader}>
-            <Text style={[styles.tableCol, { flex: 2 }]}>Feature</Text>
-            <Text style={styles.tableCol}>Free</Text>
-            <Text style={[styles.tableCol, { color: "#22c55e" }]}>Premium</Text>
+        <Text style={[styles.sectionLabel, { color: colors.text }]}>{t("premium.free_vs_premium")}</Text>
+        <View style={[styles.tableCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+          <View style={[styles.tableHeader, { backgroundColor: colors.background + '40', borderBottomColor: colors.border }]}>
+            <Text style={[styles.tableCol, { flex: 2, color: colors.textMuted }]}>{t("premium.feature")}</Text>
+            <Text style={[styles.tableCol, { color: colors.textMuted }]}>{t("premium.free")}</Text>
+            <Text style={[styles.tableCol, { color: colors.primary }]}>{t("premium.premium_label")}</Text>
           </View>
           {FREE_FEATURES.map((f, i) => (
-            <View key={i} style={[styles.tableRow, i < FREE_FEATURES.length - 1 && styles.tableRowBorder]}>
-              <Text style={[styles.tableCell, { flex: 2 }]}>{f.label}</Text>
-              <Text style={[styles.tableCell, f.locked && { color: "#ef4444" }]}>
+            <View key={i} style={[styles.tableRow, i < FREE_FEATURES.length - 1 && [styles.tableRowBorder, { borderBottomColor: colors.border }]]}>
+              <Text style={[styles.tableCell, { flex: 2, color: colors.text }]}>{f.label}</Text>
+              <Text style={[styles.tableCell, { color: colors.textMuted }, f.locked && { color: "#ef4444" }]}>
                 {f.locked ? "🔒" : f.detail}
               </Text>
-              <Text style={[styles.tableCell, { color: "#22c55e" }]}>✓</Text>
+              <Text style={[styles.tableCell, { color: colors.primary }]}>✓</Text>
             </View>
           ))}
         </View>
 
-        <Text style={styles.legal}>
-          Subscription renews monthly. Cancel anytime in your account settings.
+        <Text style={[styles.legal, { color: colors.textMuted }]}>
+          {t("premium.legal_note")}
         </Text>
       </ScrollView>
     </SafeAreaView>
@@ -179,51 +186,60 @@ export default function PremiumScreen() {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: "#071024" },
+  safe: { flex: 1 },
   scroll: { padding: 20, paddingBottom: 48 },
 
-  blobA: { position: "absolute", top: -80, right: -80, width: 220, height: 220, borderRadius: 999, backgroundColor: "rgba(34,197,94,0.12)" },
-  blobB: { position: "absolute", bottom: -100, left: -80, width: 240, height: 240, borderRadius: 999, backgroundColor: "rgba(59,130,246,0.08)" },
+  blobA: { position: "absolute", top: -80, right: -80, width: 220, height: 220, borderRadius: 999 },
+  blobB: { position: "absolute", bottom: -100, left: -80, width: 240, height: 240, borderRadius: 999 },
 
-  backBtn: { flexDirection: "row", alignItems: "center", gap: 4, marginBottom: 20 },
-  backText: { color: "#9fb1be", fontSize: 15, fontWeight: "600" },
+  backBtn: { padding: 4 },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 20,
+  },
+  headerTitle: {
+    fontSize: 18,
+    fontWeight: '900',
+  },
 
   hero: { alignItems: "center", marginBottom: 28 },
-  crownWrap: { width: 72, height: 72, borderRadius: 24, backgroundColor: "rgba(34,197,94,0.15)", alignItems: "center", justifyContent: "center", marginBottom: 14, borderWidth: 1, borderColor: "rgba(34,197,94,0.25)" },
+  crownWrap: { width: 72, height: 72, borderRadius: 24, alignItems: "center", justifyContent: "center", marginBottom: 14, borderWidth: 1 },
   crownEmoji: { fontSize: 34 },
-  heroTitle: { fontSize: 28, fontWeight: "900", color: "#f0fdf4", marginBottom: 8, letterSpacing: -0.5 },
-  heroSub: { color: "#9fb1be", textAlign: "center", fontSize: 14, lineHeight: 20, paddingHorizontal: 10 },
+  heroTitle: { fontSize: 28, fontWeight: "900", marginBottom: 8, letterSpacing: -0.5 },
+  heroSub: { textAlign: "center", fontSize: 14, lineHeight: 20, paddingHorizontal: 10 },
 
   center: { flex: 1, alignItems: "center", justifyContent: "center", padding: 40 },
-  gateTitle: { color: "#f0fdf4", fontSize: 24, fontWeight: "900", marginTop: 24, marginBottom: 8 },
-  gateSub: { color: "#9fb1be", textAlign: "center", fontSize: 15, lineHeight: 22, marginBottom: 32 },
-  loginBtn: { backgroundColor: "#22c55e", paddingVertical: 16, paddingHorizontal: 32, borderRadius: 16, width: "100%", alignItems: "center" },
-  loginBtnText: { color: "#051013", fontWeight: "900", fontSize: 16 },
+  gateTitle: { fontSize: 24, fontWeight: "900", marginTop: 24, marginBottom: 8 },
+  gateSub: { textAlign: "center", fontSize: 15, lineHeight: 22, marginBottom: 32 },
+  loginBtn: { paddingVertical: 16, paddingHorizontal: 32, borderRadius: 16, width: "100%", alignItems: "center" },
+  loginBtnText: { fontWeight: "900", fontSize: 16 },
   backBtnAlt: { marginTop: 20, padding: 12 },
-  backTextAlt: { color: "#9fb1be", fontWeight: "700", fontSize: 14 },
+  backTextAlt: { fontWeight: "700", fontSize: 14 },
 
-  priceCard: { backgroundColor: "rgba(34,197,94,0.08)", borderWidth: 1.5, borderColor: "rgba(34,197,94,0.3)", borderRadius: 20, padding: 22, alignItems: "center", marginBottom: 28, position: "relative" },
-  priceBadge: { position: "absolute", top: -12, backgroundColor: "#22c55e", borderRadius: 20, paddingVertical: 3, paddingHorizontal: 12 },
-  priceBadgeText: { color: "#051013", fontSize: 10, fontWeight: "900", letterSpacing: 1 },
-  price: { fontSize: 40, fontWeight: "900", color: "#f0fdf4", marginTop: 8 },
-  pricePer: { fontSize: 16, fontWeight: "500", color: "#9fb1be" },
-  priceNote: { color: "#9fb1be", fontSize: 12, marginTop: 4, marginBottom: 18 },
-  upgradeBtn: { flexDirection: "row", alignItems: "center", gap: 8, backgroundColor: "#22c55e", paddingVertical: 15, paddingHorizontal: 36, borderRadius: 16, width: "100%", justifyContent: "center" },
-  upgradeBtnText: { color: "#051013", fontWeight: "900", fontSize: 16 },
+  priceCard: { borderWidth: 1.5, borderRadius: 20, padding: 22, alignItems: "center", marginBottom: 28, position: "relative" },
+  priceBadge: { position: "absolute", top: -12, borderRadius: 20, paddingVertical: 3, paddingHorizontal: 12 },
+  priceBadgeText: { fontSize: 10, fontWeight: "900", letterSpacing: 1 },
+  price: { fontSize: 40, fontWeight: "900", marginTop: 8 },
+  pricePer: { fontSize: 16, fontWeight: "500" },
+  priceNote: { fontSize: 12, marginTop: 4, marginBottom: 18 },
+  upgradeBtn: { flexDirection: "row", alignItems: "center", gap: 8, paddingVertical: 15, paddingHorizontal: 36, borderRadius: 16, width: "100%", justifyContent: "center" },
+  upgradeBtnText: { fontWeight: "900", fontSize: 16 },
 
-  sectionLabel: { color: "#cbd5e1", fontSize: 15, fontWeight: "800", marginBottom: 12 },
-  featuresCard: { backgroundColor: "rgba(15,23,42,0.95)", borderWidth: 1, borderColor: "rgba(148,163,184,0.14)", borderRadius: 18, marginBottom: 28, overflow: "hidden" },
+  sectionLabel: { fontSize: 15, fontWeight: "800", marginBottom: 12 },
+  featuresCard: { borderWidth: 1, borderRadius: 18, marginBottom: 28, overflow: "hidden" },
   featureRow: { flexDirection: "row", alignItems: "center", gap: 12, padding: 14 },
-  featureRowBorder: { borderBottomWidth: 1, borderBottomColor: "rgba(148,163,184,0.08)" },
+  featureRowBorder: { borderBottomWidth: 1 },
   featureIconWrap: { width: 36, height: 36, borderRadius: 12, alignItems: "center", justifyContent: "center" },
-  featureLabel: { flex: 1, color: "#e6eef3", fontWeight: "600", fontSize: 14 },
+  featureLabel: { flex: 1, fontWeight: "600", fontSize: 14 },
 
-  tableCard: { backgroundColor: "rgba(15,23,42,0.95)", borderWidth: 1, borderColor: "rgba(148,163,184,0.14)", borderRadius: 18, marginBottom: 24, overflow: "hidden" },
-  tableHeader: { flexDirection: "row", padding: 12, backgroundColor: "rgba(255,255,255,0.04)", borderBottomWidth: 1, borderBottomColor: "rgba(148,163,184,0.1)" },
-  tableCol: { flex: 1, color: "#9fb1be", fontWeight: "800", fontSize: 12, textAlign: "center" },
+  tableCard: { borderWidth: 1, borderRadius: 18, marginBottom: 24, overflow: "hidden" },
+  tableHeader: { flexDirection: "row", padding: 12, borderBottomWidth: 1 },
+  tableCol: { flex: 1, fontWeight: "800", fontSize: 12, textAlign: "center" },
   tableRow: { flexDirection: "row", padding: 12 },
-  tableRowBorder: { borderBottomWidth: 1, borderBottomColor: "rgba(148,163,184,0.06)" },
-  tableCell: { flex: 1, color: "#cbd5e1", fontSize: 12, textAlign: "center" },
+  tableRowBorder: { borderBottomWidth: 1 },
+  tableCell: { flex: 1, fontSize: 12, textAlign: "center" },
 
-  legal: { color: "#4b5563", fontSize: 11, textAlign: "center", lineHeight: 16 },
+  legal: { fontSize: 11, textAlign: "center", lineHeight: 16 },
 });

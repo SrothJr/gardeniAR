@@ -8,12 +8,16 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useTheme } from '../hooks/useTheme';
 import { BACKEND_URL } from '../config';
+import { useTranslation } from 'react-i18next';
 
 const TABS = ['Posts', 'Comments', 'Saved'];
 
 export default function Profile() {
   const router = useRouter();
+  const { t } = useTranslation();
+  const { colors } = useTheme();
   const [user, setUser] = useState<any>(null);
   const [name, setName] = useState('');
   const [city, setCity] = useState('');
@@ -256,15 +260,15 @@ export default function Profile() {
   );
 
   return (
-    <SafeAreaView style={styles.safe} edges={['top']}>
+    <SafeAreaView style={[styles.safe, { backgroundColor: colors.background }]} edges={['top']}>
       {/* Header */}
-      <View style={styles.header}>
+      <View style={[styles.header, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <Ionicons name="chevron-back" size={24} color="#e6eef3" />
+          <Ionicons name="chevron-back" size={24} color={colors.text} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>My Profile</Text>
+        <Text style={[styles.headerTitle, { color: colors.text }]}>{t('profile.title')}</Text>
         <TouchableOpacity onPress={() => router.push('/notifications')} style={styles.notifBtn}>
-          <Ionicons name="notifications-outline" size={24} color="#e6eef3" />
+          <Ionicons name="notifications-outline" size={24} color={colors.text} />
           {unreadCount > 0 && (
             <View style={styles.badge}>
               <Text style={styles.badgeText}>{unreadCount > 9 ? '9+' : unreadCount}</Text>
@@ -281,102 +285,119 @@ export default function Profile() {
               {profilePicture ? (
                 <Image source={{ uri: profilePicture }} style={styles.avatar} />
               ) : (
-                <View style={styles.placeholderAvatar}>
-                  <Text style={styles.placeholderText}>{name.slice(0, 1).toUpperCase() || '?'}</Text>
+                <View style={[styles.placeholderAvatar, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+                  <Text style={[styles.placeholderText, { color: colors.text }]}>{name.slice(0, 1).toUpperCase() || '?'}</Text>
                 </View>
               )}
-              <View style={styles.editBadge}>
+              <View style={[styles.editBadge, { backgroundColor: colors.primary, borderColor: colors.background }]}>
                 <Ionicons name="camera" size={14} color="#fff" />
               </View>
             </View>
           </TouchableOpacity>
-          <Text style={styles.displayName}>{user.name}</Text>
-          <Text style={styles.email}>{user.email}</Text>
+          <Text style={[styles.displayName, { color: colors.text }]}>{user.name}</Text>
+          <Text style={[styles.email, { color: colors.textMuted }]}>{user.email}</Text>
           <View style={styles.karmaRow}>
-            <Ionicons name="leaf" size={14} color="#10b981" />
-            <Text style={styles.karma}>{user.karma || 0} karma</Text>
+            <Ionicons name="leaf" size={14} color={colors.primary} />
+            <Text style={[styles.karma, { color: colors.primary }]}>{user.karma || 0} {t('profile.karma')}</Text>
           </View>
           {user.isPremium && (
-            <View style={styles.premiumBadge}>
-              <Text style={styles.premiumText}>✨ Premium Member</Text>
+            <View style={[styles.premiumBadge, { backgroundColor: colors.primary + '20', borderColor: colors.primary + '40' }]}>
+              <Text style={[styles.premiumText, { color: colors.primary }]}>✨ {t('profile.premium_member')}</Text>
             </View>
           )}
         </View>
 
+        {/* Appearance Settings Link */}
+        <TouchableOpacity 
+          style={[styles.settingLink, { backgroundColor: colors.surface, borderColor: colors.border }]} 
+          onPress={() => router.push('/appearance')}
+        >
+          <View style={[styles.settingIconContainer, { backgroundColor: colors.primary + '15' }]}>
+            <Ionicons name="color-palette-outline" size={20} color={colors.primary} />
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={[styles.settingTitle, { color: colors.text }]}>{t('appearance.title')}</Text>
+            <Text style={[styles.settingSub, { color: colors.textMuted }]}>{t('appearance.amoled_sub')}</Text>
+          </View>
+          <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />
+        </TouchableOpacity>
+
         {/* Edit profile form */}
         <View style={styles.form}>
-          <Text style={styles.sectionTitle}>Edit Profile</Text>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('profile.edit_profile')}</Text>
 
-          <Text style={styles.label}>Full Name</Text>
+          <Text style={[styles.label, { color: colors.textMuted }]}>{t('profile.full_name')}</Text>
           <TextInput 
-            style={styles.input} 
+            style={[styles.input, { backgroundColor: colors.surface, borderColor: colors.border, color: colors.text }]} 
             value={name} 
             onChangeText={setName} 
-            placeholder="Your Name" 
-            placeholderTextColor="#4b5563" 
+            placeholder={t('profile.full_name')} 
+            placeholderTextColor={colors.textMuted} 
           />
 
-          <Text style={styles.label}>Bio</Text>
+          <Text style={[styles.label, { color: colors.textMuted }]}>{t('profile.bio')}</Text>
           <TextInput
-            style={[styles.input, styles.bioInput]} 
+            style={[styles.input, styles.bioInput, { backgroundColor: colors.surface, borderColor: colors.border, color: colors.text }]} 
             value={bio} 
             onChangeText={setBio}
-            placeholder="Tell the community about yourself..." 
-            placeholderTextColor="#4b5563"
+            placeholder={t('profile.bio_placeholder')} 
+            placeholderTextColor={colors.textMuted}
             multiline 
             textAlignVertical="top"
           />
 
-          <Text style={styles.label}>City</Text>
+          <Text style={[styles.label, { color: colors.textMuted }]}>{t('profile.city')}</Text>
           <TextInput 
-            style={styles.input} 
+            style={[styles.input, { backgroundColor: colors.surface, borderColor: colors.border, color: colors.text }]} 
             value={city} 
             onChangeText={setCity} 
-            placeholder="Your City" 
-            placeholderTextColor="#4b5563" 
+            placeholder={t('profile.city')} 
+            placeholderTextColor={colors.textMuted} 
           />
 
           <TouchableOpacity 
-            style={[styles.saveBtn, saving && { opacity: 0.7 }]} 
+            style={[styles.saveBtn, { backgroundColor: colors.primary }, saving && { opacity: 0.7 }]} 
             onPress={handleSave} 
             disabled={saving}
           >
-            {saving ? <ActivityIndicator color="#051013" /> : <Text style={styles.saveBtnText}>Save Changes</Text>}
+            {saving ? <ActivityIndicator color="#000" /> : <Text style={[styles.saveBtnText, { color: '#000' }]}>{t('profile.save_changes')}</Text>}
           </TouchableOpacity>
         </View>
 
         {/* Activity tabs */}
         <View style={styles.activitySection}>
-          <Text style={styles.sectionTitle}>Activity</Text>
-          <View style={styles.tabBar}>
-            {TABS.map(t => (
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('profile.activity')}</Text>
+          <View style={[styles.tabBar, { backgroundColor: colors.surface }]}>
+            {TABS.map(t_key => (
               <TouchableOpacity 
-                key={t} 
-                style={[styles.tab, activeTab === t && styles.tabActive]} 
-                onPress={() => setActiveTab(t)}
+                key={t_key} 
+                style={[styles.tab, activeTab === t_key && { backgroundColor: colors.primary }]} 
+                onPress={() => setActiveTab(t_key)}
               >
-                <Text style={[styles.tabText, activeTab === t && styles.tabTextActive]}>{t}</Text>
+                <Text style={[styles.tabText, { color: colors.textMuted }, activeTab === t_key && { color: '#000' }]}>
+                  {t(`profile.${t_key.toLowerCase()}`)}
+                </Text>
               </TouchableOpacity>
             ))}
           </View>
 
           {activityLoading ? (
-            <ActivityIndicator color="#10b981" style={{ marginTop: 20 }} />
+            <ActivityIndicator color={colors.primary} style={{ marginTop: 20 }} />
           ) : (
             <View style={styles.activityList}>
               {activeTab === 'Posts' && (
                 posts.length === 0
-                  ? <Text style={styles.emptyText}>No posts yet</Text>
+                  ? <Text style={[styles.emptyText, { color: colors.textMuted }]}>{t('profile.posts')} - {t('common.see_all')}</Text>
                   : posts.map(p => renderActivityItem(p, 'post'))
               )}
               {activeTab === 'Comments' && (
                 comments.length === 0
-                  ? <Text style={styles.emptyText}>No comments yet</Text>
+                  ? <Text style={[styles.emptyText, { color: colors.textMuted }]}>{t('profile.comments')} - {t('common.see_all')}</Text>
                   : comments.map(c => renderActivityItem(c, 'comment'))
               )}
               {activeTab === 'Saved' && (
                 savedPosts.length === 0
-                  ? <Text style={styles.emptyText}>No saved posts yet</Text>
+                  ? <Text style={[styles.emptyText, { color: colors.textMuted }]}>{t('profile.saved')} - {t('common.see_all')}</Text>
                   : savedPosts.map(p => renderActivityItem(p, 'post'))
               )}
             </View>
@@ -385,55 +406,55 @@ export default function Profile() {
 
         {/* Change password */}
         <View style={styles.form}>
-          <Text style={styles.sectionTitle}>Change Password</Text>
-          <Text style={styles.label}>Current Password</Text>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('profile.change_password')}</Text>
+          <Text style={[styles.label, { color: colors.textMuted }]}>{t('profile.current_password')}</Text>
           <TextInput 
-            style={styles.input} 
+            style={[styles.input, { backgroundColor: colors.surface, borderColor: colors.border, color: colors.text }]} 
             value={currentPassword} 
             onChangeText={setCurrentPassword} 
-            placeholder="Current password" 
-            placeholderTextColor="#4b5563" 
+            placeholder={t('profile.current_password')} 
+            placeholderTextColor={colors.textMuted} 
             secureTextEntry 
           />
-          <Text style={styles.label}>New Password</Text>
+          <Text style={[styles.label, { color: colors.textMuted }]}>{t('profile.new_password')}</Text>
           <TextInput 
-            style={styles.input} 
+            style={[styles.input, { backgroundColor: colors.surface, borderColor: colors.border, color: colors.text }]} 
             value={newPassword} 
             onChangeText={setNewPassword} 
-            placeholder="New password" 
-            placeholderTextColor="#4b5563" 
+            placeholder={t('profile.new_password')} 
+            placeholderTextColor={colors.textMuted} 
             secureTextEntry 
           />
-          <Text style={styles.label}>Confirm New Password</Text>
+          <Text style={[styles.label, { color: colors.textMuted }]}>{t('profile.confirm_password')}</Text>
           <TextInput 
-            style={styles.input} 
+            style={[styles.input, { backgroundColor: colors.surface, borderColor: colors.border, color: colors.text }]} 
             value={confirmPassword} 
             onChangeText={setConfirmPassword} 
-            placeholder="Confirm new password" 
-            placeholderTextColor="#4b5563" 
+            placeholder={t('profile.confirm_password')} 
+            placeholderTextColor={colors.textMuted} 
             secureTextEntry 
           />
           <TouchableOpacity
-            style={[styles.saveBtn, { backgroundColor: '#1e293b' }, changingPassword && { opacity: 0.7 }]}
+            style={[styles.saveBtn, { backgroundColor: colors.surface, borderColor: colors.border }, changingPassword && { opacity: 0.7 }]}
             onPress={handleChangePassword} 
             disabled={changingPassword}
           >
-            {changingPassword ? <ActivityIndicator color="#fff" /> : <Text style={[styles.saveBtnText, { color: '#fff' }]}>Update Password</Text>}
+            {changingPassword ? <ActivityIndicator color={colors.text} /> : <Text style={[styles.saveBtnText, { color: colors.text }]}>{t('profile.update_password')}</Text>}
           </TouchableOpacity>
         </View>
 
         {/* Account info */}
         <View style={styles.infoSection}>
-          <Text style={styles.sectionTitle}>Account Info</Text>
-          <View style={styles.infoCard}>
-            <View style={styles.infoRow}>
-              <Text style={styles.infoLabel}>Joined</Text>
-              <Text style={styles.infoValue}>{user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}</Text>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>{t('profile.account_info')}</Text>
+          <View style={[styles.infoCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+            <View style={[styles.infoRow, { borderBottomColor: colors.border }]}>
+              <Text style={[styles.infoLabel, { color: colors.textMuted }]}>{t('profile.joined')}</Text>
+              <Text style={[styles.infoValue, { color: colors.text }]}>{user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}</Text>
             </View>
             <View style={[styles.infoRow, { borderBottomWidth: 0 }]}>
-              <Text style={styles.infoLabel}>Subscription</Text>
-              <Text style={[styles.infoValue, user.isPremium && { color: '#22c55e', fontWeight: '800' }]}>
-                {user.isPremium ? 'Premium Plan' : 'Free Plan'}
+              <Text style={[styles.infoLabel, { color: colors.textMuted }]}>{t('profile.subscription')}</Text>
+              <Text style={[styles.infoValue, user.isPremium && { color: colors.primary, fontWeight: '800' }, !user.isPremium && { color: colors.text }]}>
+                {user.isPremium ? t('common.premium') : t('appearance.light')}
               </Text>
             </View>
           </View>
@@ -465,6 +486,27 @@ const styles = StyleSheet.create({
   karma: { color: '#10b981', fontSize: 14, fontWeight: '700' },
   premiumBadge: { marginTop: 10, backgroundColor: 'rgba(34,197,94,0.15)', paddingHorizontal: 12, paddingVertical: 4, borderRadius: 12, borderWidth: 1, borderColor: 'rgba(34,197,94,0.3)' },
   premiumText: { color: '#22c55e', fontSize: 12, fontWeight: '800' },
+  settingLink: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#1a2535',
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 24,
+    borderWidth: 1,
+    borderColor: '#2d3748',
+  },
+  settingIconContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+  settingTitle: { color: '#f9fafb', fontSize: 16, fontWeight: '700' },
+  settingSub: { color: '#6b7280', fontSize: 12, marginTop: 2 },
   form: { marginBottom: 32 },
   sectionTitle: { color: '#f9fafb', fontSize: 16, fontWeight: '800', marginBottom: 16 },
   label: { color: '#6b7280', fontSize: 13, fontWeight: '600', marginBottom: 6, marginLeft: 2 },

@@ -12,8 +12,9 @@ import {
   Alert,
 } from "react-native";
 import * as Location from 'expo-location';
-import { nBACKEND } from "../../config";
+import { BACKEND } from "../../config";
 import { Ionicons } from "@expo/vector-icons";
+import { useTheme } from "../../hooks/useTheme";
 
 const STAGES = ["Seedling", "Vegetative", "Flowering"];
 const SEASONS = ["Spring", "Summer", "Autumn", "Winter"];
@@ -21,6 +22,7 @@ const SEASONS = ["Spring", "Summer", "Autumn", "Winter"];
 export default function CareGuideDetail() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
+  const { colors, resolvedTheme } = useTheme();
 
   const [guide, setGuide] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -44,7 +46,7 @@ export default function CareGuideDetail() {
 
   useEffect(() => {
     if (!id) return;
-    fetch(`${nBACKEND}/api/care-guide/${id}`)
+    fetch(`${BACKEND}/api/care-guide/${id}`)
       .then((r) => r.json())
       .then((data) => {
         const plantData = data.guide || data;
@@ -56,16 +58,16 @@ export default function CareGuideDetail() {
 
   if (loading) {
     return (
-      <View style={styles.center}>
-        <ActivityIndicator size="large" color="#22c55e" />
+      <View style={[styles.center, { backgroundColor: colors.background }]}>
+        <ActivityIndicator size="large" color={colors.primary} />
       </View>
     );
   }
 
   if (!guide) {
     return (
-      <View style={styles.center}>
-        <Text style={styles.errorText}>Guide not found</Text>
+      <View style={[styles.center, { backgroundColor: colors.background }]}>
+        <Text style={[styles.errorText, { color: "#ef4444" }]}>Guide not found</Text>
       </View>
     );
   }
@@ -133,7 +135,7 @@ export default function CareGuideDetail() {
       const generalWater = waterRule ? `${waterRule.amount} ${waterRule.frequency}` : "Standard";
       const generalFert = fertRule ? `${fertRule.dosage} ${fertRule.frequency}` : "Standard";
 
-      const res = await fetch(`${nBACKEND}/api/weather/care-adjustment`, {
+      const res = await fetch(`${BACKEND}/api/weather/care-adjustment`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -167,22 +169,29 @@ export default function CareGuideDetail() {
     "https://picsum.photos/800/600";
 
   return (
-    <ScrollView
-      style={styles.page}
-      contentContainerStyle={{ paddingBottom: 40 }}
-    >
-      <Image
-        source={{ uri: currentImage }}
-        style={styles.hero}
-      />
+    <View style={[styles.page, { backgroundColor: colors.background }]}>
+      <TouchableOpacity 
+        onPress={() => router.back()} 
+        style={styles.floatingBackBtn}
+      >
+        <Ionicons name="chevron-back" size={24} color="#fff" />
+      </TouchableOpacity>
 
-      <View style={styles.content}>
-        <Text style={styles.name}>{guide.name}</Text>
-        <Text style={styles.scientific}>{guide.scientificName}</Text>
+      <ScrollView
+        contentContainerStyle={{ paddingBottom: 40 }}
+      >
+        <Image
+          source={{ uri: currentImage }}
+          style={styles.hero}
+        />
+
+      <View style={[styles.content, { backgroundColor: colors.background }]}>
+        <Text style={[styles.name, { color: colors.text }]}>{guide.name}</Text>
+        <Text style={[styles.scientific, { color: colors.textMuted }]}>{guide.scientificName}</Text>
 
         {/* TODAY'S ADVICE BUTTON */}
         <TouchableOpacity 
-            style={styles.aiButton} 
+            style={[styles.aiButton, { backgroundColor: colors.primary }]} 
             onPress={handleForToday} 
             disabled={analyzing}
         >
@@ -198,27 +207,27 @@ export default function CareGuideDetail() {
 
         {/* TODAY'S ADVICE CARD */}
         {todayAdvice && (
-             <View style={[styles.card, { borderColor: '#facc15', borderWidth: 1 }]}>
+             <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.primary, borderWidth: 1 }]}>
                 <View style={styles.cardHeader}>
-                  <Ionicons name="sparkles" size={24} color="#facc15" />
-                  <Text style={[styles.cardTitle, { color: '#facc15' }]}>Today's Advice</Text>
+                  <Ionicons name="sparkles" size={24} color={colors.primary} />
+                  <Text style={[styles.cardTitle, { color: colors.primary }]}>Today's Advice</Text>
                 </View>
                 
-                <Text style={[styles.label, { marginBottom: 4 }]}>
+                <Text style={[styles.label, { color: colors.textMuted, marginBottom: 4 }]}>
                     Weather: {todayAdvice.weather.condition}, {Math.round(todayAdvice.weather.temperature)}°C
                 </Text>
                 
                 <View style={{ marginVertical: 8 }}>
                     <Text style={[styles.label, { color: '#3b82f6' }]}>Water:</Text>
-                    <Text style={styles.valueLeft}>{todayAdvice.adjustment.waterAdvice}</Text>
+                    <Text style={[styles.valueLeft, { color: colors.text }]}>{todayAdvice.adjustment.waterAdvice}</Text>
                 </View>
 
                 <View style={{ marginVertical: 8 }}>
-                    <Text style={[styles.label, { color: '#22c55e' }]}>Fertilizer:</Text>
-                    <Text style={styles.valueLeft}>{todayAdvice.adjustment.fertilizerAdvice}</Text>
+                    <Text style={[styles.label, { color: colors.primary }]}>Fertilizer:</Text>
+                    <Text style={[styles.valueLeft, { color: colors.text }]}>{todayAdvice.adjustment.fertilizerAdvice}</Text>
                 </View>
 
-                <Text style={styles.desc}>{todayAdvice.adjustment.reasoning}</Text>
+                <Text style={[styles.desc, { color: colors.text, borderTopColor: colors.border }]}>{todayAdvice.adjustment.reasoning}</Text>
              </View>
         )}
 
@@ -226,22 +235,24 @@ export default function CareGuideDetail() {
         <View style={styles.controls}>
           {/* Stage Selector */}
           <View style={styles.controlGroup}>
-            <Text style={styles.sectionTitle}>Life Stage</Text>
+            <Text style={[styles.sectionTitle, { color: colors.textMuted }]}>Life Stage</Text>
             <View style={styles.pills}>
               {STAGES.map((stage) => (
                 <TouchableOpacity
                   key={stage}
-                  style={StyleSheet.flatten([
+                  style={[
                     styles.pill,
-                    activeStage === stage && styles.pillActive,
-                  ])}
+                    { backgroundColor: colors.surface, borderColor: colors.border },
+                    activeStage === stage && { backgroundColor: colors.primary, borderColor: colors.primary },
+                  ]}
                   onPress={() => setActiveStage(stage)}
                 >
                   <Text
-                    style={StyleSheet.flatten([
+                    style={[
                       styles.pillText,
-                      activeStage === stage && styles.pillTextActive,
-                    ])}
+                      { color: colors.textMuted },
+                      activeStage === stage && { color: "#000", fontWeight: "bold" },
+                    ]}
                   >
                     {stage}
                   </Text>
@@ -252,7 +263,7 @@ export default function CareGuideDetail() {
 
           {/* Season Selector */}
           <View style={styles.controlGroup}>
-            <Text style={styles.sectionTitle}>Season</Text>
+            <Text style={[styles.sectionTitle, { color: colors.textMuted }]}>Season</Text>
             <ScrollView
               horizontal
               showsHorizontalScrollIndicator={false}
@@ -261,17 +272,19 @@ export default function CareGuideDetail() {
               {SEASONS.map((season) => (
                 <TouchableOpacity
                   key={season}
-                  style={StyleSheet.flatten([
+                  style={[
                     styles.pill,
-                    activeSeason === season && styles.pillActive,
-                  ])}
+                    { backgroundColor: colors.surface, borderColor: colors.border },
+                    activeSeason === season && { backgroundColor: colors.primary, borderColor: colors.primary },
+                  ]}
                   onPress={() => setActiveSeason(season)}
                 >
                   <Text
-                    style={StyleSheet.flatten([
+                    style={[
                       styles.pillText,
-                      activeSeason === season && styles.pillTextActive,
-                    ])}
+                      { color: colors.textMuted },
+                      activeSeason === season && { color: "#000", fontWeight: "bold" },
+                    ]}
                   >
                     {season}
                   </Text>
@@ -284,101 +297,110 @@ export default function CareGuideDetail() {
         {/* --- CARDS --- */}
 
         {/* Water Card */}
-        <View style={styles.card}>
+        <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
           <View style={styles.cardHeader}>
             <Ionicons name="water" size={24} color="#3b82f6" />
-            <Text style={styles.cardTitle}>Watering</Text>
+            <Text style={[styles.cardTitle, { color: colors.text }]}>Watering</Text>
           </View>
 
           {waterRule ? (
             <>
               <View style={styles.row}>
-                <Text style={styles.label}>Amount:</Text>
-                <Text style={styles.value}>{waterRule.amount}</Text>
+                <Text style={[styles.label, { color: colors.textMuted }]}>Amount:</Text>
+                <Text style={[styles.value, { color: colors.text }]}>{waterRule.amount}</Text>
               </View>
               <View style={styles.row}>
-                <Text style={styles.label}>Frequency:</Text>
-                <Text style={styles.value}>{waterRule.frequency}</Text>
+                <Text style={[styles.label, { color: colors.textMuted }]}>Frequency:</Text>
+                <Text style={[styles.value, { color: colors.text }]}>{waterRule.frequency}</Text>
               </View>
               {waterRule.description && (
-                <Text style={styles.desc}>{waterRule.description}</Text>
+                <Text style={[styles.desc, { color: colors.text, borderTopColor: colors.border }]}>{waterRule.description}</Text>
               )}
             </>
           ) : (
-            <Text style={styles.missing}>
+            <Text style={[styles.missing, { color: colors.textMuted }]}>
               No data for {activeStage} in {activeSeason}
             </Text>
           )}
         </View>
 
         {/* Fertilizer Card */}
-        <View style={styles.card}>
+        <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
           <View style={styles.cardHeader}>
-            <Ionicons name="leaf" size={24} color="#22c55e" />
-            <Text style={styles.cardTitle}>Fertilizer</Text>
+            <Ionicons name="leaf" size={24} color={colors.primary} />
+            <Text style={[styles.cardTitle, { color: colors.text }]}>Fertilizer</Text>
           </View>
 
           {fertRule ? (
             <>
               <View style={styles.row}>
-                <Text style={styles.label}>Type:</Text>
-                <Text style={styles.value}>
+                <Text style={[styles.label, { color: colors.textMuted }]}>Type:</Text>
+                <Text style={[styles.value, { color: colors.text }]}>
                   {fertRule.type || fertRule.name || "General"}
                 </Text>
               </View>
               <View style={styles.row}>
-                <Text style={styles.label}>Dosage:</Text>
-                <Text style={styles.value}>{fertRule.dosage}</Text>
+                <Text style={[styles.label, { color: colors.textMuted }]}>Dosage:</Text>
+                <Text style={[styles.value, { color: colors.text }]}>{fertRule.dosage}</Text>
               </View>
               <View style={styles.row}>
-                <Text style={styles.label}>Frequency:</Text>
-                <Text style={styles.value}>{fertRule.frequency}</Text>
+                <Text style={[styles.label, { color: colors.textMuted }]}>Frequency:</Text>
+                <Text style={[styles.value, { color: colors.text }]}>{fertRule.frequency}</Text>
               </View>
               {fertRule.description && (
-                <Text style={styles.desc}>{fertRule.description}</Text>
+                <Text style={[styles.desc, { color: colors.text, borderTopColor: colors.border }]}>{fertRule.description}</Text>
               )}
             </>
           ) : (
-            <Text style={styles.missing}>
+            <Text style={[styles.missing, { color: colors.textMuted }]}>
               No data for {activeStage} in {activeSeason}
             </Text>
           )}
         </View>
       </View>
     </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  page: { flex: 1, backgroundColor: "#071024" },
+  page: { flex: 1 },
+  floatingBackBtn: {
+    position: 'absolute',
+    top: 50,
+    left: 20,
+    zIndex: 10,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   center: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#071024",
   },
   hero: { width: "100%", height: 250 },
   content: {
     padding: 20,
     marginTop: -20,
-    backgroundColor: "#071024",
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
   },
 
-  name: { fontSize: 28, fontWeight: "bold", color: "#e6eef3" },
+  name: { fontSize: 28, fontWeight: "bold" },
   scientific: {
     fontSize: 16,
-    color: "#94a3b8",
     fontStyle: "italic",
     marginBottom: 20,
   },
-  errorText: { color: "#ef4444", fontSize: 18 },
+  errorText: { fontSize: 18 },
 
   controls: { marginBottom: 20 },
   controlGroup: { marginBottom: 15 },
   sectionTitle: {
-    color: "#94a3b8",
     fontSize: 12,
     textTransform: "uppercase",
     letterSpacing: 1,
@@ -388,64 +410,53 @@ const styles = StyleSheet.create({
   pills: { flexDirection: "row", flexWrap: "wrap" },
   pillsScroll: { flexDirection: "row" },
   pill: {
-    backgroundColor: "#0f1724",
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: "#1e293b",
     marginRight: 8,
-    marginBottom: 8, // Added for wrapping
+    marginBottom: 8,
   },
-  pillActive: { backgroundColor: "#22c55e", borderColor: "#22c55e" },
-  pillText: { color: "#94a3b8", fontSize: 13, fontWeight: "600" },
-  pillTextActive: { color: "#071024", fontWeight: "bold" },
+  pillText: { fontSize: 13, fontWeight: "600" },
 
   card: {
-    backgroundColor: "#0f1724",
     borderRadius: 16,
     padding: 16,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: "#1e293b",
   },
   cardHeader: {
     flexDirection: "row",
     alignItems: "center",
     marginBottom: 12,
   },
-  cardTitle: { fontSize: 18, fontWeight: "bold", color: "#e6eef3", marginLeft: 10 }, // Added marginLeft to replace gap
+  cardTitle: { fontSize: 18, fontWeight: "bold", marginLeft: 10 },
 
   row: {
     flexDirection: "row",
     justifyContent: "space-between",
     marginBottom: 8,
   },
-  label: { color: "#94a3b8", fontSize: 14 },
+  label: { fontSize: 14 },
   value: {
-    color: "#e6eef3",
     fontWeight: "600",
     fontSize: 14,
     maxWidth: "65%",
     textAlign: "right",
   },
   desc: {
-    color: "#cbd5e1",
     marginTop: 8,
     fontSize: 13,
     fontStyle: "italic",
     borderTopWidth: 1,
-    borderTopColor: "#1e293b",
     paddingTop: 8,
   },
   missing: {
-    color: "#64748b",
     fontStyle: "italic",
     textAlign: "center",
     padding: 10,
   },
   aiButton: {
-    backgroundColor: '#facc15',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -459,7 +470,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   valueLeft: {
-    color: '#e6eef3',
     fontWeight: '600',
     fontSize: 15,
   }

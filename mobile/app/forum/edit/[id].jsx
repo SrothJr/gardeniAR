@@ -4,6 +4,7 @@ import {
   View, Text, TextInput, TouchableOpacity, StyleSheet,
   Alert, ActivityIndicator, ScrollView, Image
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
@@ -81,16 +82,17 @@ export default function EditPost() {
   if (loading) return <View style={styles.center}><ActivityIndicator color="#10b981" /></View>;
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
-      <View style={styles.headerRow}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.cancelBtn}>
-          <Text style={styles.cancelText}>Cancel</Text>
-        </TouchableOpacity>
-        <Text style={styles.heading}>Edit Post</Text>
-        <TouchableOpacity onPress={handleSave} disabled={saving} style={styles.saveBtn}>
-          {saving ? <ActivityIndicator color="#000" size="small" /> : <Text style={styles.saveBtnText}>Save</Text>}
-        </TouchableOpacity>
-      </View>
+    <SafeAreaView style={styles.container} edges={['top']}>
+      <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
+        <View style={styles.headerRow}>
+          <TouchableOpacity onPress={() => router.back()} style={styles.cancelBtn}>
+            <Ionicons name="chevron-back" size={24} color="#9ca3af" />
+          </TouchableOpacity>
+          <Text style={styles.heading}>Edit Post</Text>
+          <TouchableOpacity onPress={handleSave} disabled={saving} style={styles.saveBtn}>
+            {saving ? <ActivityIndicator color="#000" size="small" /> : <Text style={styles.saveBtnText}>Save</Text>}
+          </TouchableOpacity>
+        </View>
 
       <TextInput
         style={styles.titleInput}
@@ -130,6 +132,7 @@ export default function EditPost() {
         </TouchableOpacity>
       )}
     </ScrollView>
+    </SafeAreaView>
   );
 }
 

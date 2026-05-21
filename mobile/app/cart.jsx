@@ -6,11 +6,17 @@ import {
   StyleSheet,
   FlatList,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { BACKEND } from "../config";
 import { useRouter } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
+import { useTheme } from "../hooks/useTheme";
+import { useTranslation } from "react-i18next";
 
 export default function Cart() {
   const router = useRouter();
+  const { colors } = useTheme();
+  const { t } = useTranslation();
   const [cart, setCart] = useState([]);
 
   // Load cart from backend
@@ -67,40 +73,47 @@ export default function Cart() {
   );
 
   const renderItem = ({ item }) => (
-    <View style={styles.card}>
+    <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
       <View style={styles.cardHeader}>
-        <Text style={styles.name}>{item.name}</Text>
+        <Text style={[styles.name, { color: colors.text }]}>{item.name}</Text>
         <TouchableOpacity onPress={() => removeItem(item._id)} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-          <Text style={styles.removeX}>✕</Text>
+          <Text style={[styles.removeX, { color: colors.textMuted }]}>✕</Text>
         </TouchableOpacity>
       </View>
 
       <View style={styles.subRow}>
-        <Text style={styles.price}>Tk {item.price}</Text>
-        <Text style={styles.subtotal}>Subtotal: Tk {item.price * item.quantity}</Text>
+        <Text style={[styles.price, { color: colors.textMuted }]}>{t('cart.price_tk', { price: item.price })}</Text>
+        <Text style={[styles.subtotal, { color: colors.primary }]}>{t('cart.subtotal', { price: item.price * item.quantity })}</Text>
       </View>
 
       <View style={styles.row}>
-        <TouchableOpacity style={styles.qtyBtn} onPress={() => updateQty(item, -1)}>
-          <Text style={styles.qtyText}>−</Text>
+        <TouchableOpacity style={[styles.qtyBtn, { backgroundColor: colors.primary }]} onPress={() => updateQty(item, -1)}>
+          <Text style={[styles.qtyText, { color: "#000" }]}>−</Text>
         </TouchableOpacity>
-        <Text style={styles.qty}>{item.quantity}</Text>
-        <TouchableOpacity style={styles.qtyBtn} onPress={() => updateQty(item, 1)}>
-          <Text style={styles.qtyText}>+</Text>
+        <Text style={[styles.qty, { color: colors.text }]}>{item.quantity}</Text>
+        <TouchableOpacity style={[styles.qtyBtn, { backgroundColor: colors.primary }]} onPress={() => updateQty(item, 1)}>
+          <Text style={[styles.qtyText, { color: "#000" }]}>+</Text>
         </TouchableOpacity>
         <TouchableOpacity onPress={() => removeItem(item._id)} style={styles.remove}>
-          <Text style={styles.removeText}>Remove</Text>
+          <Text style={styles.removeText}>{t('cart.remove')}</Text>
         </TouchableOpacity>
       </View>
     </View>
   );
 
   return (
-    <View style={styles.page}>
-      <Text style={styles.title}>My Cart</Text>
+    <SafeAreaView style={[styles.page, { backgroundColor: colors.background }]} edges={['top']}>
+      {/* Header */}
+      <View style={[styles.header, { borderBottomColor: colors.border }]}>
+        <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
+          <Ionicons name="chevron-back" size={24} color={colors.text} />
+        </TouchableOpacity>
+        <Text style={[styles.headerTitle, { color: colors.text }]}>{t('cart.title')}</Text>
+        <View style={{ width: 40 }} />
+      </View>
 
       {cart.length === 0 ? (
-        <Text style={styles.empty}>Your cart is empty</Text>
+        <Text style={[styles.empty, { color: colors.textMuted }]}>{t('cart.empty')}</Text>
       ) : (
         <FlatList
           data={cart}
@@ -110,54 +123,65 @@ export default function Cart() {
         />
       )}
 
-      <View style={styles.summaryBar}>
+      <View style={[styles.summaryBar, { backgroundColor: colors.surface, borderColor: colors.border }]}>
         <View>
-          <Text style={styles.totalLabel}>Total</Text>
-          <Text style={styles.totalValue}>Tk {total}</Text>
+          <Text style={[styles.totalLabel, { color: colors.textMuted }]}>{t('cart.total')}</Text>
+          <Text style={[styles.totalValue, { color: colors.text }]}>{t('cart.price_tk', { price: total })}</Text>
         </View>
         <TouchableOpacity
-          style={[styles.payBtn, cart.length === 0 && styles.payBtnDisabled]}
+          style={[styles.payBtn, { backgroundColor: colors.primary }, cart.length === 0 && styles.payBtnDisabled]}
           onPress={() => router.push("/payment")}
           disabled={cart.length === 0}
         >
-          <Text style={styles.payText}>Checkout</Text>
+          <Text style={[styles.payText, { color: "#000" }]}>{t('cart.checkout')}</Text>
         </TouchableOpacity>
       </View>
-    </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  page: { flex: 1, padding: 16, backgroundColor: "#071024" },
-  title: { color: "#e6eef3", fontSize: 22, fontWeight: "700", marginBottom: 12 },
-  empty: { color: "#94a3b8", marginTop: 40, textAlign: "center" },
+  page: { flex: 1 },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+  },
+  headerTitle: {
+    fontSize: 18,
+    fontWeight: '800',
+  },
+  backBtn: {
+    padding: 4,
+  },
+  empty: { marginTop: 40, textAlign: "center" },
 
   card: {
-    backgroundColor: "rgba(15, 23, 42, 0.95)",
     borderWidth: 1,
-    borderColor: "rgba(148,163,184,0.16)",
     padding: 14,
     borderRadius: 16,
     marginBottom: 12,
   },
   cardHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
-  name: { color: "#e6eef3", fontWeight: "800", fontSize: 16 },
-  removeX: { color: "#64748b", fontSize: 18, fontWeight: "700" },
+  name: { fontWeight: "800", fontSize: 16 },
+  removeX: { fontSize: 18, fontWeight: "700" },
   subRow: { flexDirection: "row", justifyContent: "space-between", marginTop: 6 },
-  price: { color: "#9fb1be" },
-  subtotal: { color: "#93c5fd", fontWeight: "700" },
+  price: { },
+  subtotal: { fontWeight: "700" },
 
   row: { flexDirection: "row", alignItems: "center", marginTop: 8 },
   qtyBtn: {
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: "#22c55e",
     alignItems: "center",
     justifyContent: "center",
   },
-  qtyText: { color: "#051013", fontSize: 18, fontWeight: "900" },
-  qty: { color: "#e6eef3", marginHorizontal: 12, fontWeight: "800" },
+  qtyText: { fontSize: 18, fontWeight: "900" },
+  qty: { marginHorizontal: 12, fontWeight: "800" },
 
   remove: { marginLeft: "auto" },
   removeText: { color: "#ef4444" },
@@ -167,24 +191,21 @@ const styles = StyleSheet.create({
     left: 16,
     right: 16,
     bottom: 16,
-    backgroundColor: "rgba(15, 23, 42, 0.95)",
     borderWidth: 1,
-    borderColor: "rgba(148,163,184,0.16)",
     borderRadius: 16,
     padding: 14,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
   },
-  totalLabel: { color: "#9fb1be", fontSize: 12 },
-  totalValue: { color: "#e6eef3", fontSize: 18, fontWeight: "800" },
+  totalLabel: { fontSize: 12 },
+  totalValue: { fontSize: 18, fontWeight: "800" },
   payBtn: {
-    backgroundColor: "#22c55e",
     paddingHorizontal: 18,
     paddingVertical: 12,
     borderRadius: 12,
     alignItems: "center",
   },
   payBtnDisabled: { opacity: 0.6 },
-  payText: { color: "#051013", fontWeight: "900", fontSize: 15 },
+  payText: { fontWeight: "900", fontSize: 15 },
 });

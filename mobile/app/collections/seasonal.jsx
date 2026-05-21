@@ -2,6 +2,8 @@ import React from "react";
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from "react-native";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
+import { useTheme } from "../../hooks/useTheme";
+import { StatusBar } from "expo-status-bar";
 
 const SEASONAL_SETS = [
   {
@@ -26,16 +28,18 @@ const SEASONAL_SETS = [
 
 export default function SeasonalCollectionScreen() {
   const router = useRouter();
+  const { colors, resolvedTheme } = useTheme();
 
   return (
-    <View style={styles.page}>
+    <View style={[styles.page, { backgroundColor: colors.background }]}>
+      <StatusBar style={resolvedTheme === 'dark' ? 'light' : 'dark'} />
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <Ionicons name="arrow-back" size={22} color="#e5e7eb" />
+        <TouchableOpacity onPress={() => router.back()} style={[styles.backBtn, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+          <Ionicons name="arrow-back" size={22} color={colors.text} />
         </TouchableOpacity>
         <View style={{ flex: 1 }}>
-          <Text style={styles.title}>Seasonal picks</Text>
-          <Text style={styles.subtitle}>Curated sets of plants to try now.</Text>
+          <Text style={[styles.title, { color: colors.text }]}>Seasonal picks</Text>
+          <Text style={[styles.subtitle, { color: colors.textMuted }]}>Curated sets of plants to try now.</Text>
         </View>
       </View>
 
@@ -47,7 +51,7 @@ export default function SeasonalCollectionScreen() {
           <TouchableOpacity
             key={set.id}
             activeOpacity={0.9}
-            style={styles.card}
+            style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}
             onPress={() =>
               router.push({
                 pathname: "/explore",
@@ -55,27 +59,27 @@ export default function SeasonalCollectionScreen() {
               })
             }
           >
-            <View style={styles.cardIcon}>
-              <Ionicons name="leaf-outline" size={20} color="#052e16" />
+            <View style={[styles.cardIcon, { backgroundColor: colors.primary }]}>
+              <Ionicons name="leaf-outline" size={20} color="#000" />
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={styles.cardTitle}>{set.title}</Text>
-              <Text style={styles.cardDesc}>{set.description}</Text>
+              <Text style={[styles.cardTitle, { color: colors.text }]}>{set.title}</Text>
+              <Text style={[styles.cardDesc, { color: colors.textMuted }]}>{set.description}</Text>
               <View style={styles.tagRow}>
                 {set.tags.map((tag) => (
-                  <View key={tag} style={styles.tag}>
-                    <Text style={styles.tagText}>{tag}</Text>
+                  <View key={tag} style={[styles.tag, { backgroundColor: colors.primary + '15' }]}>
+                    <Text style={[styles.tagText, { color: colors.primary }]}>{tag}</Text>
                   </View>
                 ))}
               </View>
             </View>
-            <Ionicons name="chevron-forward" size={18} color="#94a3b8" />
+            <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
           </TouchableOpacity>
         ))}
 
-        <View style={styles.hintBox}>
-          <Ionicons name="bulb-outline" size={18} color="#a5b4fc" />
-          <Text style={styles.hintText}>
+        <View style={[styles.hintBox, { backgroundColor: colors.primary + '10', borderColor: colors.primary + '30' }]}>
+          <Ionicons name="bulb-outline" size={18} color={colors.primary} />
+          <Text style={[styles.hintText, { color: colors.text }]}>
             These collections are just shortcuts – you can always explore all plants from the home
             screen.
           </Text>
@@ -88,7 +92,6 @@ export default function SeasonalCollectionScreen() {
 const styles = StyleSheet.create({
   page: {
     flex: 1,
-    backgroundColor: "#020617",
     paddingHorizontal: 18,
     paddingTop: 16,
   },
@@ -103,18 +106,14 @@ const styles = StyleSheet.create({
     height: 36,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: "rgba(148,163,184,0.3)",
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "rgba(15,23,42,0.9)",
   },
   title: {
-    color: "#e5e7eb",
     fontSize: 20,
     fontWeight: "800",
   },
   subtitle: {
-    color: "#9ca3af",
     marginTop: 2,
     fontSize: 13,
   },
@@ -124,26 +123,21 @@ const styles = StyleSheet.create({
     gap: 12,
     padding: 14,
     borderRadius: 16,
-    backgroundColor: "rgba(15,23,42,0.95)",
     borderWidth: 1,
-    borderColor: "rgba(148,163,184,0.2)",
     marginBottom: 12,
   },
   cardIcon: {
     width: 34,
     height: 34,
     borderRadius: 12,
-    backgroundColor: "#4ade80",
     alignItems: "center",
     justifyContent: "center",
   },
   cardTitle: {
-    color: "#e5e7eb",
     fontWeight: "700",
     fontSize: 15,
   },
   cardDesc: {
-    color: "#9ca3af",
     fontSize: 12,
     marginTop: 2,
   },
@@ -157,10 +151,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 999,
-    backgroundColor: "rgba(34,197,94,0.18)",
   },
   tagText: {
-    color: "#bbf7d0",
     fontSize: 11,
     fontWeight: "600",
   },
@@ -169,14 +161,11 @@ const styles = StyleSheet.create({
     gap: 8,
     padding: 12,
     borderRadius: 14,
-    backgroundColor: "rgba(30,64,175,0.35)",
     borderWidth: 1,
-    borderColor: "rgba(129,140,248,0.6)",
     marginTop: 8,
   },
   hintText: {
     flex: 1,
-    color: "#e0e7ff",
     fontSize: 12,
   },
 });

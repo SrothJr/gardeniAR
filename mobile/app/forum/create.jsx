@@ -127,6 +127,7 @@ import {
   View, Text, TextInput, TouchableOpacity, StyleSheet,
   Alert, ActivityIndicator, ScrollView, Image
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
@@ -198,19 +199,20 @@ export default function CreatePost() {
   };
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
-      <View style={styles.headerRow}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.cancelBtn}>
-          <Text style={styles.cancelText}>Cancel</Text>
-        </TouchableOpacity>
-        <Text style={styles.heading}>Create Post</Text>
-        <TouchableOpacity onPress={handleCreate} disabled={loading} style={styles.postBtn}>
-          {loading
-            ? <ActivityIndicator color="#000" size="small" />
-            : <Text style={styles.postBtnText}>Post</Text>
-          }
-        </TouchableOpacity>
-      </View>
+    <SafeAreaView style={styles.container} edges={['top']}>
+      <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
+        <View style={styles.headerRow}>
+          <TouchableOpacity onPress={() => router.back()} style={styles.cancelBtn}>
+            <Ionicons name="chevron-back" size={24} color="#9ca3af" />
+          </TouchableOpacity>
+          <Text style={styles.heading}>Create Post</Text>
+          <TouchableOpacity onPress={handleCreate} disabled={loading} style={styles.postBtn}>
+            {loading
+              ? <ActivityIndicator color="#000" size="small" />
+              : <Text style={styles.postBtnText}>Post</Text>
+            }
+          </TouchableOpacity>
+        </View>
 
       <View style={styles.communityTag}>
         <Text style={styles.communityTagText}>🌿 r/Gardening</Text>
@@ -258,6 +260,7 @@ export default function CreatePost() {
         </TouchableOpacity>
       )}
     </ScrollView>
+    </SafeAreaView>
   );
 }
 

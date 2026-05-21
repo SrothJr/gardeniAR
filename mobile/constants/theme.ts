@@ -1,53 +1,220 @@
-/**
- * Below are the colors that are used in the app. The colors are defined in the light and dark mode.
- * There are many other ways to style your app. For example, [Nativewind](https://www.nativewind.dev/), [Tamagui](https://tamagui.dev/), [unistyles](https://reactnativeunistyles.vercel.app), etc.
- */
-
 import { Platform } from 'react-native';
 
-const tintColorLight = '#0a7ea4';
-const tintColorDark = '#fff';
-
-export const Colors = {
-  light: {
-    text: '#11181C',
-    background: '#fff',
-    tint: tintColorLight,
-    icon: '#687076',
-    tabIconDefault: '#687076',
-    tabIconSelected: tintColorLight,
+export const ThemePresets = {
+  Monochrome: {
+    name: 'Monochrome',
+    light: {
+      primary: '#000000',
+      background: '#ffffff',
+      surface: '#f3f4f6',
+      text: '#000000',
+      textMuted: '#4b5563',
+      border: '#d1d5db',
+    },
+    dark: {
+      primary: '#ffffff',
+      background: '#000000',
+      surface: '#1f2937',
+      text: '#ffffff',
+      textMuted: '#9ca3af',
+      border: '#374151',
+    },
   },
-  dark: {
-    text: '#ECEDEE',
-    background: '#151718',
-    tint: tintColorDark,
-    icon: '#9BA1A6',
-    tabIconDefault: '#9BA1A6',
-    tabIconSelected: tintColorDark,
+  'Yin & Yang': {
+    name: 'Yin & Yang',
+    light: {
+      primary: '#000000',
+      background: '#ffffff',
+      surface: '#e5e7eb',
+      text: '#000000',
+      textMuted: '#374151',
+      border: '#9ca3af',
+    },
+    dark: {
+      primary: '#ffffff',
+      background: '#000000',
+      surface: '#111827',
+      text: '#ffffff',
+      textMuted: '#d1d5db',
+      border: '#4b5563',
+    },
+  },
+  Default: {
+    name: 'Default',
+    light: {
+      primary: '#10b981',
+      background: '#ffffff',
+      surface: '#f3f4f6',
+      text: '#111827',
+      textMuted: '#6b7280',
+      border: '#e5e7eb',
+    },
+    dark: {
+      primary: '#10b981',
+      background: '#071024',
+      surface: '#1a2535',
+      text: '#f9fafb',
+      textMuted: '#9ca3af',
+      border: '#2d3748',
+    },
+  },
+  Dynamic: {
+    name: 'Dynamic',
+    light: {
+      primary: '#3b82f6',
+      background: '#f8fafc',
+      surface: '#f1f5f9',
+      text: '#0f172a',
+      textMuted: '#64748b',
+      border: '#e2e8f0',
+    },
+    dark: {
+      primary: '#3b82f6',
+      background: '#020617',
+      surface: '#0f172a',
+      text: '#f8fafc',
+      textMuted: '#94a3b8',
+      border: '#1e293b',
+    },
+  },
+  Catppuccin: {
+    name: 'Catppuccin',
+    light: {
+      primary: '#8839ef',
+      background: '#eff1f5',
+      surface: '#e6e9ef',
+      text: '#4c4f69',
+      textMuted: '#7c7f93',
+      border: '#dce0e8',
+    },
+    dark: {
+      primary: '#cba6f7',
+      background: '#1e1e2e',
+      surface: '#313244',
+      text: '#cdd6f4',
+      textMuted: '#a6adc8',
+      border: '#45475a',
+    },
+  },
+  'Green Apple': {
+    name: 'Green Apple',
+    light: {
+      primary: '#4ade80',
+      background: '#f0fdf4',
+      surface: '#dcfce7',
+      text: '#14532d',
+      textMuted: '#166534',
+      border: '#bbf7d0',
+    },
+    dark: {
+      primary: '#4ade80',
+      background: '#052e16',
+      surface: '#064e3b',
+      text: '#dcfce7',
+      textMuted: '#4ade80',
+      border: '#065f46',
+    },
+  },
+  Lavender: {
+    name: 'Lavender',
+    light: {
+      primary: '#8b5cf6',
+      background: '#f5f3ff',
+      surface: '#ede9fe',
+      text: '#4c1d95',
+      textMuted: '#6d28d9',
+      border: '#ddd6fe',
+    },
+    dark: {
+      primary: '#a78bfa',
+      background: '#2e1065',
+      surface: '#4c1d95',
+      text: '#ede9fe',
+      textMuted: '#a78bfa',
+      border: '#5b21b6',
+    },
+  },
+  'Midnight Dusk': {
+    name: 'Midnight Dusk',
+    light: {
+      primary: '#e11d48',
+      background: '#fff1f2',
+      surface: '#ffe4e6',
+      text: '#881337',
+      textMuted: '#be123c',
+      border: '#fecdd3',
+    },
+    dark: {
+      primary: '#fb7185',
+      background: '#4c0519',
+      surface: '#881337',
+      text: '#ffe4e6',
+      textMuted: '#fb7185',
+      border: '#9f1239',
+    },
+  },
+  Nord: {
+    name: 'Nord',
+    light: {
+      primary: '#5e81ac',
+      background: '#eceff4',
+      surface: '#e5e9f0',
+      text: '#2e3440',
+      textMuted: '#4c566a',
+      border: '#d8dee9',
+    },
+    dark: {
+      primary: '#88c0d0',
+      background: '#2e3440',
+      surface: '#3b4252',
+      text: '#eceff4',
+      textMuted: '#d8dee9',
+      border: '#4c566a',
+    },
+  },
+  'Strawberry Daiquiri': {
+    name: 'Strawberry Daiquiri',
+    light: {
+      primary: '#ef4444',
+      background: '#fef2f2',
+      surface: '#fee2e2',
+      text: '#7f1d1d',
+      textMuted: '#991b1b',
+      border: '#fecaca',
+    },
+    dark: {
+      primary: '#f87171',
+      background: '#450a0a',
+      surface: '#7f1d1d',
+      text: '#fef2f2',
+      textMuted: '#f87171',
+      border: '#991b1b',
+    },
+  },
+  'Teal & Turquoise': {
+    name: 'Teal & Turquoise',
+    light: {
+      primary: '#0d9488',
+      background: '#f0fdfa',
+      surface: '#ccfbf1',
+      text: '#134e4a',
+      textMuted: '#0f766e',
+      border: '#99f6e4',
+    },
+    dark: {
+      primary: '#2dd4bf',
+      background: '#042f2e',
+      surface: '#134e4a',
+      text: '#ccfbf1',
+      textMuted: '#2dd4bf',
+      border: '#0f766e',
+    },
   },
 };
 
-export const Fonts = Platform.select({
-  ios: {
-    /** iOS `UIFontDescriptorSystemDesignDefault` */
-    sans: 'system-ui',
-    /** iOS `UIFontDescriptorSystemDesignSerif` */
-    serif: 'ui-serif',
-    /** iOS `UIFontDescriptorSystemDesignRounded` */
-    rounded: 'ui-rounded',
-    /** iOS `UIFontDescriptorSystemDesignMonospaced` */
-    mono: 'ui-monospace',
-  },
-  default: {
-    sans: 'normal',
-    serif: 'serif',
-    rounded: 'normal',
-    mono: 'monospace',
-  },
-  web: {
-    sans: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
-    serif: "Georgia, 'Times New Roman', serif",
-    rounded: "'SF Pro Rounded', 'Hiragino Maru Gothic ProN', Meiryo, 'MS PGothic', sans-serif",
-    mono: "SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace",
-  },
-});
+export type ThemePresetName = keyof typeof ThemePresets;
+
+export const Colors = {
+  light: ThemePresets.Default.light,
+  dark: ThemePresets.Default.dark,
+};

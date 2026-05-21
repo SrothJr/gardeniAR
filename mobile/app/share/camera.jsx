@@ -194,6 +194,14 @@ export default function ShareCamera() {
         onCameraReady={() => setIsCameraReady(true)}
       />
 
+      {/* Floating Back Button */}
+      <TouchableOpacity 
+        onPress={() => router.back()} 
+        style={styles.floatingBackBtn}
+      >
+        <Ionicons name="chevron-back" size={24} color="#fff" />
+      </TouchableOpacity>
+
       {/* Share usage banner (free users only) */}
       {!isPremium && (
         <View style={styles.usageBanner}>
@@ -238,6 +246,19 @@ const styles = StyleSheet.create({
   },
   title: { color: "#fff", fontSize: 18, fontWeight: "700", marginBottom: 10 },
   hint: { color: "#cbd5e1" },
+
+  floatingBackBtn: {
+    position: 'absolute',
+    top: 50,
+    left: 20,
+    zIndex: 10,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
 
   usageBanner: {
     position: "absolute",
