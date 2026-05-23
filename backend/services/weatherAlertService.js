@@ -12,7 +12,7 @@ async function generateWeatherAlert(weatherApiResponse) {
   // ✅ Normalize once
   const weatherData = {
     city: weatherApiResponse.name,
-    temp: weatherApiResponse.main.temp,
+    temperature: weatherApiResponse.main.temp,
     humidity: weatherApiResponse.main.humidity,
     condition: weatherApiResponse.weather?.[0]?.description || "unknown"
   };
@@ -23,12 +23,12 @@ async function generateWeatherAlert(weatherApiResponse) {
   } catch (err) {
     console.warn("⚠ AI unavailable, using fallback alert");
 
-    const { city, temp, humidity, condition } = weatherData;
+    const { city, temperature, humidity, condition } = weatherData;
     const recommendations = [];
 
-    if (temp >= 35) {
+    if (temperature >= 35) {
       recommendations.push("High temperature detected. Water plants early morning or evening.");
-    } else if (temp <= 10) {
+    } else if (temperature <= 10) {
       recommendations.push("Low temperature detected. Protect sensitive plants from cold.");
     } else {
       recommendations.push("Temperature is suitable for gardening.");
@@ -46,7 +46,7 @@ async function generateWeatherAlert(weatherApiResponse) {
 
     return {
       city,
-      temperature: `${temp}°C`,
+      temperature: `${temperature}°C`,
       humidity: `${humidity}%`,
       condition,
       alertSummary: "Weather-based gardening advice",

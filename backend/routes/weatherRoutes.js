@@ -8,9 +8,10 @@ const WEATHER_KEY = process.env.WEATHER_API_KEY;
 router.get("/alert", async (req, res) => {
   try {
     const city = req.query.city || "Dhaka";
+    const language = req.query.lang || "en";
 
     const weatherRes = await fetch(
-      `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${WEATHER_KEY}&units=metric`
+      `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${WEATHER_KEY}&units=metric&lang=${language}`
     );
 
     if (!weatherRes.ok) {
@@ -27,7 +28,7 @@ router.get("/alert", async (req, res) => {
       windSpeed: weatherData.wind.speed
     };
 
-    const alert = await generateWeatherAlertAI(simpleWeather);
+    const alert = await generateWeatherAlertAI(simpleWeather, language);
 
 
     res.json({ alert, weather: simpleWeather });
@@ -40,7 +41,8 @@ router.get("/alert", async (req, res) => {
 
 router.post("/care-adjustment", async (req, res) => {
   try {
-    const { lat, lon, plantName, lifeStage, generalWater, generalFert } = req.body;
+    const { lat, lon, plantName, lifeStage, generalWater, generalFert, lang } = req.body;
+    const language = lang || "en";
 
     if (!lat || !lon || !plantName) {
       return res.status(400).json({ error: "Missing location or plant info" });
@@ -48,7 +50,7 @@ router.post("/care-adjustment", async (req, res) => {
 
 
     const weatherRes = await fetch(
-      `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${WEATHER_KEY}&units=metric`
+      `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${WEATHER_KEY}&units=metric&lang=${language}`
     );
 
     if (!weatherRes.ok) {
@@ -67,7 +69,7 @@ router.post("/care-adjustment", async (req, res) => {
     };
 
 
-    const adjustment = await generateAdjustedCareAI(plantName, lifeStage || "General", generalWater, generalFert, simpleWeather);
+    const adjustment = await generateAdjustedCareAI(plantName, lifeStage || "General", generalWater, generalFert, simpleWeather, language);
 
     res.json({ adjustment, weather: simpleWeather });
 

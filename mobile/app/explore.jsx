@@ -869,7 +869,7 @@ const fab = StyleSheet.create({
 export default function ExplorePlants() {
   const router = useRouter();
   const { fromSeasonal } = useLocalSearchParams();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { colors, resolvedTheme } = useTheme();
 
   const [plants, setPlants] = useState([]);
@@ -913,7 +913,7 @@ export default function ExplorePlants() {
       if (status !== "granted") return;
       const loc = await Location.getCurrentPositionAsync({});
       const { latitude, longitude } = loc.coords;
-      const res = await fetch(`${BACKEND}/api/weather/alert?lat=${latitude}&lon=${longitude}`);
+      const res = await fetch(`${BACKEND}/api/weather/alert?lat=${latitude}&lon=${longitude}&lang=${i18n.language}`);
       const data = await res.json();
       setWeather(data);
     } catch (err) {

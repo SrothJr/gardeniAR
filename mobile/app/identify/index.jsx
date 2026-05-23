@@ -5,6 +5,7 @@ import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { BACKEND_URL } from '../../config';
 import { useTheme } from '../../hooks/useTheme';
+import { useTranslation } from 'react-i18next';
 
 // Local Asset Mapping
 const WEED_IMAGES = {
@@ -25,6 +26,7 @@ export default function IdentifyScreen() {
   
   const router = useRouter();
   const { colors } = useTheme();
+  const { t, i18n } = useTranslation();
 
   useEffect(() => {
     // Fetch weeds for manual mode
@@ -71,8 +73,9 @@ export default function IdentifyScreen() {
       formData.append('image', {
         uri: photo.uri,
         name: 'plant.jpg',
-        type: 'image/jpeg',
+        type: 'image/jpeg', 
       });
+      formData.append('lang', i18n.language);
 
       const response = await fetch(`${BACKEND_URL}/api/weeds/identify`, {
         method: 'POST',
@@ -100,6 +103,14 @@ export default function IdentifyScreen() {
   const resetScan = () => {
     setImgSrc(null);
     setResult(null);
+    setLoading(false);
+  };
+
+  const translateDB = (val) => {
+    if (!val) return val;
+    const key = val.toLowerCase().replace(/ /g, "_");
+    const trans = t(`db.${key}`);
+    return trans === `db.${key}` ? val : trans;
   };
 
   // Manual Mode Logic
@@ -215,7 +226,7 @@ export default function IdentifyScreen() {
                 <ScrollView contentContainerStyle={{ paddingBottom: 20 }} showsVerticalScrollIndicator={false}>
                     <View style={styles.resultHeader}>
                         <View style={{ flex: 1 }}>
-                            <Text style={[styles.resultName, { color: colors.text }]}>{result?.name || "Unknown"}</Text>
+                            <Text style={[styles.resultName, { color: colors.text }]}>{translateDB(result?.name) || "Unknown"}</Text>
                             <Text style={[styles.resultScientific, { color: colors.textMuted }]}>{result?.scientificName}</Text>
                         </View>
                         <View style={[styles.confidenceBadge, { backgroundColor: colors.background }]}>

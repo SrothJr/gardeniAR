@@ -11,9 +11,11 @@ const upload = multer({
 router.post("/analyze", upload.single("image"), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ error: "No image uploaded" });
+    const language = req.body.lang || "en";
     const result = await geminiService.analyzeDisease(
       req.file.buffer,
-      req.file.mimetype || "image/jpeg"
+      req.file.mimetype || "image/jpeg",
+      language
     );
     return res.json({ result });
   } catch (err) {

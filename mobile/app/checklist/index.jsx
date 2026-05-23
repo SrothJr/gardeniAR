@@ -11,7 +11,7 @@ import { useTranslation } from 'react-i18next';
 
 export default function Checklist() {
   const { colors, resolvedTheme } = useTheme();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [modalVisible, setModalVisible] = useState(false);
@@ -70,10 +70,11 @@ export default function Checklist() {
       const response = await fetch(`${BACKEND_URL}/api/tasks/smart-add`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          userInput: smartInput, 
+        body: JSON.stringify({
+          userInput: smartInput,
           userId: user._id,
-          localDate: getLocalDateString() 
+          localDate: getLocalDateString(),
+          lang: i18n.language,
         }),
       });
 
@@ -94,7 +95,7 @@ export default function Checklist() {
 
   const handleOptimize = async () => {
     // Find overdue tasks to check if we even need to optimize
-    const overdueGroup = groupedTasks.find(g => g.title === 'Overdue');
+    const overdueGroup = groupedTasks.find(g => g.title === t('checklist.overdue'));
     if (!overdueGroup || overdueGroup.data.length === 0) return;
 
     // We want the AI to be load-aware, so we send ALL active tasks (not just overdue ones)
@@ -112,9 +113,10 @@ export default function Checklist() {
       const response = await fetch(`${BACKEND_URL}/api/tasks/optimize`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           allActiveTasks,
-          localDate: getLocalDateString()
+          localDate: getLocalDateString(),
+          lang: i18n.language,
         }),
       });
 
@@ -141,9 +143,10 @@ export default function Checklist() {
       const response = await fetch(`${BACKEND_URL}/api/tasks/generate-routine`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           userId: user._id,
-          localDate: getLocalDateString()
+          localDate: getLocalDateString(),
+          lang: i18n.language,
         }),
       });
 
@@ -283,15 +286,48 @@ export default function Checklist() {
     });
 
     const sections = [];
-    if (groups.overdue.length > 0) sections.push({ title: t('checklist.overdue'), data: groups.overdue, color: '#ef4444' });
-    if (groups.today.length > 0) sections.push({ title: t('checklist.today'), data: groups.today, color: '#10b981' });
-    if (groups.tomorrow.length > 0) sections.push({ title: t('checklist.tomorrow'), data: groups.tomorrow, color: '#3b82f6' });
-    if (groups.upcoming.length > 0) sections.push({ title: t('checklist.upcoming'), data: groups.upcoming, color: '#a855f7' });
-    if (groups.completed.length > 0) sections.push({ title: t('checklist.completed'), data: groups.completed, color: '#6b7280' });
+    if (groups.overdue.length > 0) sections.push({ type: 'overdue', title: t('checklist.overdue'), data: groups.overdue, color: '#ef4444' });
+    if (groups.today.length > 0) sections.push({ type: 'today', title: t('checklist.today'), data: groups.today, color: '#10b981' });
+    if (groups.tomorrow.length > 0) sections.push({ type: 'tomorrow', title: t('checklist.tomorrow'), data: groups.tomorrow, color: '#3b82f6' });
+    if (groups.upcoming.length > 0) sections.push({ type: 'upcoming', title: t('checklist.upcoming'), data: groups.upcoming, color: '#a855f7' });
+    if (groups.completed.length > 0) sections.push({ type: 'completed', title: t('checklist.completed'), data: groups.completed, color: '#6b7280' });
 
     return sections;
   }, [tasks, t]);
 
+
+  const getLocalizedTitle = (item) => {
+    // Only attempt translation for AI tasks that aren't in the current language
+    if (!item.aiGenerated || !item.taskType || item.language === i18n.language) {
+      return item.title;
+    }
+
+    // Try to extract the plant name from the title
+    // Titles are usually "Action PlantName" (e.g., "Water Zozo")
+    const actionWords = {
+      en: ['Water', 'Fertilize', 'Prune', 'Harvest', 'Pest-control'],
+      bn: ['জল দিন', 'সার দিন', 'ছাঁটাই করুন', 'ফসল সংগ্রহ করুন', 'কীটপতঙ্গ নিয়ন্ত্রণ']
+    };
+
+    let plantName = item.title;
+    const currentActions = actionWords[item.language] || [];
+    
+    currentActions.forEach(action => {
+      plantName = plantName.replace(action, '').trim();
+    });
+
+    // If we couldn't find a clean plant name, return original
+    if (!plantName || plantName === item.title) return item.title;
+
+    // Construct localized title: "PlantName + Action" for Bangla, "Action + PlantName" for English
+    const localizedAction = t(`checklist.task_${item.taskType}`);
+    
+    if (i18n.language === 'bn') {
+      return `${plantName}কে ${localizedAction}`;
+    } else {
+      return `${localizedAction} ${plantName}`;
+    }
+  };
 
   const renderItem = ({ item }) => (
     <View style={[styles.taskCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
@@ -306,17 +342,17 @@ export default function Checklist() {
       <View style={styles.taskInfo}>
         <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap' }}>
           {item.aiGenerated && (
-            <Ionicons name="sparkles" size={14} color={colors.primary} style={{ marginRight: 6 }} />
+            <Ionicons name="sparkles" size={14} color="#facc15" style={{ marginRight: 6 }} />
           )}
           <Text style={[styles.taskTitle, { color: colors.text }, item.isCompleted && styles.completedText]}>
-            {item.title}
+            {getLocalizedTitle(item)}
           </Text>
         </View>
         
         {item.description ? <Text style={[styles.taskDesc, { color: colors.textMuted }]}>{item.description}</Text> : null}
         
         {item.aiReasoning && !item.isCompleted ? (
-          <Text style={[styles.aiReasoningText, { color: colors.primary }]}>{item.aiReasoning}</Text>
+          <Text style={[styles.aiReasoningText, { color: "#facc15" }]}>{item.aiReasoning}</Text>
         ) : null}
 
         {item.dueDate && (
@@ -332,24 +368,24 @@ export default function Checklist() {
     </View>
   );
 
-  const renderSectionHeader = ({ section: { title, color } }) => (
+  const renderSectionHeader = ({ section }) => (
     <View style={[styles.sectionHeaderContainer, { backgroundColor: colors.background }]}>
       <View style={styles.sectionHeader}>
-        <View style={[styles.sectionIndicator, { backgroundColor: color }]} />
-        <Text style={[styles.sectionTitle, { color }]}>{title}</Text>
+        <View style={[styles.sectionIndicator, { backgroundColor: section.color }]} />
+        <Text style={[styles.sectionTitle, { color: section.color }]}>{section.title}</Text>
       </View>
-      {title === t('checklist.overdue') && (
+      {section.type === 'overdue' && (
         <TouchableOpacity 
-          style={[styles.optimizeBtn, { backgroundColor: colors.primary }, isOptimizing && { opacity: 0.7 }]} 
+          style={[styles.optimizeBtn, { backgroundColor: '#d97706' }, isOptimizing && { opacity: 0.7 }]} 
           onPress={handleOptimize}
           disabled={isOptimizing}
         >
           {isOptimizing ? (
-            <ActivityIndicator size="small" color="#000" />
+            <ActivityIndicator size="small" color="#fff" />
           ) : (
             <>
-              <Ionicons name="sparkles" size={16} color="#000" style={{ marginRight: 6 }} />
-              <Text style={[styles.optimizeBtnText, { color: "#000" }]}>{t('checklist.smart_reschedule')}</Text>
+              <Ionicons name="sparkles" size={16} color="#fff" style={{ marginRight: 6 }} />
+              <Text style={[styles.optimizeBtnText, { color: "#fff" }]}>{t('checklist.smart_reschedule')}</Text>
             </>
           )}
         </TouchableOpacity>
@@ -359,15 +395,6 @@ export default function Checklist() {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top']}>
-      {/* Header */}
-      <View style={[styles.header, { borderBottomColor: colors.border }]}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <Ionicons name="chevron-back" size={24} color={colors.text} />
-        </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: colors.text }]}>{t('checklist.title')}</Text>
-        <View style={{ width: 40 }} />
-      </View>
-
       {/* AI Generate Routine Banner */}
       <View style={styles.aiBannerContainer}>
         <TouchableOpacity 
@@ -379,7 +406,7 @@ export default function Checklist() {
             <ActivityIndicator size="small" color={colors.primary} />
           ) : (
             <>
-              <Ionicons name="sparkles" size={20} color={colors.primary} style={{ marginRight: 8 }} />
+              <Ionicons name="sparkles" size={20} color="#facc15" style={{ marginRight: 8 }} />
               <View>
                 <Text style={[styles.aiBannerTitle, { color: colors.primary }]}>{t('checklist.generate_routine')}</Text>
                 <Text style={[styles.aiBannerSub, { color: colors.textMuted }]}>{t('checklist.generate_routine_sub')}</Text>
@@ -507,21 +534,6 @@ export default function Checklist() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: '800',
-  },
-  backBtn: {
-    padding: 4,
   },
   aiBannerContainer: {
     paddingHorizontal: 15,

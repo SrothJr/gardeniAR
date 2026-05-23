@@ -58,6 +58,13 @@ export default function PlantCard({ plant, onPress }) {
     return val;
   };
 
+  const translateDB = (val) => {
+    if (!val) return val;
+    const key = val.toLowerCase().replace(/ /g, "_");
+    const trans = t(`db.${key}`);
+    return trans === `db.${key}` ? val : trans;
+  };
+
   return (
     <View style={styles.wrapper}>
       {/* MAIN CARD — tap goes to plant detail */}
@@ -69,7 +76,7 @@ export default function PlantCard({ plant, onPress }) {
         <Image source={{ uri: imageUri }} style={[styles.image, { backgroundColor: colors.background }]} />
 
         <View style={styles.info}>
-          <Text style={[styles.name, { color: colors.text }]}>{plant?.name ?? t("plant.unknown")}</Text>
+          <Text style={[styles.name, { color: colors.text }]}>{translateDB(plant?.name) ?? t("plant.unknown")}</Text>
 
           <View style={styles.tags}>
             {plant?.sunlight ? <Text style={[styles.tag, { color: colors.primary, backgroundColor: colors.background }]}>{translateTag(plant.sunlight)}</Text> : null}

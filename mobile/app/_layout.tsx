@@ -29,8 +29,10 @@ function AppContent() {
       <Stack.Screen name="profile" />
       <Stack.Screen name="appearance" />
       <Stack.Screen name="premium" />
-      <Stack.Screen name="companions/index" />
+      <Stack.Screen name="companions" />
       <Stack.Screen name="growth/index" />
+      <Stack.Screen name="settings" />
+      <Stack.Screen name="notifications" />
       <Stack.Screen name="cart" />
       <Stack.Screen name="collections/seasonal" />
       <Stack.Screen name="routines/watering" />

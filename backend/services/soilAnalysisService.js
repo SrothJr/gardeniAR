@@ -1,57 +1,52 @@
 // backend/services/soilAnalysisService.js
 const { GoogleGenerativeAI } = require("@google/generative-ai");
+const { cleanAIJSON } = require("./aiUtils");
+require("dotenv").config();
 
-const key = process.env.SOIL_GEMINI_KEY || process.env.GEMINI_API_KEY;
-console.log(key);
-let model = null;
-try {
-  const genAI = new GoogleGenerativeAI(key);
-  model = genAI.getGenerativeModel({ model: "gemini-3.1-flash-lite-preview" });
-} catch (err) {
-  console.warn("⚠ Gemini init failed, returning mock soil results.", err.message);
-}
+const key = process.env.GEMINI_API_KEY;
+const genAI = new GoogleGenerativeAI(key);
+const model = genAI.getGenerativeModel({ model: "gemini-flash-latest" });
 
 module.exports = {
-  async analyzeSoil(imageBuffer, mimeType = "image/jpeg") {
-  
-    if (!model) {
+  async analyzeSoil(imageBuffer, mimeType = "image/jpeg", language = "en") {
+    if (!key) {
       return {
         soilType: "loamy",
         ph: 6.5,
         fertility: "medium",
-        description: "Mock result because Gemini key is missing.",
+        description: language === "bn" ? "Gemini কী অনুপস্থিত থাকায় মক রেজাল্ট।" : "Mock result because Gemini key is missing.",
       };
     }
 
+    const prompt = `
+      Analyze this image and classify soil properties.
+      Respond in ${language === "bn" ? "Bengali" : "English"}.
+      Return STRICT JSON:
+      {
+        "soilType": "loamy | sandy | clay | silt | peat | chalk",
+        "ph": number,
+        "fertility": "low | medium | high",
+        "description": "Short explanation in ${language === "bn" ? "Bengali" : "English"}"
+      }
+    `;
+
     try {
-      const prompt = `
-        Analyze this image and classify soil properties.
-        Return STRICT JSON:
+      const result = await model.generateContent([
+        prompt,
         {
-          "soilType": "loamy | sandy | clay | silt | peat | chalk",
-          "ph": number,
-          "fertility": "low | medium | high",
-          "description": "Short explanation"
-        }
-      `;
-
-      const imagePart = {
-        inlineData: {
-          data: imageBuffer.toString("base64"),
-          mimeType,
+          inlineData: {
+            data: imageBuffer.toString("base64"),
+            mimeType,
+          },
         },
-      };
+      ]);
 
-      const result = await model.generateContent([prompt, imagePart]);
-      const response = result.response;
-      const text = response.text();
-
-      const cleaned = text.replace(/```json/g, "").replace(/```/g, "").trim();
-
-      return JSON.parse(cleaned);
-    } catch (err) {
-      console.error("Gemini Soil Error:", err);
-      throw new Error("Failed to analyze soil with AI.");
+      const response = await result.response;
+      let text = response.text().trim();
+      return JSON.parse(cleanAIJSON(text));
+    } catch (error) {
+      console.error("Soil analysis error:", error);
+      throw error;
     }
   },
 };

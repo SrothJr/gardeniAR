@@ -1,212 +1,151 @@
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 const fs = require("fs");
+const { cleanAIJSON } = require("./aiUtils");
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 class GeminiService {
   constructor() {
-    this.model = genAI.getGenerativeModel({ model: "gemini-3.1-flash-lite-preview" });
+    this.model = genAI.getGenerativeModel({ model: "gemini-flash-latest" });
   }
 
-  async identifyWeed(imageBuffer, mimeType) {
+  async identifyWeed(imageBuffer, mimeType, language = "en") {
     try {
       const prompt = `
         Analyze this image as an expert botanist and gardener.
         Identify if there is a weed in the image.
+        Respond in ${language === "bn" ? "Bengali" : "English"}.
         
         Return the response in this strictly valid JSON format:
         {
           "isPlant": boolean,
           "isWeed": boolean,
-          "name": "Common Name",
+          "name": "Common Name in ${language === "bn" ? "Bengali" : "English"}",
           "scientificName": "Scientific Name",
           "confidence": "High/Medium/Low",
-          "description": "Brief description of visual characteristics",
-          "removalInstructions": "Step-by-step organic removal instructions",
-          "warning": "Any toxicity or safety warnings (e.g., poisonous sap)"
+          "description": "Brief description in ${language === "bn" ? "Bengali" : "English"}",
+          "removalInstructions": "Organic removal in ${language === "bn" ? "Bengali" : "English"}",
+          "warning": "Safety warnings in ${language === "bn" ? "Bengali" : "English"}"
         }
         
-        If no plant is detected (e.g., a person, car, empty ground), set isPlant to false and isWeed to false.
-        If it is a plant but not a weed, set isPlant to true and isWeed to false.
-        Do not use markdown code blocks. Just return the raw JSON string.
+        Return ONLY valid JSON.
       `;
 
-      const imagePart = {
-        inlineData: {
-          data: imageBuffer.toString("base64"),
-          mimeType: mimeType,
+      const result = await this.model.generateContent([
+        prompt,
+        {
+          inlineData: {
+            data: imageBuffer.toString("base64"),
+            mimeType,
+          },
         },
-      };
+      ]);
 
-      const result = await this.model.generateContent([prompt, imagePart]);
       const response = await result.response;
-      const text = response.text();
-
-      // Clean up markdown
-      const cleanedText = text
-        .replace(/```json/g, "")
-        .replace(/```/g, "")
-        .trim();
-
-      return JSON.parse(cleanedText);
+      let text = response.text().trim();
+      return JSON.parse(cleanAIJSON(text));
     } catch (error) {
-      console.error("Gemini AI Error:", error);
-      throw new Error("Failed to identify weed with AI.");
+      console.error("Gemini identifyWeed error:", error);
+      throw error;
     }
   }
 
-  async analyzeDisease(imageBuffer, mimeType = "image/jpeg") {
+  async analyzeDisease(imageBuffer, mimeType = "image/jpeg", language = "en") {
     try {
-      const prompt = `Act as a plant doctor. Identify the plant and disease in this image. Provide 3 organic remedies and 1 chemical remedy. Format with clear headings.`;
-      const imagePart = {
-        inlineData: {
-          data: imageBuffer.toString("base64"),
-          mimeType,
+      const prompt = `Act as a plant doctor. Identify the plant and disease in this image. Provide 3 organic remedies and 1 chemical remedy. Format with clear headings. Respond in ${language === "bn" ? "Bengali" : "English"}.`;
+      const result = await this.model.generateContent([
+        prompt,
+        {
+          inlineData: {
+            data: imageBuffer.toString("base64"),
+            mimeType,
+          },
         },
-      };
-      const result = await this.model.generateContent([prompt, imagePart]);
+      ]);
       const response = await result.response;
       return response.text();
     } catch (error) {
       console.error("Gemini Disease Analysis Error:", error);
-      throw new Error("Failed to analyze plant disease.");
+      throw error;
     }
   }
 
-  async parseSmartTask(userInput, localDate) {
+  async parseSmartTask(userInput, localDate, language = "en") {
     try {
       const today = localDate || new Date().toISOString().split('T')[0];
       const prompt = `
         You are an intelligent gardening assistant. Today's date is ${today}.
-        Parse the following user input into a structured garden task.
-        User Input: "${userInput}"
-        
-        Return a strictly valid JSON object with the following keys:
-        - "title": A clean, concise title for the task.
-        - "description": Any extra details extracted from the input (optional).
-        - "dueDate": The date intended by the user in YYYY-MM-DD format. If no date is mentioned or implied, default to today.
-        - "taskType": Must be one of: 'water', 'fertilize', 'prune', 'harvest', 'pest-control', or 'custom'.
-        - "aiReasoning": A brief friendly note confirming why this was scheduled, e.g., "Scheduled for tomorrow as requested."
-        
-        Return ONLY valid JSON. No markdown formatting, no code blocks.
+        Parse: "${userInput}"
+        Respond in ${language === "bn" ? "Bengali" : "English"}.
+        Return JSON: { "title": "...", "description": "...", "dueDate": "YYYY-MM-DD", "taskType": "...", "aiReasoning": "..." }
       `;
-
-      const result = await this.model.generateContent([prompt]);
-      const response = await result.response;
-      let text = response.text();
-      
-      text = text.replace(/```json/g, "").replace(/```/g, "").trim();
-      return JSON.parse(text);
+      const result = await this.model.generateContent(prompt);
+      let text = result.response.text().trim();
+      return JSON.parse(cleanAIJSON(text));
     } catch (error) {
-      console.error("Gemini Smart Task Error:", error);
-      throw new Error("Failed to parse task from natural language.");
+      console.error("Gemini parseSmartTask error:", error);
+      throw error;
     }
   }
 
-  async rescheduleTasks(overdueTasks, futureTasks, localDate) {
+  async rescheduleTasks(overdueTasks, futureTasks, localDate, language = "en") {
     try {
       const today = localDate || new Date().toISOString().split('T')[0];
-      const overdueData = overdueTasks.map(t => ({
-        id: t._id,
-        title: t.title,
-        oldDueDate: new Date(t.dueDate).toISOString().split('T')[0]
-      }));
-      const futureData = futureTasks.map(t => ({
-        title: t.title,
-        dueDate: new Date(t.dueDate).toISOString().split('T')[0]
-      }));
-
       const prompt = `
-        You are an intelligent gardening manager. Today's local date for the user is ${today}.
-        
-        The user has the following OVERDUE tasks that need to be rescheduled:
-        ${JSON.stringify(overdueData, null, 2)}
-        
-        The user ALREADY HAS the following tasks scheduled for today and the future:
-        ${JSON.stringify(futureData, null, 2)}
-        
-        Your job is to reschedule ONLY the overdue tasks so the user is not overwhelmed. 
-        Look at their existing schedule. If today (${today}) already has a lot of tasks (e.g., 3 or more), 
-        push the overdue tasks to tomorrow or the day after tomorrow. Do not overload any single day.
-        Prioritize watering tasks to happen as soon as possible without overloading.
-        
-        CRITICAL RULE: You MUST NOT assign any task a "newDueDate" that is before ${today}. ALL new dates must be ${today} or later.
-        
-        Return a strictly valid JSON array of objects, where each object corresponds ONLY to the overdue tasks you are rescheduling:
-        - "id": the original task ID of the overdue task
-        - "newDueDate": The new assigned date in YYYY-MM-DD format.
-        - "aiReasoning": A short, friendly explanation (e.g., "✨ Rescheduled to tomorrow because today looks busy!")
-        
-        Return ONLY valid JSON array. No markdown formatting, no code blocks.
+        Today: ${today}. Reschedule these overdue tasks: ${JSON.stringify(overdueTasks)}.
+        Respond in ${language === "bn" ? "Bengali" : "English"}.
+        Return JSON array of { "id": "...", "newDueDate": "YYYY-MM-DD", "aiReasoning": "..." }
       `;
-
-      const result = await this.model.generateContent([prompt]);
-      const response = await result.response;
-      let text = response.text();
-      
-      text = text.replace(/```json/g, "").replace(/```/g, "").trim();
-      return JSON.parse(text);
+      const result = await this.model.generateContent(prompt);
+      let text = result.response.text().trim();
+      return JSON.parse(cleanAIJSON(text));
     } catch (error) {
-      console.error("Gemini Reschedule Error:", error);
-      throw new Error("Failed to reschedule tasks using AI.");
+      console.error("Gemini rescheduleTasks error:", error);
+      throw error;
     }
   }
 
-  async generateWeeklyRoutine(plants, existingTasks, localDate) {
+  async generateWeeklyRoutine(plants, existingTasks, localDate, language = "en") {
     try {
       const today = localDate || new Date().toISOString().split('T')[0];
-      const plantData = plants.map(p => ({
-        name: p.name,
-        species: p.species || 'Unknown',
-        status: p.status || 'Vegetative'
-      }));
-
-      const existingData = existingTasks.map(t => ({
-        title: t.title,
-        dueDate: new Date(t.dueDate).toISOString().split('T')[0]
-      }));
-
       const prompt = `
-        You are an expert horticulturist and intelligent gardening planner. Today's local date is ${today}.
-        The user wants you to generate a 7-day care routine based on the plants currently in their garden.
-
-        Here is the user's garden profile:
-        ${JSON.stringify(plantData, null, 2)}
-
-        Here are the user's EXISTING scheduled tasks for the upcoming week:
-        ${JSON.stringify(existingData, null, 2)}
-
-        Your job is to generate a realistic, balanced 7-day task list (starting from ${today}) for these specific plants.
+        You are an expert gardening assistant. Today's date is ${today}.
+        Generate a 7-day routine for these specific plants: ${JSON.stringify(plants)}.
         
-        CRITICAL RULES:
-        1. Do NOT duplicate tasks that are already scheduled in the EXISTING tasks list for the same plant on the same or adjacent days.
-        2. If the existing tasks already adequately cover the care needs of ALL plants in the profile for the week, you MUST return an empty array [].
-        3. ONLY generate new tasks if there are gaps in the routine, or if a plant in the profile lacks necessary tasks (e.g., the user added a new plant).
-
-        Consider their "status" (life stage):
-        - Seedlings need frequent, light watering.
-        - Vegetative plants might need fertilizing.
-        - Flowering/Harvesting plants have different needs.
+        CRITICAL INSTRUCTIONS:
+        1. Use the "name" field from each plant object in the task title (e.g., if a plant's name is "Zozo", use "Water Zozo").
+        2. START the routine from TODAY (${today}). Ensure at least one task is scheduled for today if any plant needs immediate care.
+        3. If a plant's cycle suggests it's late for an action (based on its life stage and the current date), schedule that task for today or even yesterday to mark it as "Overdue" for the user.
+        4. Consider the "species", "status" (life stage), and dates to provide accurate care.
+        5. Respond in ${language === "bn" ? "Bengali" : "English"}.
+        6. Return a JSON array of objects: { "title": "...", "description": "...", "dueDate": "YYYY-MM-DD", "taskType": "...", "aiReasoning": "..." }
         
-        Return a strictly valid JSON array of objects representing ONLY the NEW tasks to be added. If no new tasks are needed, return []. Each object has:
-        - "title": A clear, action-oriented title (e.g., "Water the Tomatoes", "Fertilize the Basil").
-        - "description": A short explanation of how to do the task based on the plant's life stage.
-        - "dueDate": The assigned date in YYYY-MM-DD format (must be between ${today} and 7 days from now).
-        - "taskType": Must be one of: 'water', 'fertilize', 'prune', 'harvest', 'pest-control', or 'custom'.
-        - "aiReasoning": A brief, friendly note (e.g., "✨ Added because your new basil needs water.")
-        
-        Return ONLY valid JSON array. No markdown formatting, no code blocks.
+        "taskType" MUST be one of: 'water', 'fertilize', 'prune', 'harvest', 'pest-control', 'custom'.
       `;
-
-      const result = await this.model.generateContent([prompt]);
-      const response = await result.response;
-      let text = response.text();
-      
-      text = text.replace(/```json/g, "").replace(/```/g, "").trim();
-      return JSON.parse(text);
+      const result = await this.model.generateContent(prompt);
+      let text = result.response.text().trim();
+      return JSON.parse(cleanAIJSON(text));
     } catch (error) {
-      console.error("Gemini Generate Routine Error:", error);
-      throw new Error("Failed to generate weekly routine using AI.");
+      console.error("Gemini generateWeeklyRoutine error:", error);
+      throw error;
+    }
+  }
+
+  async translateCareTips(careTips, language = "en") {
+    if (language === "en") return careTips;
+    try {
+      const prompt = `
+        Translate these gardening care tips into ${language === "bn" ? "Bengali" : "English"}.
+        Keep the meaning precise for a gardener.
+        Input: ${JSON.stringify(careTips)}
+        Return ONLY a JSON array of strings.
+      `;
+      const result = await this.model.generateContent(prompt);
+      let text = result.response.text().trim();
+      return JSON.parse(cleanAIJSON(text));
+    } catch (error) {
+      console.error("Gemini translateCareTips error:", error);
+      return careTips; // Fallback to original
     }
   }
 }

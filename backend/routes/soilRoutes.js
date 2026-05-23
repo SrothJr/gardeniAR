@@ -14,11 +14,13 @@ router.post("/analyze-file", upload.single("image"), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ error: "No file uploaded" });
 
-    console.log("Received soil image:", req.file.size, "bytes");
+    const language = req.body.lang || "en";
+    console.log("Received soil image:", req.file.size, "bytes", "Language:", language);
 
     const analysis = await soilService.analyzeSoil(
       req.file.buffer,
-      req.file.mimetype
+      req.file.mimetype,
+      language
     );
 
     return res.json({ analysis });

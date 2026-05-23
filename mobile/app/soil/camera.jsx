@@ -6,11 +6,13 @@ import { CameraView, useCameraPermissions } from "expo-camera";
 import * as ImageManipulator from "expo-image-manipulator";
 import { Stack, useRouter } from "expo-router";
 import { BACKEND } from "../../config";
+import { useTranslation } from "react-i18next";
 
 export default function SoilCamera() {
   const router = useRouter();
   const [permission, requestPermission] = useCameraPermissions();
   const [loading, setLoading] = useState(false);
+  const { i18n } = useTranslation();
 
   let cameraRef = null;
 
@@ -69,6 +71,7 @@ export default function SoilCamera() {
         name: "soil.jpg",
         type: "image/jpeg",
       });
+      form.append("lang", i18n.language);
 
  
       const resp = await fetch(`${BACKEND}/api/soil/analyze-file`, {

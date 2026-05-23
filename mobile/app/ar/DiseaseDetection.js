@@ -31,6 +31,7 @@ import Constants from 'expo-constants';
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { usePremium } from '../../hooks/usePremium';
+import { useTranslation } from 'react-i18next';
 
 const API_KEY =
   process.env.EXPO_PUBLIC_AR_GEMINI_API_KEY ||
@@ -39,8 +40,8 @@ const API_KEY =
   process.env.EXPO_PUBLIC_GOOGLE_API_KEY ||
   '';
 const GENAI_BASE = 'https://generativelanguage.googleapis.com/v1beta/models';
-const GENAI_MODEL_PRIMARY = 'gemini-2.5-flash';
-const GENAI_MODEL_FALLBACK = 'gemini-1.5-flash';
+const GENAI_MODEL_PRIMARY = 'gemini-flash-latest';
+const GENAI_MODEL_FALLBACK = 'gemini-flash-latest';
 
 export default function App() {
   const [image, setImage] = useState(null);
@@ -48,6 +49,7 @@ export default function App() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const { isPremium, loaded } = usePremium();
+  const { i18n } = useTranslation();
 
   React.useEffect(() => {
     if (loaded && !isPremium) {
@@ -74,6 +76,8 @@ export default function App() {
     setLoading(true);
     setResult(null);
 
+    const language = i18n.language === 'bn' ? 'Bengali' : 'English';
+
     try {
       const base64 = await FileSystem.readAsStringAsync(uri, {
         encoding: 'base64',
@@ -86,7 +90,7 @@ export default function App() {
             parts: [
               {
                 text:
-                  'Act as a plant doctor. Identify the plant and disease in this image. Provide 3 organic remedies and 1 chemical remedy. Format with clear headings.',
+                  `Act as a plant doctor. Identify the plant and disease in this image. Provide 3 organic remedies and 1 chemical remedy. Format with clear headings. Respond in ${language}.`,
               },
               {
                 inlineData: {

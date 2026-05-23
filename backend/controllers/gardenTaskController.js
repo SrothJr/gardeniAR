@@ -56,11 +56,11 @@ exports.deleteTask = async (req, res) => {
 // Smart Add Task using Gemini
 exports.smartAddTask = async (req, res) => {
   try {
-    const { userInput, userId, localDate } = req.body;
+    const { userInput, userId, localDate, lang } = req.body;
     if (!userInput) return res.status(400).json({ message: 'User input is required' });
 
     // 1. Send the natural language string to Gemini
-    const aiParsedData = await geminiService.parseSmartTask(userInput, localDate);
+    const aiParsedData = await geminiService.parseSmartTask(userInput, localDate, lang || "en");
 
     // 2. Create the new task using the structured data
     const newTask = new GardenTask({
@@ -70,7 +70,8 @@ exports.smartAddTask = async (req, res) => {
       taskType: aiParsedData.taskType || 'custom',
       aiGenerated: true,
       aiReasoning: aiParsedData.aiReasoning,
-      user: userId
+      user: userId,
+      language: lang || 'en'
     });
 
     await newTask.save();
@@ -84,7 +85,7 @@ exports.smartAddTask = async (req, res) => {
 // Optimize Overdue Tasks using Gemini
 exports.optimizeTasks = async (req, res) => {
   try {
-    const { allActiveTasks, localDate } = req.body;
+    const { allActiveTasks, localDate, lang } = req.body;
     if (!allActiveTasks || !Array.isArray(allActiveTasks) || allActiveTasks.length === 0) {
       return res.status(400).json({ message: 'Active tasks are required for optimization.' });
     }
@@ -117,7 +118,7 @@ exports.optimizeTasks = async (req, res) => {
     }
 
     // 2. Send both groups to Gemini so it has full context
-    const rescheduledData = await geminiService.rescheduleTasks(overdueTasks, futureTasks, localDate);
+    const rescheduledData = await geminiService.rescheduleTasks(overdueTasks, futureTasks, localDate, lang || "en");
 
     // 3. Update only the tasks that were rescheduled
     const updatePromises = rescheduledData.map(async (aiUpdate) => {
@@ -140,7 +141,7 @@ exports.optimizeTasks = async (req, res) => {
 // Generate Weekly Routine using Gemini
 exports.generateRoutine = async (req, res) => {
   try {
-    const { userId, localDate } = req.body;
+    const { userId, localDate, lang } = req.body;
     if (!userId) return res.status(400).json({ message: 'User ID is required.' });
 
     // 1. Fetch user's tracked plants
@@ -155,16 +156,25 @@ exports.generateRoutine = async (req, res) => {
     const todayStr = localDate || new Date().toISOString().split('T')[0];
     const todayStart = new Date(todayStr);
     
+    // 3. Delete future AI tasks to prevent duplicates when regenerating (e.g. after language switch)
+    await GardenTask.deleteMany({
+      user: userId,
+      dueDate: { $gte: todayStart },
+      aiGenerated: true,
+      isCompleted: false
+    });
+
+    // 4. Fetch existing tasks for the upcoming week to prevent duplicates (manual tasks)
     const existingTasks = await GardenTask.find({ 
       user: userId, 
       dueDate: { $gte: todayStart },
       isCompleted: false
     });
 
-    // 3. Ask Gemini to generate tasks, passing both plants and existing tasks
-    const generatedTasks = await geminiService.generateWeeklyRoutine(userPlants, existingTasks, localDate);
+    // 5. Ask Gemini to generate tasks, passing both plants and existing tasks
+    const generatedTasks = await geminiService.generateWeeklyRoutine(userPlants, existingTasks, localDate, lang || "en");
 
-    // 4. If AI determines no new tasks are needed based on the current profile
+    // 6. If AI determines no new tasks are needed based on the current profile
     if (!generatedTasks || generatedTasks.length === 0) {
       return res.status(200).json({ 
         message: 'Your routine is already fully up to date for your current plants!', 
@@ -172,16 +182,26 @@ exports.generateRoutine = async (req, res) => {
       });
     }
 
-    // 5. Save the new tasks to the database
-    const tasksToInsert = generatedTasks.map(task => ({
-      title: task.title,
-      description: task.description || '',
-      dueDate: new Date(task.dueDate),
-      taskType: task.taskType || 'custom',
-      aiGenerated: true,
-      aiReasoning: task.aiReasoning,
-      user: userId
-    }));
+    // 7. Save the new tasks to the database
+    const validTypes = ['water', 'fertilize', 'prune', 'harvest', 'pest-control', 'custom'];
+    
+    const tasksToInsert = generatedTasks.map(task => {
+      let type = (task.taskType || 'custom').toLowerCase();
+      if (type === 'watering') type = 'water';
+      if (type === 'fertilizing') type = 'fertilize';
+      if (!validTypes.includes(type)) type = 'custom';
+
+      return {
+        title: task.title,
+        description: task.description || '',
+        dueDate: new Date(task.dueDate),
+        taskType: type,
+        aiGenerated: true,
+        aiReasoning: task.aiReasoning,
+        user: userId,
+        language: lang || 'en'
+      };
+    });
 
     const savedTasks = await GardenTask.insertMany(tasksToInsert);
 

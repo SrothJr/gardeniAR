@@ -15,6 +15,7 @@ import * as Location from 'expo-location';
 import { BACKEND } from "../../config";
 import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "../../hooks/useTheme";
+import { useTranslation } from "react-i18next";
 
 const STAGES = ["Seedling", "Vegetative", "Flowering"];
 const SEASONS = ["Spring", "Summer", "Autumn", "Winter"];
@@ -23,6 +24,7 @@ export default function CareGuideDetail() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
   const { colors, resolvedTheme } = useTheme();
+  const { t, i18n } = useTranslation();
 
   const [guide, setGuide] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -115,6 +117,32 @@ export default function CareGuideDetail() {
     );
   };
 
+  const translateValue = (val) => {
+    if (!val) return val;
+    
+    // 1. Handle direct translations
+    const key = val.toLowerCase().trim()
+      .replace(/[()]/g, "")
+      .replace(/ /g, "_")
+      .replace(/-/g, "_");
+    const trans = t(`plant.${key}`);
+    if (trans !== `plant.${key}`) return trans;
+
+    // 2. Handle numbers + units
+    if (i18n.language === "bn") {
+      const bnNumbers = {
+        '0': '০', '1': '১', '2': '২', '3': '৩', '4': '৪',
+        '5': '৫', '6': '৬', '7': '৭', '8': '৮', '9': '৯'
+      };
+      return val.replace(/[0-9]/g, m => bnNumbers[m] || m)
+                .replace(/ml/gi, "মি.লি.")
+                .replace(/l/gi, "লিটার")
+                .replace(/g/gi, "গ্রাম");
+    }
+
+    return val;
+  };
+
   const waterRule = getRule(guide.waterConfig);
   const fertRule = getRule(guide.fertilizerConfig);
 
@@ -144,7 +172,8 @@ export default function CareGuideDetail() {
           plantName: guide.name,
           lifeStage: activeStage, // Added lifeStage
           generalWater,
-          generalFert
+          generalFert,
+          lang: i18n.language,
         })
       });
 
@@ -235,7 +264,7 @@ export default function CareGuideDetail() {
         <View style={styles.controls}>
           {/* Stage Selector */}
           <View style={styles.controlGroup}>
-            <Text style={[styles.sectionTitle, { color: colors.textMuted }]}>Life Stage</Text>
+            <Text style={[styles.sectionTitle, { color: colors.textMuted }]}>{t("plant.life_stage")}</Text>
             <View style={styles.pills}>
               {STAGES.map((stage) => (
                 <TouchableOpacity
@@ -254,7 +283,7 @@ export default function CareGuideDetail() {
                       activeStage === stage && { color: "#000", fontWeight: "bold" },
                     ]}
                   >
-                    {stage}
+                    {translateValue(stage)}
                   </Text>
                 </TouchableOpacity>
               ))}
@@ -263,7 +292,7 @@ export default function CareGuideDetail() {
 
           {/* Season Selector */}
           <View style={styles.controlGroup}>
-            <Text style={[styles.sectionTitle, { color: colors.textMuted }]}>Season</Text>
+            <Text style={[styles.sectionTitle, { color: colors.textMuted }]}>{t("plant.season")}</Text>
             <ScrollView
               horizontal
               showsHorizontalScrollIndicator={false}
@@ -286,7 +315,7 @@ export default function CareGuideDetail() {
                       activeSeason === season && { color: "#000", fontWeight: "bold" },
                     ]}
                   >
-                    {season}
+                    {translateValue(season)}
                   </Text>
                 </TouchableOpacity>
               ))}
@@ -300,18 +329,18 @@ export default function CareGuideDetail() {
         <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
           <View style={styles.cardHeader}>
             <Ionicons name="water" size={24} color="#3b82f6" />
-            <Text style={[styles.cardTitle, { color: colors.text }]}>Watering</Text>
+            <Text style={[styles.cardTitle, { color: colors.text }]}>{t("plant.watering")}</Text>
           </View>
 
           {waterRule ? (
             <>
               <View style={styles.row}>
-                <Text style={[styles.label, { color: colors.textMuted }]}>Amount:</Text>
-                <Text style={[styles.value, { color: colors.text }]}>{waterRule.amount}</Text>
+                <Text style={[styles.label, { color: colors.textMuted }]}>{t("plant.amount")}:</Text>
+                <Text style={[styles.value, { color: colors.text }]}>{translateValue(waterRule.amount)}</Text>
               </View>
               <View style={styles.row}>
-                <Text style={[styles.label, { color: colors.textMuted }]}>Frequency:</Text>
-                <Text style={[styles.value, { color: colors.text }]}>{waterRule.frequency}</Text>
+                <Text style={[styles.label, { color: colors.textMuted }]}>{t("plant.frequency")}:</Text>
+                <Text style={[styles.value, { color: colors.text }]}>{translateValue(waterRule.frequency)}</Text>
               </View>
               {waterRule.description && (
                 <Text style={[styles.desc, { color: colors.text, borderTopColor: colors.border }]}>{waterRule.description}</Text>
@@ -319,7 +348,7 @@ export default function CareGuideDetail() {
             </>
           ) : (
             <Text style={[styles.missing, { color: colors.textMuted }]}>
-              No data for {activeStage} in {activeSeason}
+              {t("plant.no_data", { stage: translateValue(activeStage), season: translateValue(activeSeason) })}
             </Text>
           )}
         </View>
@@ -328,24 +357,24 @@ export default function CareGuideDetail() {
         <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
           <View style={styles.cardHeader}>
             <Ionicons name="leaf" size={24} color={colors.primary} />
-            <Text style={[styles.cardTitle, { color: colors.text }]}>Fertilizer</Text>
+            <Text style={[styles.cardTitle, { color: colors.text }]}>{t("plant.fertilizer")}</Text>
           </View>
 
           {fertRule ? (
             <>
               <View style={styles.row}>
-                <Text style={[styles.label, { color: colors.textMuted }]}>Type:</Text>
+                <Text style={[styles.label, { color: colors.textMuted }]}>{t("plant.type")}:</Text>
                 <Text style={[styles.value, { color: colors.text }]}>
-                  {fertRule.type || fertRule.name || "General"}
+                  {translateValue(fertRule.type || fertRule.name || "General")}
                 </Text>
               </View>
               <View style={styles.row}>
-                <Text style={[styles.label, { color: colors.textMuted }]}>Dosage:</Text>
-                <Text style={[styles.value, { color: colors.text }]}>{fertRule.dosage}</Text>
+                <Text style={[styles.label, { color: colors.textMuted }]}>{t("plant.dosage")}:</Text>
+                <Text style={[styles.value, { color: colors.text }]}>{translateValue(fertRule.dosage)}</Text>
               </View>
               <View style={styles.row}>
-                <Text style={[styles.label, { color: colors.textMuted }]}>Frequency:</Text>
-                <Text style={[styles.value, { color: colors.text }]}>{fertRule.frequency}</Text>
+                <Text style={[styles.label, { color: colors.textMuted }]}>{t("plant.frequency")}:</Text>
+                <Text style={[styles.value, { color: colors.text }]}>{translateValue(fertRule.frequency)}</Text>
               </View>
               {fertRule.description && (
                 <Text style={[styles.desc, { color: colors.text, borderTopColor: colors.border }]}>{fertRule.description}</Text>
@@ -353,7 +382,7 @@ export default function CareGuideDetail() {
             </>
           ) : (
             <Text style={[styles.missing, { color: colors.textMuted }]}>
-              No data for {activeStage} in {activeSeason}
+              {t("plant.no_data", { stage: translateValue(activeStage), season: translateValue(activeSeason) })}
             </Text>
           )}
         </View>

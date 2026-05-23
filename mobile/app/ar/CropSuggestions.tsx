@@ -13,6 +13,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import * as Location from "expo-location";
+import { useTranslation } from "react-i18next";
 
 const screenWidth = Dimensions.get("window").width;
 const itemWidth = (screenWidth - 60) / 2;
@@ -168,10 +169,18 @@ const cropsByMonth: Record<number, any[]> = {
 
 // -------------------- CROP SUGGESTIONS COMPONENT --------------------
 export default function CropSuggestions() {
+  const { t } = useTranslation();
   const [month, setMonth] = useState("");
   const [suggestions, setSuggestions] = useState<any[]>([]);
   const [location, setLocation] = useState<any>(null);
   const [weather, setWeather] = useState<any>(null);
+
+  const translateDB = (val: string) => {
+    if (!val) return val;
+    const key = val.toLowerCase().replace(/ /g, "_");
+    const trans = t(`db.${key}`);
+    return trans === `db.${key}` ? val : trans;
+  };
 
   useEffect(() => {
     getLocation();
@@ -180,7 +189,7 @@ export default function CropSuggestions() {
   const getLocation = async () => {
     let { status } = await Location.requestForegroundPermissionsAsync();
     if (status !== "granted") {
-      Alert.alert("Permission denied");
+      Alert.alert(t('common.permission_denied'));
       return;
     }
     let loc = await Location.getCurrentPositionAsync({});
@@ -212,7 +221,7 @@ export default function CropSuggestions() {
   const getSuggestions = () => {
     const m = parseInt(month);
     if (isNaN(m) || m < 1 || m > 12) {
-      Alert.alert("Enter valid month (1-12)");
+      Alert.alert(t('tracker.enter_valid_month'));
       return;
     }
     const season = getSeason(m);
@@ -226,7 +235,7 @@ export default function CropSuggestions() {
     const formatted = selected.map((crop) => ({
       ...crop,
       season,
-      weather: weather ? `${weather.temperature}°C` : "Unknown",
+      weather: weather ? `${weather.temperature}°C` : t('common.unknown'),
     }));
 
     setSuggestions(formatted);
@@ -235,23 +244,23 @@ export default function CropSuggestions() {
   const renderItem = ({ item }: { item: any }) => (
     <View style={[styles.cropContainer, { width: itemWidth }]}>
       <Image source={{ uri: item.imageUrl || fallbackImage }} style={styles.cropImage} />
-      <Text style={styles.cropItem}>{item.name}</Text>
-      <Text style={styles.cropInfo}>Season: {item.season}</Text>
-      <Text style={styles.cropInfo}>Temp: {item.weather}</Text>
-      <Text style={styles.cropInfo}>Soil: {item.soil}</Text>
-      <Text style={styles.cropInfo}>Water: {item.water}</Text>
+      <Text style={styles.cropItem}>{translateDB(item.name)}</Text>
+      <Text style={styles.cropInfo}>{t('crop_info.season')}: {translateDB(item.season)}</Text>
+      <Text style={styles.cropInfo}>{t('crop_info.temp')}: {item.weather}</Text>
+      <Text style={styles.cropInfo}>{t('crop_info.soil')}: {translateDB(item.soil)}</Text>
+      <Text style={styles.cropInfo}>{t('crop_info.water')}: {translateDB(item.water)}</Text>
     </View>
   );
 
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>Smart Crop Advisor</Text>
-        <Text style={styles.subtitle}>Seasonal picks based on your month and weather</Text>
+        <Text style={styles.title}>{t('tracker.crop_suggestions')}</Text>
+        <Text style={styles.subtitle}>{t('tracker.crop_suggestions_subtitle')}</Text>
       </View>
       <View style={styles.formRow}>
         <TextInput
-          placeholder="Month (1-12)"
+          placeholder={t('tracker.month_placeholder')}
           placeholderTextColor="#8aa3b2"
           value={month}
           onChangeText={setMonth}
@@ -260,12 +269,12 @@ export default function CropSuggestions() {
         />
         <View style={{ width: 10 }} />
         <TouchableOpacity onPress={getSuggestions} style={styles.cta}>
-          <Text style={styles.ctaText}>Suggest</Text>
+          <Text style={styles.ctaText}>{t('tracker.suggest')}</Text>
         </TouchableOpacity>
       </View>
 
-      {location && <Text style={styles.info}>📍 Location detected</Text>}
-      {weather && <Text style={styles.info}>🌦 Temp: {weather.temperature}°C</Text>}
+      {location && <Text style={styles.info}>📍 {t('tracker.location_detected')}</Text>}
+      {weather && <Text style={styles.info}>🌦 {t('crop_info.temp')}: {weather.temperature}°C</Text>}
 
       <FlatList
         data={suggestions}

@@ -299,7 +299,7 @@ export default function PlantDetail() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
   const { colors, resolvedTheme } = useTheme();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   const [plant, setPlant] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -325,7 +325,7 @@ export default function PlantDetail() {
     if (!id) return;
     setLoading(true);
 
-    fetch(`${BACKEND}/api/plants/${id}`)
+    fetch(`${nBACKEND}/api/plants/${id}?lang=${i18n.language}`)
       .then((r) => r.json())
       .then(async (plantData) => {
         let guideData = {};
@@ -374,6 +374,39 @@ export default function PlantDetail() {
     );
   };
 
+  const translateValue = (val) => {
+    if (!val) return val;
+    
+    // 1. Handle direct translations (like "Every 2-3 days" -> "every_2_3_days")
+    const key = val.toLowerCase().trim()
+      .replace(/[()]/g, "") // remove parentheses
+      .replace(/ /g, "_")
+      .replace(/-/g, "_");
+    const trans = t(`plant.${key}`);
+    if (trans !== `plant.${key}`) return trans;
+
+    // 2. Handle numbers + units (like "200ml")
+    if (i18n.language === "bn") {
+      const bnNumbers = {
+        '0': '০', '1': '১', '2': '২', '3': '৩', '4': '৪',
+        '5': '৫', '6': '৬', '7': '৭', '8': '৮', '9': '৯'
+      };
+      return val.replace(/[0-9]/g, m => bnNumbers[m] || m)
+                .replace(/ml/gi, "মি.লি.")
+                .replace(/l/gi, "লিটার")
+                .replace(/g/gi, "গ্রাম");
+    }
+
+    return val;
+  };
+
+  const translateDB = (val) => {
+    if (!val) return val;
+    const key = val.toLowerCase().replace(/ /g, "_").replace(/-/g, "_");
+    const trans = t(`db.${key}`);
+    return trans === `db.${key}` ? val : trans;
+  };
+
   // Add to garden
   const addToGarden = async () => {
     setSaving(true);
@@ -415,6 +448,7 @@ export default function PlantDetail() {
           lifeStage: activeStage,
           generalWater: waterRule ? `${waterRule.amount} ${waterRule.frequency}` : "Standard",
           generalFert:  fertRule  ? `${fertRule.dosage} ${fertRule.frequency}`  : "Standard",
+          lang: i18n.language,
         }),
       });
       const data = await res.json();
@@ -474,7 +508,7 @@ export default function PlantDetail() {
 
       {/* Name + tags */}
       <View style={[s.block, { borderBottomColor: colors.border }]}>
-        <Text style={[s.name, { color: colors.text }]}>{plant.name}</Text>
+        <Text style={[s.name, { color: colors.text }]}>{translateDB(plant.name)}</Text>
         {!!plant.scientificName && (
           <Text style={[s.scientific, { color: colors.textMuted }]}>{plant.scientificName}</Text>
         )}
@@ -483,19 +517,19 @@ export default function PlantDetail() {
           {!!plant.sunlight && (
             <View style={[s.tag, { backgroundColor: colors.surface, borderColor: colors.border }]}>
               <Ionicons name="sunny-outline" size={12} color="#fbbf24" />
-              <Text style={[s.tagText, { color: colors.text }]}>{plant.sunlight}</Text>
+              <Text style={[s.tagText, { color: colors.text }]}>{translateDB(plant.sunlight)}</Text>
             </View>
           )}
           {!!plant.water && (
             <View style={[s.tag, { backgroundColor: colors.surface, borderColor: colors.border }]}>
               <Ionicons name="water-outline" size={12} color="#60a5fa" />
-              <Text style={[s.tagText, { color: colors.text }]}>{plant.water}</Text>
+              <Text style={[s.tagText, { color: colors.text }]}>{translateDB(plant.water)}</Text>
             </View>
           )}
           {!!plant.type && (
             <View style={[s.tag, { backgroundColor: colors.surface, borderColor: colors.border }]}>
               <Ionicons name="leaf-outline" size={12} color={colors.primary} />
-              <Text style={[s.tagText, { color: colors.text }]}>{plant.type}</Text>
+              <Text style={[s.tagText, { color: colors.text }]}>{translateDB(plant.type)}</Text>
             </View>
           )}
         </View>
@@ -536,7 +570,7 @@ export default function PlantDetail() {
             {!!plant?.season && (
               <View style={[s.metaTag, { backgroundColor: colors.surface, borderColor: colors.border }]}>
                 <Ionicons name="calendar-outline" size={13} color="#a5b4fc" />
-                <Text style={[s.metaText, { color: colors.text }]}>{plant.season}</Text>
+                <Text style={[s.metaText, { color: colors.text }]}>{translateValue(plant.season)}</Text>
               </View>
             )}
           </View>
@@ -566,7 +600,7 @@ export default function PlantDetail() {
               onPress={() => { setActiveStage(stage); setTodayAdvice(null); }}
             >
               <Text style={[s.pillText, { color: colors.textMuted }, activeStage === stage && [s.pillTextActive, { color: '#000' }]]}>
-                {stage}
+                {translateValue(stage)}
               </Text>
             </TouchableOpacity>
           ))}
@@ -582,7 +616,7 @@ export default function PlantDetail() {
                 onPress={() => { setActiveSeason(season); setTodayAdvice(null); }}
               >
                 <Text style={[s.pillText, { color: colors.textMuted }, activeSeason === season && [s.pillTextActive, { color: '#000' }]]}>
-                  {season}
+                  {translateValue(season)}
                 </Text>
               </TouchableOpacity>
             ))}
@@ -635,11 +669,11 @@ export default function PlantDetail() {
             <>
               <View style={s.cardRow}>
                 <Text style={[s.label, { color: colors.textMuted }]}>{t("plant.amount")}</Text>
-                <Text style={[s.value, { color: colors.text }]}>{waterRule.amount}</Text>
+                <Text style={[s.value, { color: colors.text }]}>{translateValue(waterRule.amount)}</Text>
               </View>
               <View style={s.cardRow}>
                 <Text style={[s.label, { color: colors.textMuted }]}>{t("plant.frequency")}</Text>
-                <Text style={[s.value, { color: colors.text }]}>{waterRule.frequency}</Text>
+                <Text style={[s.value, { color: colors.text }]}>{translateValue(waterRule.frequency)}</Text>
               </View>
               {!!waterRule.description && (
                 <Text style={[s.cardDesc, { color: colors.textMuted, borderTopColor: colors.border }]}>{waterRule.description}</Text>
@@ -675,15 +709,15 @@ export default function PlantDetail() {
             <>
               <View style={s.cardRow}>
                 <Text style={[s.label, { color: colors.textMuted }]}>{t("plant.type")}</Text>
-                <Text style={[s.value, { color: colors.text }]}>{fertRule.type || fertRule.name || "General"}</Text>
+                <Text style={[s.value, { color: colors.text }]}>{translateValue(fertRule.type || fertRule.name || "General")}</Text>
               </View>
               <View style={s.cardRow}>
                 <Text style={[s.label, { color: colors.textMuted }]}>{t("plant.dosage")}</Text>
-                <Text style={[s.value, { color: colors.text }]}>{fertRule.dosage}</Text>
+                <Text style={[s.value, { color: colors.text }]}>{translateValue(fertRule.dosage)}</Text>
               </View>
               <View style={s.cardRow}>
                 <Text style={[s.label, { color: colors.textMuted }]}>{t("plant.frequency")}</Text>
-                <Text style={[s.value, { color: colors.text }]}>{fertRule.frequency}</Text>
+                <Text style={[s.value, { color: colors.text }]}>{translateValue(fertRule.frequency)}</Text>
               </View>
               {!!fertRule.description && (
                 <Text style={[s.cardDesc, { color: colors.textMuted, borderTopColor: colors.border }]}>{fertRule.description}</Text>

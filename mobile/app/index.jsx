@@ -16,7 +16,7 @@ import { useTranslation } from "react-i18next";
 export default function Index() {
   const [user, setUser] = useState(null);
   const router = useRouter();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { isPremium, sharesLeft } = usePremium();
   const { colors, resolvedTheme } = useTheme();
 
@@ -62,7 +62,7 @@ export default function Index() {
       if (status !== "granted") return;
       const loc = await Location.getCurrentPositionAsync({});
       const { latitude, longitude } = loc.coords;
-      const res = await fetch(`${BACKEND}/api/weather/alert?lat=${latitude}&lon=${longitude}`);
+      const res = await fetch(`${BACKEND}/api/weather/alert?lat=${latitude}&lon=${longitude}&lang=${i18n.language}`);
       const data = await res.json();
       setWeather(data);
     } catch (err) {

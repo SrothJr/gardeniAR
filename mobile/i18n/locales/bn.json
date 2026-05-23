@@ -8,7 +8,9 @@
     "upgrade": "আপগ্রেড",
     "premium": "প্রিমিয়াম",
     "login": "লগ ইন",
-    "logout": "লগ আউট"
+    "logout": "লগ আউট",
+    "permission_denied": "অনুমতি অস্বীকার করা হয়েছে",
+    "unknown": "অজানা"
   },
   "services": {
     "explore": "খুঁজুন",
@@ -172,7 +174,13 @@
     "error_routine": "রুটিন তৈরি করতে ব্যর্থ হয়েছে।",
     "error_routine_generic": "রুটিন তৈরি করার সময় একটি ত্রুটি ঘটেছে।",
     "title_required": "কাজের শিরোনাম প্রয়োজন",
-    "error_add": "কাজ যোগ করতে ব্যর্থ হয়েছে"
+    "error_add": "কাজ যোগ করতে ব্যর্থ হয়েছে",
+    "task_water": "জল দিন",
+    "task_fertilize": "সার দিন",
+    "task_prune": "ছাঁটাই করুন",
+    "task_harvest": "ফসল সংগ্রহ করুন",
+    "task_pest-control": "কীটপতঙ্গ নিয়ন্ত্রণ",
+    "task_custom": "কাস্টম"
   },
   "forum": {
     "community_name": "🌿 আর/বাগান",
@@ -222,9 +230,20 @@
     "select_first": "প্রথমে একটি গাছ নির্বাচন করুন",
     "select_hint": "নিচের তালিকা থেকে একটি গাছ নির্বাচন করুন।"
   },
+  "crop_info": {
+    "season": "ঋতু",
+    "temp": "তাপমাত্রা",
+    "soil": "মাটি",
+    "water": "জল"
+  },
   "tracker": {
     "title": "প্ল্যান্ট ট্র্যাকার",
     "crop_suggestions": "ফসলের পরামর্শ",
+    "crop_suggestions_subtitle": "আপনার মাস এবং আবহাওয়ার উপর ভিত্তি করে ঋতুভিত্তিক বাছাই",
+    "month_placeholder": "মাস (১-১২)",
+    "suggest": "পরামর্শ নিন",
+    "location_detected": "অবস্থান শনাক্ত করা হয়েছে",
+    "enter_valid_month": "সঠিক মাস লিখুন (১-১২)",
     "disease_detection": "রোগ শনাক্তকরণ",
     "view_ar": "AR-এ দেখুন",
     "upgrade_msg": "রোগ শনাক্তকরণ এবং AR আনলক করুন — ",
@@ -251,6 +270,32 @@
     "login_msg": "গাছ যোগ করতে দয়া করে লগ ইন করুন।",
     "fill_fields": "দয়া করে সব ঘর পূরণ করুন",
     "date_format_error": "YYYY-MM-DD ফরম্যাট ব্যবহার করুন"
+  },
+  "db": {
+    "basil": "তুলসী",
+    "rosemary": "রোজমেরি",
+    "mint": "পুদিনা",
+    "lavender": "ল্যাভেন্ডার",
+    "thyme": "থাইম",
+    "cilantro": "ধনেপাতা",
+    "parsley": "পার্সলে",
+    "aloe_vera": "ঘৃতকুমারী",
+    "snake_plant": "স্নেক প্ল্যান্ট",
+    "spider_plant": "স্পাইডার প্ল্যান্ট",
+    "tomato": "টমেটো",
+    "spinach": "পালং শাক",
+    "lemon_balm": "লেমন বাম",
+    "cucumber": "শসা",
+    "lettuce": "লেটুস",
+    "chili_pepper": "মরিচ",
+    "carrot": "গাজর",
+    "herb": "ভেষজ",
+    "vegetable": "শাকসবজি",
+    "houseplant": "ইনডোর গাছ",
+    "succulent": "রসালো গাছ",
+    "dandelion": "ড্যান্ডেলিয়ন",
+    "crabgrass": "ক্র্যাবগ্রাস",
+    "white_clover": "সাদা ক্লোভার"
   },
   "plant": {
     "not_found": "গাছ পাওয়া যায়নি",
@@ -300,6 +345,33 @@
     "error": "ত্রুটি",
     "could_not_add_to_cart": "কার্টে যোগ করা সম্ভব হয়নি",
     "price_tk": "৳ {{price}}",
-    "beginner": "নতুনদের জন্য"
+    "beginner": "নতুনদের জন্য",
+    "200ml": "২০০ মি.লি.",
+    "seedling": "চারা",
+    "vegetative": "অঙ্গজ বৃদ্ধি",
+    "flowering": "ফুল আসা",
+    "spring": "বসন্ত",
+    "summer": "গ্রীষ্ম",
+    "autumn": "শরৎ",
+    "winter": "শীত",
+    "all_year": "সারা বছর",
+    "standard": "স্বাভাবিক",
+    "once_a_day": "দিনে একবার",
+    "twice_a_day": "দিনে দুইবার",
+    "once_a_week": "সপ্তাহে একবার",
+    "twice_a_week": "সপ্তাহে দুইবার",
+    "every_2_weeks": "প্রতি ২ সপ্তাহে একবার",
+    "every_2_days": "প্রতি ২ দিনে একবার",
+    "every_2_3_days": "প্রতি ২-৩ দিনে একবার",
+    "monthly": "মাসিক",
+    "nitrogen": "নাইট্রোজেন",
+    "nitrogen_rich": "নাইট্রোজেন সমৃদ্ধ",
+    "nitrogen_rich_blood_meal": "নাইট্রোজেন সমৃদ্ধ (ব্লাড মিল)",
+    "phosphorus": "ফসফরাস",
+    "potassium": "পটাশিয়াম",
+    "balanced": "সুষম",
+    "organic": "জৈব",
+    "liquid": "তরল",
+    "granular": "দানাদার"
   }
 }

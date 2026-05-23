@@ -16,9 +16,12 @@ exports.identifyWeed = async (req, res) => {
       return res.status(400).json({ message: "No image uploaded" });
     }
 
+    const language = req.body.lang || "en";
+
     const result = await geminiService.identifyWeed(
       req.file.buffer,
-      req.file.mimetype
+      req.file.mimetype,
+      language
     );
     res.json(result);
   } catch (error) {

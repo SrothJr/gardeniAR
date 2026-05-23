@@ -17,6 +17,7 @@ const gardenTaskSchema = new mongoose.Schema({
   aiReasoning: { type: String },
   relatedPlant: { type: mongoose.Schema.Types.ObjectId, ref: 'TrackedPlant' },
   weatherDependent: { type: Boolean, default: false },
+  language: { type: String, default: 'en' },
   
   createdAt: { type: Date, default: Date.now }
 });

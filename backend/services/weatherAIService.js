@@ -1,13 +1,13 @@
 const { GoogleGenerativeAI } = require("@google/generative-ai");
+const { cleanAIJSON } = require("./aiUtils");
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+const model = genAI.getGenerativeModel({ model: "gemini-flash-latest" });
 
-// Using 1.5-flash for stability and speed
-const model = genAI.getGenerativeModel({ model: "gemini-3.1-flash-lite-preview" });
-
-async function generateWeatherAlertAI(weather) {
+async function generateWeatherAlertAI(weather, language = "en") {
   const prompt = `
 You are an expert gardening assistant.
+Respond in ${language === "bn" ? "Bengali" : "English"}.
 
 Weather data:
 - City: ${weather.city}
@@ -15,7 +15,7 @@ Weather data:
 - Humidity: ${weather.humidity}%
 - Condition: ${weather.condition}
 
-Generate a short gardening alert with:
+Generate a short gardening alert in ${language === "bn" ? "Bengali" : "English"} with:
 - What gardeners should do today
 - Any precautions
 - Watering advice
@@ -23,15 +23,19 @@ Generate a short gardening alert with:
 Return plain text only.
 `;
 
-  const result = await model.generateContent(prompt);
-  return result.response.text().trim();
+  try {
+    const result = await model.generateContent(prompt);
+    return result.response.text().trim();
+  } catch (error) {
+    console.error("Weather Alert AI failed:", error);
+    throw error;
+  }
 }
 
-async function generateAdjustedCareAI(plantName, lifeStage, generalWater, generalFert, weather) {
-  console.log(`Generating AI advice for: ${plantName} (${lifeStage}) in ${weather.city}`);
-  
+async function generateAdjustedCareAI(plantName, lifeStage, generalWater, generalFert, weather, language = "en") {
   const prompt = `
 You are an expert botanist. Adjust the care for the plant "${plantName}" which is in the "${lifeStage}" stage, based on TODAY's weather, keep it within 20 words or concise.
+Respond in ${language === "bn" ? "Bengali" : "English"}.
 
 General Rules for this stage:
 - Water: ${generalWater || "Standard"}
@@ -43,28 +47,21 @@ Today's Weather in ${weather.city}:
 - Condition: ${weather.condition}
 - Wind: ${weather.windSpeed} m/s
 
-Output a JSON object ONLY (no markdown):
+Output a JSON object ONLY:
 {
-  "waterAdvice": "Specific instruction for today (e.g. 'Skip watering due to rain' or 'Water deeply as it is hot' or 'water 20ml today')",
-  "fertilizerAdvice": "Specific instruction for today" (e.g. 'Apply half dose due to humidity' or 'No fertilizer needed today')",
-  "reasoning": "Brief explanation based on weather variables (must be concise and relevant, within 20 words and mention the plant name and life stage)"
+  "waterAdvice": "Specific instruction for today in ${language === "bn" ? "Bengali" : "English"}",
+  "fertilizerAdvice": "Specific instruction for today in ${language === "bn" ? "Bengali" : "English"}",
+  "reasoning": "Brief explanation in ${language === "bn" ? "Bengali" : "English"} (concise, mention plant and weather)"
 }
 `;
 
   try {
     const result = await model.generateContent(prompt);
-    const text = result.response.text();
-    // Clean markdown if present
-    const cleaned = text.replace(/```json/g, "").replace(/```/g, "").trim();
-    return JSON.parse(cleaned);
-  } catch (e) {
-    console.error("AI Care Adjustment Error Details:", e);
-    // Fallback
-    return {
-      waterAdvice: "Follow standard guide (AI unavailable)",
-      fertilizerAdvice: "Follow standard guide (AI unavailable)",
-      reasoning: "Service disruption: " + e.message
-    };
+    let text = result.response.text().trim();
+    return JSON.parse(cleanAIJSON(text));
+  } catch (error) {
+    console.error("AI Care Adjustment failed:", error);
+    throw error;
   }
 }
 
