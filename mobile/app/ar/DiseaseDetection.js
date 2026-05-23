@@ -49,7 +49,7 @@ export default function App() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const { isPremium, loaded } = usePremium();
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   React.useEffect(() => {
     if (loaded && !isPremium) {
@@ -68,8 +68,8 @@ export default function App() {
   const analyzeLeaf = async (uri) => {
     if (!API_KEY) {
       Alert.alert(
-        'Configuration Error',
-        'Missing GENAI API key. Set EXPO_PUBLIC_GENAI_API_KEY or extra.GENAI_API_KEY.'
+        t('doctor.config_error'),
+        t('doctor.missing_key')
       );
       return;
     }
@@ -130,7 +130,7 @@ export default function App() {
       setResult(text);
     } catch (err) {
       console.error(err);
-      Alert.alert('Analysis Failed', err.message);
+      Alert.alert(t('doctor.analysis_failed'), err.message);
     } finally {
       setLoading(false);
     }
@@ -142,7 +142,7 @@ export default function App() {
       : await ImagePicker.requestMediaLibraryPermissionsAsync();
 
     if (!granted) {
-      Alert.alert('Permission Required', 'Camera/Gallery access is required.');
+      Alert.alert(t('doctor.permission_title'), t('doctor.permission_body'));
       return;
     }
 
@@ -160,7 +160,7 @@ export default function App() {
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        <Text style={styles.header}>🌿 PlantDoctor AI</Text>
+        <Text style={styles.header}>{t('doctor.header')}</Text>
 
         <View style={styles.card}>
           {image ? (
@@ -168,7 +168,7 @@ export default function App() {
           ) : (
             <View style={styles.placeholder}>
               <Text style={styles.placeholderText}>
-                Take a photo of a leaf to begin
+                {t('doctor.placeholder')}
               </Text>
             </View>
           )}
@@ -179,14 +179,14 @@ export default function App() {
               style={styles.btnFull}
               onPress={() => pickImage(true)}
             >
-              <Text style={styles.btnText}>📸 Camera</Text>
+              <Text style={styles.btnText}>{t('doctor.camera')}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
               style={[styles.btnFull, styles.btnSecondary]}
               onPress={() => pickImage(false)}
             >
-              <Text style={styles.btnText}>📁 Gallery</Text>
+              <Text style={styles.btnText}>{t('doctor.gallery')}</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -195,14 +195,14 @@ export default function App() {
           <View style={styles.statusBox}>
             <ActivityIndicator size="large" color="#2ecc71" />
             <Text style={styles.statusText}>
-              AI is scanning for diseases...
+              {t('doctor.scanning')}
             </Text>
           </View>
         )}
 
         {result && (
           <View style={styles.reportCard}>
-            <Text style={styles.reportTitle}>Diagnosis Report</Text>
+            <Text style={styles.reportTitle}>{t('doctor.report_title')}</Text>
             <Text style={styles.reportContent}>{result}</Text>
           </View>
         )}

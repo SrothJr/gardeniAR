@@ -12,14 +12,14 @@ export default function SoilCamera() {
   const router = useRouter();
   const [permission, requestPermission] = useCameraPermissions();
   const [loading, setLoading] = useState(false);
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   let cameraRef = null;
 
   if (!permission) {
     return (
       <View style={styles.center}>
-        <Text style={styles.hint}>Checking camera permission…</Text>
+        <Text style={styles.hint}>{t('soil.checking_permission')}</Text>
       </View>
     );
   }
@@ -27,9 +27,9 @@ export default function SoilCamera() {
   if (!permission.granted) {
     return (
       <View style={styles.center}>
-        <Text style={styles.title}>Camera permission required</Text>
+        <Text style={styles.title}>{t('soil.camera_permission')}</Text>
         <TouchableOpacity style={styles.btn} onPress={requestPermission}>
-          <Text style={styles.btnText}>Grant Permission</Text>
+          <Text style={styles.btnText}>{t('soil.grant_permission')}</Text>
         </TouchableOpacity>
       </View>
     );
@@ -37,7 +37,7 @@ export default function SoilCamera() {
 
   const captureAndAnalyze = async () => {
     if (!cameraRef || loading) {
-      Alert.alert("Camera not ready", "Please wait a moment.");
+      Alert.alert(t('soil.camera_not_ready'), t('soil.wait_moment'));
       return;
     }
 
@@ -95,7 +95,7 @@ export default function SoilCamera() {
       });
     } catch (err) {
       console.error("captureAndAnalyze error:", err);
-      Alert.alert("Error", "Could not capture or analyze soil");
+      Alert.alert(t('plant.error'), t('soil.capture_error'));
     } finally {
       setLoading(false);
     }
@@ -119,7 +119,7 @@ export default function SoilCamera() {
           disabled={loading}
         >
           <Text style={styles.btnTextSmall}>
-            {loading ? "Analyzing..." : "Scan Soil"}
+            {loading ? t('soil.analyzing') : t('soil.scan_soil')}
           </Text>
         </TouchableOpacity>
 
@@ -127,7 +127,7 @@ export default function SoilCamera() {
           style={[styles.btnSmall, styles.outline]}
           onPress={() => router.back()}
         >
-          <Text style={styles.outlineText}>Back</Text>
+          <Text style={styles.outlineText}>{t('soil.back')}</Text>
         </TouchableOpacity>
       </View>
     </View>

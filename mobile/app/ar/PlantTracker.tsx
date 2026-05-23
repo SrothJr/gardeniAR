@@ -78,17 +78,17 @@ export default function PlantTracker() {
 
   const addPlant = async () => {
     if (!name || !plantingDate || !harvestingDate) {
-      Alert.alert("Error", "Please fill all fields");
+      Alert.alert(t('tracker.error_title'), t('tracker.fill_fields'));
       return;
     }
     if (isNaN(Date.parse(plantingDate)) || isNaN(Date.parse(harvestingDate))) {
-      Alert.alert("Error", "Use YYYY-MM-DD format");
+      Alert.alert(t('tracker.error_title'), t('tracker.date_format'));
       return;
     }
     try {
       const userStr = await AsyncStorage.getItem('user');
       if (!userStr) {
-        Alert.alert('Login Required', 'Please log in to add plants.');
+        Alert.alert(t('tracker.login_required'), t('tracker.login_msg'));
         return;
       }
       const user = JSON.parse(userStr);
@@ -105,7 +105,7 @@ export default function PlantTracker() {
       setName(""); setSpecies(""); setPlantingDate(""); setHarvestingDate(""); setStatus("Vegetative");
       fetchPlants();
     } catch {
-      Alert.alert("Error", "Failed to add plant.");
+      Alert.alert(t('tracker.error_title'), t('tracker.add_failed'));
     } finally {
       setAdding(false);
     }
@@ -113,9 +113,9 @@ export default function PlantTracker() {
 
   const handleARPress = async () => {
     if (!isPremium) {
-      Alert.alert("🔒 Premium Feature", "View in AR is for Premium subscribers only.", [
-        { text: "Not now", style: "cancel" },
-        { text: "Upgrade →", onPress: () => router.push("/premium") },
+      Alert.alert(t('tracker.premium_feature'), t('tracker.ar_premium_msg'), [
+        { text: t('common.not_now'), style: "cancel" },
+        { text: t('common.upgrade_arrow'), onPress: () => router.push("/premium") },
       ]);
       return;
     }
@@ -124,9 +124,9 @@ export default function PlantTracker() {
 
   const handleDiseasePress = () => {
     if (!isPremium) {
-      Alert.alert("🔒 Premium Feature", "Disease Detection is for Premium subscribers only.", [
-        { text: "Not now", style: "cancel" },
-        { text: "Upgrade →", onPress: () => router.push("/premium") },
+      Alert.alert(t('tracker.premium_feature'), t('tracker.disease_premium_msg'), [
+        { text: t('common.not_now'), style: "cancel" },
+        { text: t('common.upgrade_arrow'), onPress: () => router.push("/premium") },
       ]);
       return;
     }

@@ -1,14 +1,15 @@
-// mobile/app/soil/index.jsx
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../hooks/useTheme';
+import { useTranslation } from 'react-i18next';
 
 export default function SoilTestScreen() {
   const router = useRouter();
   const { colors } = useTheme();
+  const { t } = useTranslation();
 
   return (
     <SafeAreaView style={[styles.page, { backgroundColor: colors.background }]} edges={['top']}>
@@ -17,26 +18,26 @@ export default function SoilTestScreen() {
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
           <Ionicons name="chevron-back" size={24} color={colors.text} />
         </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: colors.text }]}>Soil Test</Text>
+        <Text style={[styles.headerTitle, { color: colors.text }]}>{t('soil.title')}</Text>
         <View style={{ width: 40 }} />
       </View>
 
       <View style={styles.container}>
         <View style={[styles.card, { backgroundColor: colors.surface }]}>
-        <View style={{ height: 180, borderRadius: 12, backgroundColor: colors.background, marginBottom: 16, alignItems: 'center', justifyContent: 'center' }}>
-          <Text style={{ color: colors.textMuted }}>Tip: hold phone ~20–30 cm above the soil</Text>
+        <View style={{ height: 180, borderRadius: 12, backgroundColor: colors.background, marginBottom: 16, alignItems: 'center', justifyContent: 'center', padding: 20 }}>
+          <Text style={{ color: colors.textMuted, textAlign: 'center' }}>{t('soil.tip')}</Text>
         </View>
 
         <TouchableOpacity
           style={[styles.primaryBtn, { backgroundColor: colors.primary }]}
           onPress={() => router.push('/soil/camera')}
         >
-          <Text style={[styles.primaryBtnText, { color: "#000" }]}>Scan Soil with Camera</Text>
+          <Text style={[styles.primaryBtnText, { color: "#000" }]}>{t('soil.scan_btn')}</Text>
         </TouchableOpacity>
 
-        <Text style={[styles.howItWorksTitle, { color: colors.text }]}>How it works</Text>
+        <Text style={[styles.howItWorksTitle, { color: colors.text }]}>{t('soil.how_it_works')}</Text>
         <Text style={[styles.howItWorks, { color: colors.textMuted }]}>
-          The camera captures the soil photo and the server-side AI analyzes texture, color, and moisture hints to estimate soil type and give short recommendations.
+          {t('soil.how_it_works_desc')}
         </Text>
       </View>
     </View>

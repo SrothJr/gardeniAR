@@ -236,33 +236,33 @@ export default function IdentifyScreen() {
 
                     <View style={[styles.divider, { backgroundColor: colors.border }]} />
                     
-                    <Text style={[styles.sectionTitle, { color: colors.text }]}>🌱 Description</Text>
+                    <Text style={[styles.sectionTitle, { color: colors.text }]}>🌱 {t('checklist.description')}</Text>
                     <Text style={[styles.bodyText, { color: colors.textMuted }]}>{result?.description}</Text>
                     
-                    <Text style={[styles.sectionTitle, { color: colors.text }]}>⚠️ Is it a Weed?</Text>
+                    <Text style={[styles.sectionTitle, { color: colors.text }]}>⚠️ {t('checklist.is_it_a_weed')}</Text>
                     <Text style={[styles.bodyText, { color: colors.textMuted }]}>
-                        {result?.isPlant === false ? "No plant detected." : 
-                         result?.isWeed ? "Yes, this is considered a weed." : 
-                         "No, this might be a beneficial plant."}
+                        {result?.isPlant === false ? t('checklist.no_plant') : 
+                         result?.isWeed ? t('checklist.yes_weed') : 
+                         t('checklist.no_weed')}
                     </Text>
 
                     {result?.isWeed && (
                         <>
-                            <Text style={[styles.sectionTitle, { color: colors.text }]}>🛠️ Removal Instructions</Text>
+                            <Text style={[styles.sectionTitle, { color: colors.text }]}>🛠️ {t('checklist.removal_instructions')}</Text>
                             <Text style={[styles.bodyText, { color: colors.textMuted }]}>{result?.removalInstructions}</Text>
                         </>
                     )}
 
                     {result?.warning && (
                         <>
-                            <Text style={[styles.sectionTitle, { color: '#ef4444' }]}>☣️ Warning</Text>
+                            <Text style={[styles.sectionTitle, { color: '#ef4444' }]}>☣️ {t('checklist.warning')}</Text>
                             <Text style={[styles.bodyText, { color: '#ef4444' }]}>{result?.warning}</Text>
                         </>
                     )}
 
                     <TouchableOpacity style={[styles.closeBtn, { backgroundColor: colors.primary }]} onPress={resetScan}>
                         <Text style={[styles.closeBtnText, { color: "#000" }]}>
-                            {mode === 'auto' ? "Scan Another" : "Back to AR"}
+                            {mode === 'auto' ? t('checklist.scan_another') : (i18n.language === 'bn' ? "AR-এ ফিরে যান" : "Back to AR")}
                         </Text>
                     </TouchableOpacity>
                 </ScrollView>

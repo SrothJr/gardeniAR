@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from "@expo/vector-icons";
+import { useTranslation } from 'react-i18next';
 
 import {
   GestureHandlerRootView,
@@ -33,6 +34,7 @@ type ARObject = {
 
 export default function ARScreen(): React.JSX.Element {
   const router = useRouter();
+  const { t } = useTranslation();
   const [permission, requestPermission] = useCameraPermissions();
   const [objects, setObjects] = useState<ARObject[]>([]);
   const selectedType = useRef<ARType>('coconut');
@@ -99,9 +101,9 @@ export default function ARScreen(): React.JSX.Element {
   if (!permission?.granted) {
     return (
       <View style={styles.center}>
-        <Text style={{ color: '#e6eef3', marginBottom: 20 }}>Camera permission required</Text>
+        <Text style={{ color: '#e6eef3', marginBottom: 20 }}>{t('ar.permission_required')}</Text>
         <TouchableOpacity style={styles.permissionBtn} onPress={requestPermission}>
-          <Text style={styles.permissionBtnText}>Allow Camera</Text>
+          <Text style={styles.permissionBtnText}>{t('ar.allow_camera')}</Text>
         </TouchableOpacity>
       </View>
     );
@@ -173,15 +175,15 @@ export default function ARScreen(): React.JSX.Element {
       {/* 🎮 CONTROLS */}
       <View style={styles.bottomBar}>
         <TouchableOpacity onPress={() => (selectedType.current = 'coconut')} style={[styles.btn, selectedType.current === 'coconut' && styles.btnActive]}>
-          <Text style={styles.txt}>Coconut</Text>
+          <Text style={styles.txt}>{t('ar.coconut')}</Text>
         </TouchableOpacity>
 
         <TouchableOpacity onPress={() => (selectedType.current = 'tomato')} style={[styles.btn, selectedType.current === 'tomato' && styles.btnActive]}>
-          <Text style={styles.txt}>Tomato</Text>
+          <Text style={styles.txt}>{t('ar.tomato')}</Text>
         </TouchableOpacity>
 
         <TouchableOpacity onPress={() => (selectedType.current = 'areca')} style={[styles.btn, selectedType.current === 'areca' && styles.btnActive]}>
-          <Text style={styles.txt}>Areca</Text>
+          <Text style={styles.txt}>{t('ar.areca')}</Text>
         </TouchableOpacity>
       </View>
 

@@ -1,10 +1,12 @@
 import React from "react";
 import { View, Text, Image, StyleSheet, ScrollView, TouchableOpacity } from "react-native";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
+import { useTranslation } from "react-i18next";
 
 export default function SoilResult() {
   const params = useLocalSearchParams();
   const router = useRouter();
+  const { t } = useTranslation();
   let uri = params?.uri || "";
   let analysis = null;
 
@@ -17,26 +19,26 @@ export default function SoilResult() {
   return (
     <ScrollView style={styles.page}>
       <Stack.Screen options={{ headerShown: false }} />
-      <Text style={styles.title}>Soil Result</Text>
+      <Text style={styles.title}>{t('soil.result_title')}</Text>
 
       {uri ? (
         <Image source={{ uri }} style={styles.preview} />
       ) : (
-        <Text style={styles.no}>No image received.</Text>
+        <Text style={styles.no}>{t('soil.no_image')}</Text>
       )}
 
       <View style={styles.block}>
-        <Text style={styles.label}>AI Analysis</Text>
+        <Text style={styles.label}>{t('soil.ai_analysis')}</Text>
 
         {!analysis && (
-          <Text style={styles.text}>No analysis data received.</Text>
+          <Text style={styles.text}>{t('soil.no_analysis')}</Text>
         )}
 
         {analysis && (
           <>
-            <Text style={styles.text}>Type: {analysis.soilType}</Text>
-            <Text style={styles.text}>pH: {analysis.ph}</Text>
-            <Text style={styles.text}>Fertility: {analysis.fertility}</Text>
+            <Text style={styles.text}>{t('soil.type')}: {t(`soil.${analysis.soilType?.toLowerCase()}`)}</Text>
+            <Text style={styles.text}>{t('soil.ph')}: {analysis.ph}</Text>
+            <Text style={styles.text}>{t('soil.fertility')}: {t(`soil.${analysis.fertility?.toLowerCase()}`)}</Text>
             <Text style={styles.text}>{analysis.description}</Text>
           </>
         )}
@@ -46,7 +48,7 @@ export default function SoilResult() {
         style={styles.backBtn}
         onPress={() => router.replace("/")}
       >
-        <Text style={styles.backBtnText}>Back to Home</Text>
+        <Text style={styles.backBtnText}>{t('soil.back_home')}</Text>
       </TouchableOpacity>
     </ScrollView>
   );
