@@ -1,6 +1,25 @@
 import { Platform } from 'react-native';
 
 export const ThemePresets = {
+  Default: {
+    name: 'Default',
+    light: {
+      primary: '#10b981',
+      background: '#ffffff',
+      surface: '#f3f4f6',
+      text: '#111827',
+      textMuted: '#6b7280',
+      border: '#e5e7eb',
+    },
+    dark: {
+      primary: '#10b981',
+      background: '#071024',
+      surface: '#1a2535',
+      text: '#f9fafb',
+      textMuted: '#9ca3af',
+      border: '#2d3748',
+    },
+  },
   Monochrome: {
     name: 'Monochrome',
     light: {
@@ -37,25 +56,6 @@ export const ThemePresets = {
       text: '#ffffff',
       textMuted: '#d1d5db',
       border: '#4b5563',
-    },
-  },
-  Default: {
-    name: 'Default',
-    light: {
-      primary: '#10b981',
-      background: '#ffffff',
-      surface: '#f3f4f6',
-      text: '#111827',
-      textMuted: '#6b7280',
-      border: '#e5e7eb',
-    },
-    dark: {
-      primary: '#10b981',
-      background: '#071024',
-      surface: '#1a2535',
-      text: '#f9fafb',
-      textMuted: '#9ca3af',
-      border: '#2d3748',
     },
   },
   Dynamic: {
